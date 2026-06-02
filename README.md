@@ -8,13 +8,13 @@ Description:
   # Team: 
     (Figma: Design, Frontend System and Design, Backend System and Design, Databses System and Design)
   ### Cooperation and Teammate:
-  ### Visal: 
+  ### 1. Visal: 
   ( Frontend System )
   
-  ### Sullivann Sam: 
+  ### 2. Sullivann Sam: 
   ( Figma Design and Planning, Frontend Design and System, Backend System and Design Project Architecture, and Databases Design and Architecture ) 
   
-  ### China Ra:
+  ### 3. China Ra:
   ( Figma Designer )
 
     
