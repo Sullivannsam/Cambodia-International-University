@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import Navbar from './components/Navbar';
 import SlideShow from './components/SlideShow';
+import AboutPage from './components/AboutPage';
 import Footer from './components/Footers';
 
 
@@ -10,6 +11,7 @@ function App() {
     <div>
       <Navbar></Navbar>
       <SlideShow></SlideShow>
+      <AboutPage></AboutPage>
       <Footer></Footer>
     </div>
   );
