@@ -47,17 +47,20 @@ const SlideShow = () => {
     };
 
     return (
-        <div className="relative w-full h-[600px] overflow-hidden bg-gray-50">
+        /* កែប្រែទំហំមកត្រឹម h-[350px] លើ Mobile និង h-[450px] លើ Desktop ដើម្បីឱ្យសមល្មមមើល (Attractive Size) */
+        /* បន្ថែម rounded-t-[2rem] ឱ្យស៊ីគ្នានឹងកាត AboutPage ខាងក្រោម */
+        <div className="relative w-full h-[350px] lg:h-[450px] overflow-hidden bg-slate-100 rounded-t-[2rem] shadow-sm">
+            
             {/* Slides */}
             {slides.map((slide, index) => (
                 <div
                     key={index}
-                    className={`absolute inset-0 transition-all duration-700 ease-out ${
+                    className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                         index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
                     }`}
                 >
-                    {/* Dark overlay for better text readability - matches navbar's glass aesthetic */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-black/20 z-10"></div>
+                    {/* បន្ថែម Gradient ងងឹតផ្នែកខាងក្រោម ដើម្បីជួយឱ្យអក្សរកាន់តែច្បាស់ស្អាត */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent z-10"></div>
                     
                     <img 
                         src={slide.url} 
@@ -65,14 +68,16 @@ const SlideShow = () => {
                         className="w-full h-full object-cover object-center"
                     />
                     
-                    {/* Caption overlay - matching navbar's glass style */}
-                    <div className="absolute bottom-0 left-0 right-0 z-20 pb-20 pt-32 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="transform transition-all duration-500 delay-100 translate-y-0">
-                                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 font-['Inter'] tracking-tight">
+                    {/* Caption Overlay - រៀបចំទីតាំង និងទំហំអក្សរឱ្យសមរម្យជាមួយទំហំស្លាយថ្មី */}
+                    <div className="absolute bottom-0 left-0 right-0 z-20 pb-12 pt-24">
+                        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                            <div className={`transform transition-all duration-700 ${
+                                index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                            }`}>
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-2 font-['Inter'] tracking-tight">
                                     {slide.title}
                                 </h2>
-                                <p className="text-lg sm:text-xl text-white/90 font-['Inter']">
+                                <p className="text-sm sm:text-base lg:text-lg text-slate-200/90 font-['Inter'] font-normal max-w-xl">
                                     {slide.subtitle}
                                 </p>
                             </div>
@@ -81,45 +86,45 @@ const SlideShow = () => {
                 </div>
             ))}
 
-            {/* Navigation Arrows - matching navbar's blue accent */}
+            {/* Navigation Arrows - រចនាបថថ្លាៗបែប Glassmorphism ស្អាតប្លែកភ្នែក */}
             <button
                 onClick={prevSlide}
-                className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-30 bg-white/80 backdrop-blur-md hover:bg-white/95 text-gray-800 rounded-full p-2 sm:p-3 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full p-2.5 transition-all duration-200 hover:scale-105 active:scale-95 border border-white/20 shadow-md"
                 aria-label="Previous slide"
             >
-                <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
 
             <button
                 onClick={nextSlide}
-                className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-30 bg-white/80 backdrop-blur-md hover:bg-white/95 text-gray-800 rounded-full p-2 sm:p-3 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full p-2.5 transition-all duration-200 hover:scale-105 active:scale-95 border border-white/20 shadow-md"
                 aria-label="Next slide"
             >
-                <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
 
-            {/* Dots indicator - matching navbar's clean minimal style */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+            {/* Dots indicator - ប្តូរមកពណ៌សថ្លា និងខៀវ (Blue-600) ឱ្យត្រូវនឹង Brand សាលា */}
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
                 {slides.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => goToSlide(index)}
-                        className={`transition-all duration-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`transition-all duration-300 rounded-full ${
                             index === currentSlide 
-                                ? 'w-8 h-2 bg-blue-600' 
-                                : 'w-2 h-2 bg-white/60 hover:bg-white/90 hover:w-4'
+                                ? 'w-6 h-2 bg-blue-600' 
+                                : 'w-2 h-2 bg-white/40 hover:bg-white/80'
                         }`}
                         aria-label={`Go to slide ${index + 1}`}
                     />
                 ))}
             </div>
 
-            {/* Optional: Slide counter - subtle like navbar's search bar */}
-            <div className="absolute bottom-6 right-4 sm:right-6 z-30 bg-white/80 backdrop-blur-md rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 font-['Inter'] shadow-sm">
+            {/* Slide counter - កែសម្រួលទីតាំងឱ្យស្អាតស្រទន់ */}
+            <div className="absolute bottom-5 right-6 z-30 bg-slate-950/40 backdrop-blur-md rounded-full px-3 py-1 text-[11px] font-semibold text-slate-200 border border-white/10 tracking-wider">
                 {currentSlide + 1} / {slides.length}
             </div>
         </div>
