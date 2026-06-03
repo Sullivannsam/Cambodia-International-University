@@ -1,4 +1,4 @@
-# Combodia-International-University
+# Cambodia-International-University
 Description: 
   # Tools:
     (Figma: UI/UX, git, github, postman, obsidian, vscode editor, Dbeaver: Sql Editor)
