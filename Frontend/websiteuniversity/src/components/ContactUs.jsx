@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const ContactUs = () => {
   // បង្កើត State សម្រាប់គ្រប់គ្រងការបង្ហាញផ្ទាំងជោគជ័យ
@@ -16,10 +17,15 @@ const ContactUs = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsSubmitted(true);
-  };
+  const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+          await axios.post("http://localhost:8080/api/contact", formData);
+          setIsSubmitted(true);
+      } catch (err) {
+          console.error(err);
+      }
+  }; 
 
   const handleReset = () => {
     setFormData({ username: '', phone: '', email: '', message: '' });
