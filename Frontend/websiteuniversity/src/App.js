@@ -7,10 +7,10 @@ import ContactUs from './components/ContactUs';
 import Footer from './components/Footers';
 
 
-
 function App() {
   return (
-    <div>
+
+      <div>
       <Navbar></Navbar>
       <SlideShow></SlideShow>
       <AboutPage></AboutPage>
