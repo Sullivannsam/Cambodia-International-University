@@ -51,9 +51,11 @@ const AboutPage = () => {
                                 {/* Dynamic Pill Buttons Stack */}
                                 <div className="flex flex-col gap-2.5 shrink-0 w-32">
                                     {/* Enroll Pill */}
-                                    <button className="bg-black hover:bg-slate-900 text-white text-xs font-semibold py-2 px-4 rounded-full flex items-center justify-between transition-colors shadow-sm">
-                                        <span>Enroll</span>
-                                        <span className="text-[10px]">➔</span>
+                                     <button className="bg-black hover:bg-slate-900 text-white text-xs font-semibold py-2 px-4 rounded-full flex items-center justify-center transition-colors shadow-sm">
+                                        <a href="/Enroll">
+                                              <span>Enroll</span>
+                                              <span className="text-[15px]">➔</span>
+                                        </a>
                                     </button>
 
                                     {/* View Course Pill */}

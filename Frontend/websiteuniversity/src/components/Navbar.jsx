@@ -19,20 +19,19 @@ const Navbar = () => {
                                     d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.5" />
                             </svg>
                         </div>
-                        <span className="font-semibold text-base lg:text-lg tracking-tight text-gray-900 dynamic-title">
-                            Cambodia International University
+                        <span className="font-semibold text-base lg:text-lg tracking-tight text-gray-900 dynamic-title"> <a href="/"> Cambodia International University </a> 
                         </span>
                     </div>
 
                     {/* Navigation Links (Desktop) */}
                     <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-                        <a href="/" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
+                        <a href="/public/homepage" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
                             Home
                         </a>
-                        <a href="/about" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
-                            About
+                        <a href="/public/aboutus" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
+                            About Us
                         </a>
-                        <a href="/contact" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
+                        <a href="/public/contact" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
                             Contact
                         </a>
                         {/* បានប្តូរពី Email ទៅជា Enroll រួចរាល់ */}
@@ -58,10 +57,16 @@ const Navbar = () => {
 
                         {/* Modern Login Button */}
                         <a 
-                            href="/login" 
+                            href="/public/login" 
                             className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow active:scale-[0.98]"
                         >
                             Login
+                        </a>
+                        <a 
+                          href="/public/register" 
+                          className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow active:scale-[0.98]"
+                        >
+                            Register
                         </a>
                     </div>
 
@@ -88,8 +93,8 @@ const Navbar = () => {
             {isOpen && (
                 <div className="md:hidden bg-white border-b border-gray-100 px-4 pt-2 pb-4 space-y-2 shadow-inner">
                     <a href="/" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Home</a>
-                    <a href="/about" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">About</a>
-                    <a href="/contact" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Contact</a>
+                    <a href="/public/aboutus" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">About</a>
+                    <a href="/public/contact" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Contact</a>
                     {/* បានប្តូរពី Email ទៅជា Enroll សម្រាប់អេក្រង់ទូរស័ព្ទ */}
                     <a href="/enroll" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Enroll</a>
                     
@@ -107,10 +112,16 @@ const Navbar = () => {
                         </div>
                         {/* Login Button on Mobile */}
                         <a 
-                            href="/login" 
+                            href="/public/login" 
                             className="w-full bg-slate-900 hover:bg-slate-800 text-white text-center text-sm font-medium py-2 rounded-xl block transition duration-200"
                         >
                             Login
+                        </a>
+                        <a 
+                            href="/public/register" 
+                            className="w-full bg-slate-900 hover:bg-slate-800 text-white text-center text-sm font-medium py-2 rounded-xl block transition duration-200"
+                        >
+                            Register
                         </a>
                     </div>
                 </div>
