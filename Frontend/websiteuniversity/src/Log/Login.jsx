@@ -1,6 +1,9 @@
 'use client';
-
+import { loginUser } from '../Api/api.js';
 import React, { useState } from 'react';
+
+
+
 const ArrowBoxIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M14 10L20 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M15 4H20V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -40,21 +43,13 @@ const Login2 = () => {
 const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        const response = await fetch("http://localhost:8080/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
+        const data = await loginUser({ email, password });
+        if (data.token) {
             localStorage.setItem("token", data.token);
             localStorage.setItem("email", data.email);
             localStorage.setItem("role", data.role);
             window.location.href = "/";
-        } 
-       
-         else {
+        } else {
             setError("Invalid email or password");
         }
     } catch (err) {
