@@ -19,12 +19,8 @@ const ContactUs = () => {
 
   const handleSubmit = async (e) => {
       e.preventDefault();
-      try {
-          await axios.post("http://localhost:8080/api/contact", formData);
-          setIsSubmitted(true);
-      } catch (err) {
-          console.error(err);
-      }
+      setIsSubmitted(true);
+  
   }; 
 
   const handleReset = () => {
@@ -168,7 +164,9 @@ const ContactUs = () => {
                 onClick={handleReset}
                 className="bg-blue-400 hover:bg-blue-500 text-gray-900 font-bold text-xs px-10 py-2.5 rounded-md shadow transition transform active:scale-95 mt-4"
               >
-                Back to Home
+                  <a href="/">
+                    Back to Home
+                  </a>
               </button>
 
               {/* Decorative Small Circles (ជ្រុងខាងឆ្វេងក្រោម) */}

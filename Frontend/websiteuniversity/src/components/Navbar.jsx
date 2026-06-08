@@ -1,133 +1,228 @@
 import React, { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
+ 
 const Navbar = () => {
-    // បន្ថែម State សម្រាប់បើក/បិទ Mobile Menu
     const [isOpen, setIsOpen] = useState(false);
-
+    const navigate = useNavigate();
+ 
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
+ 
+    const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+        navigate("/public/login");
+    };
+ 
+    const linkStyle = {
+        fontSize: 14,
+        fontWeight: 500,
+        color: "#4b5563",
+        textDecoration: "none",
+        transition: "color 0.2s",
+    };
+ 
     return (
-        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 text-gray-800 font-['Inter']">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    
+        <nav style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 50,
+            backgroundColor: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(12px)",
+            borderBottom: "1px solid #f3f4f6",
+            fontFamily: "'Inter', sans-serif",
+        }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
+ 
                     {/* Brand Logo & Title */}
-                    <div className="flex items-center space-x-3 cursor-pointer group">
-                        <div className="flex-shrink-0 bg-blue-600 p-2 rounded-xl transition-transform duration-300 group-hover:scale-105">
-                            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                    <a href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
+                        <div style={{
+                            background: "#2563eb",
+                            padding: 8,
+                            borderRadius: 12,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                        }}>
+                            <svg style={{ width: 20, height: 20, color: "white" }} fill="none" stroke="white" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                     d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-                                    d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.5" />
                             </svg>
                         </div>
-                        <span className="font-semibold text-base lg:text-lg tracking-tight text-gray-900 dynamic-title"> <a href="/"> Cambodia International University </a> 
+                        <span style={{ fontWeight: 600, fontSize: 16, color: "#111827", whiteSpace: "nowrap" }}>
+                            Cambodia International University
                         </span>
+                    </a>
+ 
+                    {/* Desktop Nav Links */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 32 }}
+                        className="desktop-nav">
+                        {[
+                            { label: "Home", href: "/public/homepage" },
+                            { label: "About Us", href: "/public/aboutus" },
+                            { label: "Contact", href: "/public/contact" },
+                            { label: "Enroll", href: "/public/content/enroll" },
+                        ].map(({ label, href }) => (
+                            <a key={label} href={href} style={linkStyle}
+                                onMouseEnter={e => e.target.style.color = "#2563eb"}
+                                onMouseLeave={e => e.target.style.color = "#4b5563"}>
+                                {label}
+                            </a>
+                        ))}
                     </div>
-
-                    {/* Navigation Links (Desktop) */}
-                    <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-                        <a href="/public/homepage" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
-                            Home
-                        </a>
-                        <a href="/public/aboutus" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
-                            About Us
-                        </a>
-                        <a href="/public/contact" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
-                            Contact
-                        </a>
-                        {/* បានប្តូរពី Email ទៅជា Enroll រួចរាល់ */}
-                        <a href="/enroll" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition duration-200">
-                            Enroll
-                        </a>
-                    </div>
-
-                    {/* Search Bar & Action Block (Login Button) */}
-                    <div className="hidden sm:flex items-center space-x-4">
-                        {/* Search Input */}
-                        <div className="relative">
-                            <input 
-                                type="text" 
-                                placeholder="Search..." 
-                                className="w-40 lg:w-48 bg-gray-50 text-gray-900 placeholder-gray-400 pl-4 pr-10 py-1.5 rounded-lg text-sm border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+ 
+                    {/* Search + Buttons */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}
+                        className="desktop-actions">
+                        {/* Search */}
+                        <div style={{ position: "relative" }}>
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                style={{
+                                    width: 176,
+                                    background: "#f9fafb",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 10,
+                                    padding: "7px 36px 7px 14px",
+                                    fontSize: 14,
+                                    color: "#111827",
+                                    outline: "none",
+                                }}
                             />
-                            <svg className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                            <svg style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "#9ca3af" }}
+                                fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
-
-                        {/* Modern Login Button */}
-                        <a 
-                            href="/public/login" 
-                            className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow active:scale-[0.98]"
-                        >
-                            Login
-                        </a>
-                        <a 
-                          href="/public/register" 
-                          className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow active:scale-[0.98]"
-                        >
-                            Register
-                        </a>
+ 
+                        {/* Auth Buttons */}
+                        {token ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                {/* User avatar circle */}
+                                <div style={{
+                                    width: 34, height: 34, borderRadius: "50%",
+                                    background: "#2563eb", color: "white",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: 13, fontWeight: 700,
+                                }}>
+                                    {email ? email[0].toUpperCase() : "U"}
+                                </div>
+                                <span style={{ fontSize: 13, color: "#4b5563", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    {email}
+                                </span>
+                                <button onClick={logout} style={{
+                                    background: "#ef4444", color: "white",
+                                    fontSize: 13, fontWeight: 600,
+                                    padding: "7px 16px", borderRadius: 10,
+                                    border: "none", cursor: "pointer",
+                                    whiteSpace: "nowrap",
+                                }}>
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <a href="/public/login" style={{
+                                    background: "#0f172a", color: "white",
+                                    fontSize: 14, fontWeight: 500,
+                                    padding: "8px 18px", borderRadius: 12,
+                                    textDecoration: "none", whiteSpace: "nowrap",
+                                }}>Login</a>
+                                <a href="/public/register" style={{
+                                    background: "#0f172a", color: "white",
+                                    fontSize: 14, fontWeight: 500,
+                                    padding: "8px 18px", borderRadius: 12,
+                                    textDecoration: "none", whiteSpace: "nowrap",
+                                }}>Register</a>
+                            </>
+                        )}
                     </div>
-
-                    {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center">
-                        <button 
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="text-gray-600 hover:text-gray-900 focus:outline-none p-1.5 rounded-lg hover:bg-gray-100 transition"
-                        >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                {isOpen ? (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                ) : (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />
-                                )}
-                            </svg>
-                        </button>
-                    </div>
-                    
+ 
+                    {/* Hamburger (mobile) */}
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="mobile-menu-btn"
+                        style={{
+                            display: "none",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 6,
+                            borderRadius: 8,
+                            color: "#4b5563",
+                        }}>
+                        <svg style={{ width: 24, height: 24 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {isOpen
+                                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />}
+                        </svg>
+                    </button>
                 </div>
             </div>
-
-            {/* Mobile Navigation Menu (Responsive Dropdown) */}
+ 
+            {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden bg-white border-b border-gray-100 px-4 pt-2 pb-4 space-y-2 shadow-inner">
-                    <a href="/" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Home</a>
-                    <a href="/public/aboutus" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">About</a>
-                    <a href="/public/contact" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Contact</a>
-                    {/* បានប្តូរពី Email ទៅជា Enroll សម្រាប់អេក្រង់ទូរស័ព្ទ */}
-                    <a href="/enroll" className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2 transition">Enroll</a>
-                    
-                    <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
-                        {/* Search on Mobile */}
-                        <div className="relative">
-                            <input 
-                                type="text" 
-                                placeholder="Search..." 
-                                className="w-full bg-gray-50 text-gray-900 placeholder-gray-400 pl-4 pr-10 py-2 rounded-lg text-sm border border-gray-200"
-                            />
-                            <svg className="absolute right-3 top-3 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div style={{
+                    background: "white",
+                    borderTop: "1px solid #f3f4f6",
+                    padding: "12px 24px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                }}>
+                    {[
+                        { label: "Home", href: "/public/homepage" },
+                        { label: "About Us", href: "/public/aboutus" },
+                        { label: "Contact", href: "/public/contact" },
+                        { label: "Enroll", href: "/enroll" },
+                    ].map(({ label, href }) => (
+                        <a key={label} href={href} style={{ ...linkStyle, padding: "10px 0", display: "block", borderBottom: "1px solid #f9fafb" }}>
+                            {label}
+                        </a>
+                    ))}
+ 
+                    <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+                        <div style={{ position: "relative" }}>
+                            <input type="text" placeholder="Search..."
+                                style={{ width: "100%", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: "9px 36px 9px 14px", fontSize: 14, outline: "none" }} />
+                            <svg style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16 }}
+                                fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
-                        {/* Login Button on Mobile */}
-                        <a 
-                            href="/public/login" 
-                            className="w-full bg-slate-900 hover:bg-slate-800 text-white text-center text-sm font-medium py-2 rounded-xl block transition duration-200"
-                        >
-                            Login
-                        </a>
-                        <a 
-                            href="/public/register" 
-                            className="w-full bg-slate-900 hover:bg-slate-800 text-white text-center text-sm font-medium py-2 rounded-xl block transition duration-200"
-                        >
-                            Register
-                        </a>
+                        {token ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <span style={{ fontSize: 13, color: "#4b5563" }}>👤 {email}</span>
+                                <button onClick={logout} style={{ background: "#ef4444", color: "white", padding: "10px", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <a href="/public/login" style={{ background: "#0f172a", color: "white", textAlign: "center", padding: "10px", borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Login</a>
+                                <a href="/public/register" style={{ background: "#0f172a", color: "white", textAlign: "center", padding: "10px", borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Register</a>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
+ 
+            {/* Responsive styles via <style> tag */}
+            <style>{`
+                @media (max-width: 768px) {
+                    .desktop-nav { display: none !important; }
+                    .desktop-actions { display: none !important; }
+                    .mobile-menu-btn { display: flex !important; }
+                }
+            `}</style>
         </nav>
     );
-}
-
+};
+ 
 export default Navbar;

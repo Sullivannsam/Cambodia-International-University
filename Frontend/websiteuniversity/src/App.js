@@ -1,7 +1,8 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import logo from './logo.svg';
 import './App.css';
+import Homepage from './components/Homepage.jsx'
 import Navbar from './components/Navbar';
 import SlideShow from './components/SlideShow';
 import AboutPage from './components/AboutPage';
@@ -9,8 +10,8 @@ import ContactUs from './components/ContactUs';
 import Footer from './components/Footers';
 import Admin from './Admin/admin.jsx';
 import Register from './Log/Register.jsx';
-import Log from './Log/Login.jsx';
-import Enroll from './components/Enroll.jsx'
+import Login from './Log/Login.jsx';
+import Enroll from './components/Enrollment.jsx'
 
 
 function App() {
@@ -26,6 +27,13 @@ function App() {
               <Footer />
             </div>
           } />
+
+          <Route path = "/public/homepage" element = {
+            <div>
+              <Navbar />
+              <Homepage />
+            </div>
+        }/>
 
           {/* Admin page */}
           <Route path="/api/v1/auth/login/admin" element={
@@ -51,7 +59,7 @@ function App() {
             <div>
               <Navbar />
               <div className = "center-container">
-                <Log />
+                <Login />
               </div>
             </div>
            }/>
@@ -61,7 +69,7 @@ function App() {
             <div>
               <Navbar />
               <div className = "center-container">
-                <Log />
+                <Register />
               </div>
             </div>
            }/>
@@ -70,11 +78,13 @@ function App() {
            <Route path="/public/content/enroll" element={
             <div>
               <Navbar />
-              <div className = "center-container">
                 <Enroll />
-              </div>
             </div>
            }/>
+
+          <Route path = "*" element = {
+            <Navigate to =  "/" replace />
+          }/>
           
         </Routes>
       </BrowserRouter>

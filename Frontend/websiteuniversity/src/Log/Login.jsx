@@ -30,7 +30,38 @@ const AppleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" heigh
         <path d="M12 20.94c1.5 0 2.75-.81 3.5-2.06 1.25-1.25.75-3.44-.94-4.13-1.69-.69-2.81.5-3.56 1.31-.81.88-1.81 2.88-1.81 2.88s-1.06-2.06-2.56-2.06c-1.5 0-2.88 1.31-2.88 3.19 0 1.88 1.38 3.19 2.88 3.19.44 0 1.06-.19 1.5-.5.5.31 1.06.5 1.81.5zM12 2.5c-1.5 0-2.81.69-3.56 1.88-1.25 1.25-.75 3.44.94 4.13 1.69.69 2.81-.5 3.56-1.31.81-.88 1.81-2.88 1.81-2.88s1.06 2.06 2.56 2.06c1.5 0 2.88-1.31 2.88-3.19C20.75 4.5 19.38 3.19 17.88 3.19c-.44 0-1.06.19-1.5.5-.5-.31-1.06-.5-1.81-.5z"></path>
     </svg>;
 const Login2 = () => {
+
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  
+
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+        const response = await fetch("http://localhost:8080/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("email", data.email);
+            localStorage.setItem("role", data.role);
+            window.location.href = "/";
+        } 
+       
+         else {
+            setError("Invalid email or password");
+        }
+    } catch (err) {
+        setError("Server error, please try again");
+    }
+};
+
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
@@ -67,13 +98,13 @@ const Login2 = () => {
                 </button>
             </div>
 
-            <form className="space-y-6 my-6">
+            <form className="space-y-6 my-6" onSubmit = {handleSubmit}>
                 {}
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
                         <EmailIcon />
                     </span>
-                    <input type="email" placeholder="Email" aria-label="Email" className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 focus:border-sky-500 dark:focus:border-sky-400 outline-none transition duration-300 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" />
+                    <input type="email" placeholder="Email" value = {email} onChange = {e => setEmail(e.target.value)} aria-label="Email" className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 focus:border-sky-500 dark:focus:border-sky-400 outline-none transition duration-300 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" />
                 </div>
 
                 {}
@@ -81,13 +112,13 @@ const Login2 = () => {
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
                         <LockIcon />
                     </span>
-                    <input type={passwordVisible ? "text" : "password"} placeholder="Password" aria-label="Password" className="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 focus:border-sky-500 dark:focus:border-sky-400 outline-none transition duration-300 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" />
+                    <input type={passwordVisible ? "text" : "password"} value = {password} onChange = {e => setPassword(e.target.value)} placeholder="Password" aria-label="Password" className="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 focus:border-sky-500 dark:focus:border-sky-400 outline-none transition duration-300 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" />
                     <button type="button" onClick={togglePasswordVisibility} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" aria-label={passwordVisible ? "Hide password" : "Show password"}>
                         {passwordVisible ? <EyeOffIcon /> : <EyeIcon />}
                     </button>
                 </div>
 
-
+                {error && <p style={{ color: "red", fontSize: 13 }}>{error}</p>}
                 <button type="submit" className="w-full bg-gray-800 dark:bg-blue-500 text-white dark:text-gray-900 font-bold py-3 px-4 rounded-lg hover:bg-gray-900 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 dark:focus:ring-gray-400 dark:focus:ring-offset-gray-900 shadow-md transition-transform transform hover:scale-105 cursor-pointer">
                     Sign In
                 </button>

@@ -52,7 +52,7 @@ const AboutPage = () => {
                                 <div className="flex flex-col gap-2.5 shrink-0 w-32">
                                     {/* Enroll Pill */}
                                      <button className="bg-black hover:bg-slate-900 text-white text-xs font-semibold py-2 px-4 rounded-full flex items-center justify-center transition-colors shadow-sm">
-                                        <a href="/Enroll">
+                                        <a href="/public/content/Enroll">
                                               <span>Enroll</span>
                                               <span className="text-[15px]">➔</span>
                                         </a>
@@ -60,7 +60,7 @@ const AboutPage = () => {
 
                                     {/* View Course Pill */}
                                     <button className="bg-white/80 hover:bg-white text-slate-900 border border-slate-300 text-xs font-semibold py-2 px-4 rounded-full text-center transition-colors shadow-sm">
-                                        View Course
+                                      <a href="/public/homepage">View Course</a>    
                                     </button>
 
                                     {/* See More Pill */}

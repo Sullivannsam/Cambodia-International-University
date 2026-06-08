@@ -10,7 +10,7 @@ const SlideShow = () => {
             subtitle: "Shaping future leaders since 2005"
         },
         {
-            url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
+            url: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpaperaccess.com%2Ffull%2F2137313.jpg&f=1&nofb=1&ipt=a4ed63f0861b8bd7a83c9f35b427c573361471c1d4866fa3ea0c1539467bef0a",
             title: "World-Class Campus",
             subtitle: "State-of-the-art facilities for modern learning"
         },
