@@ -1,0 +1,25 @@
+package com.ciu.sys.Config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@CrossOrigin
+public class Config {
+
+  @Bean
+  public WebMvcConfigurer webMvcConfigurer() {
+    return new WebMvcConfigurer() {
+
+      @Override
+      public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+            .allowedOrigins("http://localhost:3000")
+            .allowedMethods("GET", "POST", "PUT", "DELETE")
+            .allowedHeaders("*")
+            .allowCredentials(true);
+      }
+    };
+  }
+}

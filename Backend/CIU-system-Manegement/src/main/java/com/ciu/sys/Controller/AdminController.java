@@ -1,0 +1,58 @@
+package com.ciu.sys.Controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ciu.sys.Model.Admin;
+import com.ciu.sys.Service.AdminService;
+
+@RestController
+@RequestMapping("/api/auth/admin")
+public class AdminController {
+
+  @Autowired
+  private AdminService adminService;
+
+  @PreAuthorize("hasRole ('ADMIN')")
+  @GetMapping("/admin/{id}")
+
+  public Admin getAdminById(@PathVariable Long id) {
+    return adminService.getAdminById(id);
+  }
+
+  @PreAuthorize("hasRole ('ADMIN')")
+  @GetMapping
+  public List<Admin> getListAdmins() {
+    return adminService.getListAdmins();
+  }
+
+  @PreAuthorize("hasRole ('ADMIN')")
+  @PutMapping("/{id}")
+  public Admin updateAdminById(@PathVariable Long id, @RequestBody Admin updateAdmin) {
+    return adminService.updateAdminById(updateAdmin);
+  }
+
+  @PreAuthorize("hasRole ('ADMIN')")
+  @DeleteMapping("/delete/{id}")
+  public ResponseEntity<Admin> deleteAdminById(@PathVariable Long id) {
+    Admin getAdmin = adminService.deleteAdminById(id);
+
+    if (getAdmin != null) {
+      return new ResponseEntity<>(getAdmin, HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+  }
+
+}

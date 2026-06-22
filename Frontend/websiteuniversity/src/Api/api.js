@@ -24,7 +24,7 @@ export const sendContact = async (data) => {
 
 // Auth/User Login API
 export const loginUser = async (data) => {
-    const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export const loginUser = async (data) => {
     });
     return response.json();
 }; 
-// Auth/User Registration API
+    
 export const registerUser = async (data) => {
     const response = await fetch(`${BASE_URL}/api/auth/register`, {
         method: "POST",
