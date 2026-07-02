@@ -8,7 +8,8 @@ import SlideShow from './components/SlideShow';
 import AboutPage from './components/AboutPage';
 import ContactUs from './components/ContactUs';
 import Footer from './components/Footers';
-import Admin from './Admin/admin.jsx';
+import AdminLogin from './Admin/adminLogin.jsx';
+import AdminDashboard from './Admin/adminDashboard.jsx';
 import Register from './Log/Register.jsx';
 import Login from './Log/Login.jsx';
 import Enroll from './components/Enrollment.jsx'
@@ -36,15 +37,18 @@ function App() {
         }/>
 
           {/* Admin page */}
-          <Route path="/api/v1/auth/login/admin" element={
+          <Route path="/login/admin" element={
             <div>
-                <Navbar/>
-                  <div className = "center-container ">
-                    <Admin />
-                  </div>
-          
+               <AdminLogin />          
             </div>
             }/>
+          
+          <Route path = "/admin/adminDashboard" element = {
+            <div>
+               <AdminDashboard />
+            </div>
+          }/>
+ 
           
           {/*Contact page */}
           <Route path="/public/contact" element={
