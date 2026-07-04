@@ -2,17 +2,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import logo from './logo.svg';
 import './App.css';
-import Homepage from './components/Homepage.jsx'
-import Navbar from './components/Navbar';
-import SlideShow from './components/SlideShow';
-import AboutPage from './components/AboutPage';
-import ContactUs from './components/ContactUs';
-import Footer from './components/Footers';
-import AdminLogin from './Admin/adminLogin.jsx';
-import AdminDashboard from './Admin/adminDashboard.jsx';
-import Register from './Log/Register.jsx';
-import Login from './Log/Login.jsx';
-import Enroll from './components/Enrollment.jsx'
+import Homepage from './components/public/Homepage.jsx'
+import Navbar from './components/layout/Navbar';
+import SlideShow from './components/public/SlideShow';
+import AboutPage from './components/public/AboutPage';
+import ContactUs from './components/public/ContactUs';
+import Footer from './components/layout/Footer';
+import AdminLogin from './pages/admin/Login.jsx';
+import AdminDashboard from './pages/admin/Dashboard.jsx';
+import Register from './components/forms/RegisterForm.jsx';
+import Login from './components/forms/LoginForm.jsx';
+import Enroll from './components/public/Enrollment.jsx'
 
 
 function App() {
@@ -36,14 +36,10 @@ function App() {
             </div>
         }/>
 
-          {/* Admin page */}
-          <Route path="/login/admin" element={
-            <div>
-               <AdminLogin />          
-            </div>
-            }/>
+          {/* Admin pages */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           
-          <Route path = "/admin/adminDashboard" element = {
+          <Route path = "/admin/dashboard" element = {
             <div>
                <AdminDashboard />
             </div>

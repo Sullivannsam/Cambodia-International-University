@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { registerUser } from '../Api/api.js';
+import { registerUser } from '../../services/endpoints.js';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);

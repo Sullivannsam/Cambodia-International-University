@@ -1,5 +1,5 @@
 'use client';
-import { loginUser } from '../Api/api.js';
+import { loginUser } from '../../services/endpoints.js';
 import React, { useState } from 'react';
 
 
