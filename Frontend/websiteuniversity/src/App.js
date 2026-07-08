@@ -8,6 +8,7 @@ import SlideShow from './components/public/SlideShow';
 import AboutPage from './components/public/AboutPage';
 import ContactUs from './components/public/ContactUs';
 import Footer from './components/layout/Footer';
+import SecondFooter from './components/layout/BlackFooter.jsx';
 import AdminLogin from './pages/admin/Login.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import Register from './components/forms/RegisterForm.jsx';
@@ -29,10 +30,11 @@ function App() {
             </div>
           } />
 
-          <Route path = "/public/homepage" element = {
+          <Route path = "/public/course" element = {
             <div>
               <Navbar />
               <Homepage />
+              <SecondFooter />
             </div>
         }/>
 

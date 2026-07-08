@@ -130,7 +130,7 @@ function CourseCard({ course }) {
         <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", lineHeight: 1.65, margin: 0, flex: 1 }}>{course.desc}</p>
 
         {/* Buttons */}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button style={{
             flex: 1, padding: "8px 6px", borderRadius: 8, border: `1.5px solid ${course.accent}`,
             background: "transparent", color: course.accent, fontSize: 12, fontWeight: 700,
@@ -164,35 +164,16 @@ function HeroBanner() {
   return (
     <div style={{
       background: "linear-gradient(120deg,#e8ecf5 0%,#d4dce8 60%,#c8d5e8 100%)",
-      minHeight: 220, display: "flex", alignItems: "center", justifyContent: "center",
+      minHeight: "clamp(160px, 30vw, 220px)", display: "flex", alignItems: "center", justifyContent: "center",
       position: "relative", overflow: "hidden",
     }}>
       {/* Decorative triangles */}
-      <div style={{ position: "absolute", bottom: 0, right: 0, width: 0, height: 0, borderLeft: "240px solid transparent", borderBottom: "220px solid rgba(59,130,246,0.13)" }} />
-      <div style={{ position: "absolute", top: 0, left: 0, width: 0, height: 0, borderRight: "180px solid transparent", borderTop: "220px solid rgba(200,210,220,0.5)" }} />
-      <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 28, fontWeight: 700, color: "#1e293b", zIndex: 1, textAlign: "center", padding: "0 20px" }}>
+      <div style={{ position: "absolute", bottom: 0, right: 0, width: 0, height: 0, borderLeft: "clamp(120px, 20vw, 240px) solid transparent", borderBottom: "clamp(110px, 18vw, 220px) solid rgba(59,130,246,0.13)" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, width: 0, height: 0, borderRight: "clamp(90px, 15vw, 180px) solid transparent", borderTop: "clamp(110px, 18vw, 220px) solid rgba(200,210,220,0.5)" }} />
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: "clamp(18px, 4vw, 28px)", fontWeight: 700, color: "#1e293b", zIndex: 1, textAlign: "center", padding: "0 20px" }}>
         Content Slide Display Image
       </h2>
     </div>
-  );
-}
-
-// ── FOOTER ────────────────────────────────────────────────────────────────────
-function Footer() {
-  return (
-    <footer style={{ background: "#0f172a", padding: "28px 32px", display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "space-between", alignItems: "center" }}>
-      <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, margin: 0 }}>
-        This contact provided by our University. 🇰🇭
-      </p>
-      <div style={{ textAlign: "center" }}>
-        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Contact us for more information</p>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, margin: 0 }}>✉ Email: CIU.edu.info@gmail.com</p>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, marginBottom: 6, fontWeight: 600 }}>Developer System</p>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, margin: 0 }}>⊙ Github: Sullivann Sam.github</p>
-      </div>
-    </footer>
   );
 }
 
@@ -206,33 +187,44 @@ export default function App() {
   );
 
   return (
-    <div style={{ fontFamily: "'DM Sans','Helvetica Neue',sans-serif", minHeight: "100vh", background: "#e8ecf5", overflowX: "hidden" }}>
+    <div className="page-wrap" style={{ fontFamily: "'DM Sans','Helvetica Neue',sans-serif", minHeight: "100vh", background: "#e8ecf5", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { width: 100%; overflow-x: hidden; }
+        .page-wrap { max-width: 1400px; margin: 0 auto; width: 100%; }
+        .course-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+          position: relative;
+          z-index: 1;
+        }
         @media (max-width: 640px) {
-          .desk-nav { display: none !important; }
           .course-grid { grid-template-columns: 1fr !important; }
+          .deco-shape { display: none !important; }
         }
         @media (min-width: 641px) and (max-width: 900px) {
           .course-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (min-width: 901px) and (max-width: 1100px) {
+          .course-grid { grid-template-columns: 1fr 1fr 1fr !important; }
         }
       `}</style>
 
       <HeroBanner />
 
       {/* Course section */}
-      <div style={{ background: "linear-gradient(180deg,#dce3ef 0%,#e8f0e8 100%)", padding: "36px 28px 48px", position: "relative" }}>
+      <div style={{ background: "linear-gradient(180deg,#dce3ef 0%,#e8f0e8 100%)", padding: "clamp(24px, 4vw, 36px) clamp(16px, 3vw, 28px) clamp(32px, 5vw, 48px)", position: "relative" }}>
         {/* Decorative teal shapes */}
-        <div style={{ position: "absolute", top: 0, right: 0, width: 220, height: 220, background: "rgba(20,184,166,0.18)", borderRadius: "0 0 0 100%", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: 0, right: 60, width: 140, height: 140, background: "rgba(20,184,166,0.12)", borderRadius: "100% 0 0 0", pointerEvents: "none" }} />
+        <div className="deco-shape" style={{ position: "absolute", top: 0, right: 0, width: 220, height: 220, background: "rgba(20,184,166,0.18)", borderRadius: "0 0 0 100%", pointerEvents: "none" }} />
+        <div className="deco-shape" style={{ position: "absolute", bottom: 0, right: 60, width: 140, height: 140, background: "rgba(20,184,166,0.12)", borderRadius: "100% 0 0 0", pointerEvents: "none" }} />
 
-        {/* Header row — always single row on all screen sizes */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, gap: 12, position: "relative", zIndex: 1, flexWrap: "nowrap" }}>
+        {/* Header row — responsive */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, gap: 12, position: "relative", zIndex: 1, flexWrap: "wrap" }}>
           {/* School Course badge */}
           <div style={{ background: "white", borderRadius: 10, padding: "8px 16px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)", flexShrink: 0 }}>
-            <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: "clamp(16px, 4vw, 26px)", fontWeight: 800, background: "linear-gradient(90deg,#3b82f6,#8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", margin: 0, whiteSpace: "nowrap" }}>
+            <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: "clamp(16px, 4vw, 26px)", fontWeight: 800, background: "linear-gradient(90deg,#3b82f6,#8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", margin: 0 }}>
               School Course
             </h2>
           </div>
@@ -250,10 +242,7 @@ export default function App() {
         </div>
 
         {/* Grid */}
-        <div
-          className="course-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, position: "relative", zIndex: 1 }}
-        >
+        <div className="course-grid">
           {filtered.length > 0
             ? filtered.map(c => <CourseCard key={c.id} course={c} />)
             : (
@@ -265,7 +254,6 @@ export default function App() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

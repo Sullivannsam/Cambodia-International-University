@@ -2,7 +2,6 @@ package com.ciu.sys.Controller;
 
 import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,14 +45,9 @@ public class UserController {
   }
 
   @DeleteMapping("/delete/{id}")
-  public ResponseEntity<User> deleteUserById(@PathVariable Long id, @RequestBody User deleteUser) {
-    User verifyUser = userService.deleteUserById(id);
-
-    if (verifyUser != null) {
-      return new ResponseEntity<>(deleteUser, HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+  public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
+    userService.deleteUserById(id);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
 }

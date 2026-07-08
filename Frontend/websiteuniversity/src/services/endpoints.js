@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const authHeaders = () => ({
     "Content-Type": "application/json",
@@ -86,6 +86,16 @@ export const getFeeGroups = async () => {
 export const getFeeGroupMembers = async (group) => {
     const response = await fetch(`${BASE_URL}/api/admin/fee-groups/${encodeURIComponent(group)}`, {
         headers: authHeaders(),
+    });
+    return response.json();
+};
+
+// ---------- Email Verification ----------
+export const verifyEmail = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
     });
     return response.json();
 };

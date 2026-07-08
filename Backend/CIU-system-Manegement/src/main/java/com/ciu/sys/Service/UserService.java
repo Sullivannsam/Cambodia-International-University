@@ -30,9 +30,17 @@ public class UserService {
     return userRepository.save(updateUser);
   }
 
-  public User deleteUserById(Long id) {
-    return userRepository.deleteUserById(id);
+  public void deleteUserById(Long id) {
+    userRepository.deleteById(id);
+  }
 
+  public boolean authenticate(String email, String password) {
+    User user = userRepository.findByEmail(email).orElse(null);
+    return user != null && user.getPassword().equals(password);
+  }
+
+  public User register(User user) {
+    return userRepository.save(user);
   }
 
 }

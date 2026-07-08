@@ -1,137 +1,126 @@
-'use client';
+import { useState } from 'react';
 import { loginUser } from '../../services/endpoints.js';
-import React, { useState } from 'react';
+import Spinner from '../common/Spinner';
 
-
-
-const ArrowBoxIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14 10L20 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M15 4H20V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10 14L4 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M9 20H4V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>;
-const EmailIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-    <polyline points="22,6 12,13 2,6"></polyline>
-  </svg>;
-const LockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>;
-const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-    </svg>;
-const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-    </svg>;
-const FacebookIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#1877F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-    </svg>;
-const AppleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20.94c1.5 0 2.75-.81 3.5-2.06 1.25-1.25.75-3.44-.94-4.13-1.69-.69-2.81.5-3.56 1.31-.81.88-1.81 2.88-1.81 2.88s-1.06-2.06-2.56-2.06c-1.5 0-2.88 1.31-2.88 3.19 0 1.88 1.38 3.19 2.88 3.19.44 0 1.06-.19 1.5-.5.5.31 1.06.5 1.81.5zM12 2.5c-1.5 0-2.81.69-3.56 1.88-1.25 1.25-.75 3.44.94 4.13 1.69.69 2.81-.5 3.56-1.31.81-.88 1.81-2.88 1.81-2.88s1.06 2.06 2.56 2.06c1.5 0 2.88-1.31 2.88-3.19C20.75 4.5 19.38 3.19 17.88 3.19c-.44 0-1.06.19-1.5.5-.5-.31-1.06-.5-1.81-.5z"></path>
-    </svg>;
-const Login2 = () => {
-
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function Register() {
+  const [form, setForm] = useState({ email: '', password: '', terms: false });
+  const [show, setShow] = useState(false);
   const [error, setError] = useState('');
-  
+  const [loading, setLoading] = useState(false);
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-        const data = await loginUser({ email, password });
-        if (data.token) {
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("email", data.email);
-            localStorage.setItem("role", data.role);
-            window.location.href = "/";
-        } else {
-            setError("Invalid email or password");
-        }
-    } catch (err) {
-        setError("Server error, please try again");
-    }
-};
-
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
-  return <div className="font-sans text-gray-800 dark:text-gray-200 w-full max-w-md bg-white dark:bg-black shadow-2xl dark:shadow-gray-900/50 rounded-3xl p-8 mx-auto border border-gray-200 dark:border-gray-800">
 
-            <div className="flex justify-center mb-6">
-                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                    <ArrowBoxIcon />
-                </div>
-            </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const data = await loginUser({ email: form.email, password: form.password });
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("email", data.email);
+        localStorage.setItem("role", data.role);
+        window.location.href = "/";
+      } else {
+        setError(data.message || "Registration failed");
+      }
+    } catch {
+      setError("Server error, please try again");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <h1 className="text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white"> Sigin Your Account </h1>
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
-               Sign Up with Your Account. 
-            </p>
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Sign in Your Account with Us Right Now</h1>
+          <p className="text-sm text-gray-500 mt-1">Welcome Back</p>
+        </div>
 
-            
-            <div className="flex items-center my-6">
-                <hr className="flex-grow border-t border-gray-300 dark:border-gray-700" />
-                <span className="mx-4 text-sm text-gray-500 dark:text-gray-400">Or sign in with</span>
-                <hr className="flex-grow border-t border-gray-300 dark:border-gray-700" />
-            </div>
- 
-              {/* Icon Symbols*/}
-            <div className="flex justify-center space-x-4">
-                <button aria-label="Sign in with Google" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-110 cursor-pointer">
-                   <img src="https://www.google.com/favicon.ico" alt="Google" className="h-5 w-5" />
-                </button>
-                <button aria-label="Sign in with Facebook" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-110 cursor-pointer">
-                    <FacebookIcon />
-                </button>
-                 <button aria-label="Sign in with Apple" className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-110 cursor-pointer">
-                    <AppleIcon />
-                </button>
-            </div>
+        <div className="flex justify-center gap-3 mb-6">
+          <button className="flex items-center justify-center w-12 h-12 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+          </button>
+          <button className="flex items-center justify-center w-12 h-12 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+            <i className="fa-brands fa-apple text-lg"></i>
+          </button>
+          <button className="flex items-center justify-center w-12 h-12 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+            <svg className="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+            </svg>
+          </button>
+        </div>
 
-            <form className="space-y-6 my-6" onSubmit = {handleSubmit}>
-                {}
-                <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
-                        <EmailIcon />
-                    </span>
-                    <input type="email" placeholder="Email" value = {email} onChange = {e => setEmail(e.target.value)} aria-label="Email" className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 focus:border-sky-500 dark:focus:border-sky-400 outline-none transition duration-300 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" />
-                </div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-gray-100" />
+          <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
+          <div className="flex-1 h-px bg-gray-100" />
+        </div>
 
-                {}
-                <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
-                        <LockIcon />
-                    </span>
-                    <input type={passwordVisible ? "text" : "password"} value = {password} onChange = {e => setPassword(e.target.value)} placeholder="Password" aria-label="Password" className="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 focus:border-sky-500 dark:focus:border-sky-400 outline-none transition duration-300 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100" />
-                    <button type="button" onClick={togglePasswordVisibility} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" aria-label={passwordVisible ? "Hide password" : "Show password"}>
-                        {passwordVisible ? <EyeOffIcon /> : <EyeIcon />}
-                    </button>
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email address"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+              required
+            />
+          </div>
 
-                {error && <p style={{ color: "red", fontSize: 13 }}>{error}</p>}
-                <button type="submit" className="w-full bg-gray-800 dark:bg-blue-500 text-white dark:text-gray-900 font-bold py-3 px-4 rounded-lg hover:bg-gray-900 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 dark:focus:ring-gray-400 dark:focus:ring-offset-gray-900 shadow-md transition-transform transform hover:scale-105 cursor-pointer">
-                    Sign In
-                </button>
+          <div className="relative">
+            <input
+              type={show ? "text" : "password"}
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Create a password"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition pr-10"
+              required
+            />
+            <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              {show ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </div>
 
-                <div className="flex justify-between">
-                  <a href="#" className="text-sm font-medium text-gray-600 dark:text-blue-400 hover:text-sky-600 dark:hover:text-sky-400">
-                   <input 
-                        type = "checkbox"
-                        className = "w-4 mr-1 cursor-pointer" /> 
-                    Remember Me
-                  </a>
-                  <a href="#" className="text-sm font-medium text-gray-600 dark:text-blue-400 hover:text-sky-600 dark:hover:text-sky-400">
-                    Forgot password?
-                  </a>
-                </div>
+          <label className="flex items-start gap-3 text-sm text-gray-500 cursor-pointer">
+            <input type="checkbox" name="terms" checked={form.terms} onChange={handleChange}
+              className="w-4 h-4 mt-0.5 accent-blue-600 rounded border-gray-300" required />
+            <span>By signing up, you agree to our <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Terms</a> and <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>.</span>
+          </label>
 
-            </form>
- 
-        </div>;
-};
-export default Login2;
+          {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+
+          <button type="submit" disabled={loading}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed">
+           Sign In 
+          </button>
+
+          {loading && <Spinner text="Creating your account..." />}
+        </form>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Already have an account?{' '}
+          <a href="/public/login" className="text-blue-600 hover:text-blue-700 font-medium">Sign in</a>
+        </p>
+      </div>
+    </div>
+  );
+}

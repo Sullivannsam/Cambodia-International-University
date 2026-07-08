@@ -30,5 +30,14 @@ public class AdminService {
 
   public Admin deleteAdminById(Long id) {
     adminRepository.deleteById(id);
+    return null;
+  }
+
+  public Admin authenticate(String email, String password) {
+    Admin admin = adminRepository.findByEmail(email).orElse(null);
+    if (admin != null && admin.getPassword().equals(password) && "ADMIN".equals(admin.getRole())) {
+      return admin;
+    }
+    return null;
   }
 }

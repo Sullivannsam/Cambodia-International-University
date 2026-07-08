@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { adminLogin } from '../../services/endpoints';
+import Spinner from '../../components/common/Spinner';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', rememberMe: false });
@@ -31,7 +32,7 @@ export default function Login() {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user || { email: form.email }));
+        localStorage.setItem("user", JSON.stringify({ email: data.email, username: data.username }));
         window.location.href = "/admin/dashboard";
       } else {
         setError(data.message || 'Invalid email or password.');
@@ -142,10 +143,12 @@ export default function Login() {
                 disabled={loading}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading ? 'Signing in…' : 'Sign in'}
+                Sign in
               </button>
             </div>
-          </form>          </div>
+            {loading && <Spinner text="Signing in..." />}
+          </form>
+        </div>
       </div>
     </div>
   );

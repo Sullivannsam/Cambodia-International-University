@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "Users")
+@Table(name = "tb_users")
 public class User {
 
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,5 +18,11 @@ public class User {
   private String username;
   private String password;
   private String email;
+  private String address;
+  private String role;
+  private String course;
+  private boolean isActive;
+  private String createAt;
+  private String phone;
 
 }

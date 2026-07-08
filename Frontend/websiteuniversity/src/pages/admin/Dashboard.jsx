@@ -233,10 +233,15 @@ export default function AdminDashboard() {
   const activeLabel =
     NAV.flatMap((s) => s.items).find((i) => i.key === active)?.label || "Overview";
 
+  if (!localStorage.getItem("token")) {
+    window.location.href = "/";
+    return null;
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/admin/login";
+    window.location.href = "/";
   };
 
   return (
@@ -457,7 +462,7 @@ export default function AdminDashboard() {
       <aside className="sidebar">
         <div className="sidebar-head">
           <div className="avatar-ring"><UserCircle2 size={30} color="#fff" /></div>
-          <div className="sidebar-head-title">Admin: {user.email || "Admin"}</div>
+          <div className="sidebar-head-title">Admin: {user.username || (user.email || "").split("@")[0] || "Admin"}</div>
         </div>
         <div className="sidebar-scroll">
           {NAV.map((section) => (
