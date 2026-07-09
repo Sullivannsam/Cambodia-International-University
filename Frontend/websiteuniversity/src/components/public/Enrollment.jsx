@@ -4,7 +4,7 @@ const majors = ["Computer Science", "Business Administration", "Engineering", "M
 const degrees = ["Bachelor's Degree", "Master's Degree", "PhD", "Associate Degree", "Diploma"];
 const years = ["Year 1", "Year 2", "Year 3", "Year 4"];
 const startDates = ["September 2026", "January 2027", "March 2027", "June 2027"];
-const nationalities = ["Cambodian", "Thai", "Vietnamese", "Chinese", "Korean", "American", "French", "Other"];
+const nationalities = ["Cambodian", "Vietnamese", "Chinese", "Korean", "American", "French", "Other"];
 
 const steps = ["Application", "Confirmation", "Success"];
 

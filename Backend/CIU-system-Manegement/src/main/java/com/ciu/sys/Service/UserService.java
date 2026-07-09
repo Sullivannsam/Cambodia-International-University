@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.ciu.sys.Model.User;
 import com.ciu.sys.Repository.UserRepository;
-import com.ciu.sys.exception.ResourceNotFoundException;
-import com.ciu.sys.exception.UnauthorizedException;
 
 @Service
 public class UserService {
@@ -41,6 +39,14 @@ public class UserService {
 
   public User register(User user) {
     return userRepository.save(user);
+  }
+
+  public List<User> findAllUserByEmail(String email) {
+    return userRepository.findAllByEmail(email);
+  }
+
+  public User findUserByEmail(String userEmail) {
+    return userRepository.findByEmail(userEmail);
   }
 
 }

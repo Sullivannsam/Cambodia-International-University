@@ -35,7 +35,7 @@ public class SecurityConfig {
 
     httpSecurity
         .formLogin(form -> form.disable())
-        .httpBasic(request -> request.disable());
+        .httpBasic(request -> request.);
 
     return httpSecurity.build();
   }

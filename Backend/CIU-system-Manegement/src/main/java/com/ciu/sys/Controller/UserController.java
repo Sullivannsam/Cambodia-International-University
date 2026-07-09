@@ -50,4 +50,14 @@ public class UserController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @GetMapping("/emails")
+  public List<User> findAllUserByEmail(String email) {
+    return userService.findAllUserByEmail(email);
+  }
+
+  @GetMapping("/email")
+  public User findUserByEmail(@RequestBody String userEmail) {
+    return userService.findUserByEmail(userEmail);
+  }
+
 }

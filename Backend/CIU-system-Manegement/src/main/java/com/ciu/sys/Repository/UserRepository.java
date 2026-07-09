@@ -1,5 +1,6 @@
 package com.ciu.sys.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +10,14 @@ import com.ciu.sys.Model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-  Optional<User> findByEmail(String email);
 
-  User deleteUserById(Long id);
+  public User findByEmail(String email);
+
+  public List<User> findAllByEmail(String email);
+
+  public Optional<User> findUserByUsername(String username);
+
+  public Optional<User> findUserByAddress(String address);
+
+  void deleteUserById(Long id);
 }

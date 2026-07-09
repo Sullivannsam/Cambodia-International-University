@@ -1,0 +1,67 @@
+=== REPOSITORY RETURN TYPES ===
+
+How many results? | Exists?     | Return type
+1 or 0            | Maybe       | Optional<User>
+Many              | Maybe none  | List<User>
+1                 | Always      | User (never use in Repository)
+
+=== RULES ===
+
+1. Parameter type must match Entity field type
+   Entity: private String email
+   Repo:   findByEmail(String email)    ✓
+           findByEmail(User email)      ✗
+
+2. Method name = Action + By + FieldName
+   findByEmail        → WHERE email = ?
+   findByEmailAndPassword → WHERE email = ? AND password = ?
+   findAllByRole      → WHERE role = ?
+   countByRole        → SELECT COUNT(*) WHERE role = ?
+   existsByEmail      → SELECT EXISTS(WHERE email = ?)
+   deleteByEmail      → DELETE WHERE email = ?
+
+3. Field name after "By" must match Entity field EXACTLY
+   Entity: private String username;
+   Repo:   findByUsername(String username)  ✓
+           findByUserName(String userName)  ✗
+
+4. Free methods from JpaRepository (don't write these):
+   findAll()
+   findById(id)
+   save(object)
+   deleteById(id)
+   count()
+   existsById(id)
+
+5. In Repository interface → no "public" needed
+   Optional<User> findByEmail(String email);  ✓
+   public Optional<User> findByEmail(...);    ✗ (works but unnecessary)
+
+6. In Service class → "public" IS needed
+   public User getByEmail(String email) { ... }  ✓
+
+=== SERVICE USAGE PATTERN ===
+
+public User getByEmail(String email) {
+    return repo.findByEmail(email).orElse(null);  // safe
+}
+
+public List<User> getByRole(String role) {
+    return repo.findAllByRole(role);  // safe, empty list if none
+}
+
+=== CONTROLLER → SERVICE → REPOSITORY ===
+
+@RestController
+public class SomeController {
+    private final SomeService service;
+
+    public SomeController(SomeService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/path")
+    public ReturnType method() {
+        return service.someMethod();
+    }
+}
