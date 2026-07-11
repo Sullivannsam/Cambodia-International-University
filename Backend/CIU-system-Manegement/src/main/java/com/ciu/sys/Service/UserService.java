@@ -1,10 +1,12 @@
 package com.ciu.sys.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ciu.sys.Dto.UserDto;
 import com.ciu.sys.Model.User;
 import com.ciu.sys.Repository.UserRepository;
 
@@ -14,13 +16,25 @@ public class UserService {
   @Autowired
   UserRepository userRepository;
 
-  public List<User> getListUser() {
-    return userRepository.findAll();
-  }
-
   public User findUserById(Long id) {
     return userRepository.findById(id)
         .orElse(new User());
+  }
+
+  public List<UserDto> getListUser() {
+    return userRepository.findAll()
+        .stream()
+        .map(user -> new UserDto(
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole(),
+            user.getAddress(),
+            user.isActive(),
+            user.getCreateAt(),
+            user.getPhone()
+
+        ))
+        .collect(Collectors.toList());
 
   }
 
@@ -33,7 +47,7 @@ public class UserService {
   }
 
   public boolean authenticate(String email, String password) {
-    User user = userRepository.findByEmail(email).orElse(null);
+    User user = userRepository.findByEmail(email);
     return user != null && user.getPassword().equals(password);
   }
 

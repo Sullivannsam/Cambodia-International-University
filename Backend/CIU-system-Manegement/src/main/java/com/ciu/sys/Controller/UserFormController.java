@@ -2,6 +2,7 @@ package com.ciu.sys.Controller;
 
 import java.util.Map;
 
+import com.ciu.sys.Model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,14 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.Dto.LoginRequest;
 import com.ciu.sys.Dto.RegisterRequest;
-import com.ciu.sys.Model.Admin;
-import com.ciu.sys.Model.User;
 import com.ciu.sys.Service.AdminService;
 import com.ciu.sys.Service.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class UserFormController {
 
   @Autowired
   UserService userService;
@@ -29,36 +28,34 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-    boolean ok = userService.authenticate(request.getEmail(), request.getPassword());
+    boolean ok = userService.authenticate(request.email(), request.password());
     if (ok) {
       return ResponseEntity.ok(Map.of(
           "token", "user-token",
           "message", "Login Successful!",
-          "email", request.getEmail()));
+          "email", request.email()));
     }
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
   }
 
   @PostMapping("/register")
   public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest request) {
-    userService.register(request);
+    User user = new User();
+    user.setUsername(request.username());
+    user.setPassword(request.password());
+    user.setEmail(request.email());
+    user.setPhone(request.phone());
+    user.setAddress("");
+    user.setRole("USER");
+    user.setCourse("");
+    user.setActive(false);
+    user.setCreateAt(java.time.LocalDateTime.now().toString());
+
+    userService.register(user);
     return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
         "token", "user-token",
         "message", "Register Successfully",
-        "email", request.getEmail()));
+        "email", request.email()));
   }
 
-  @PostMapping("/login/admin")
-  public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Admin admin) {
-    Admin found = adminService.authenticate(admin.getEmail(), admin.getPassword());
-    if (found != null) {
-      return ResponseEntity.ok(Map.of(
-          "token", "admin-token",
-          "message", "Admin Login Successful!",
-          "email", found.getEmail(),
-          "username", found.getUsername(),
-          "role", "ADMIN"));
-    }
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
-  }
 }
