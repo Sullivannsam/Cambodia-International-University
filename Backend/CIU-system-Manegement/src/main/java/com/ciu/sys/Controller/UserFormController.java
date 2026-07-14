@@ -6,6 +6,9 @@ import com.ciu.sys.Model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,23 +29,31 @@ public class UserFormController {
   @Autowired
   AdminService adminService;
 
+  @Autowired
+  AuthenticationManager authenticationManager;
+
+  @Autowired
+  PasswordEncoder passwordEncoder;
+
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-    boolean ok = userService.authenticate(request.email(), request.password());
-    if (ok) {
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(request.email(), request.password()));
       return ResponseEntity.ok(Map.of(
           "token", "user-token",
           "message", "Login Successful!",
           "email", request.email()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
     }
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
   }
 
   @PostMapping("/register")
   public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest request) {
     User user = new User();
     user.setUsername(request.username());
-    user.setPassword(request.password());
+    user.setPassword(passwordEncoder.encode(request.password()));
     user.setEmail(request.email());
     user.setPhone(request.phone());
     user.setAddress("");

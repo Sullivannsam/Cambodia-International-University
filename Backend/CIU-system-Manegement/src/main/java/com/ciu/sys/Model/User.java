@@ -38,7 +38,7 @@ public class User {
   @Column(nullable = false)
   private boolean isActive;
 
-  @Column(nullable = false)
+  @Column(name = "created", nullable = false)
   private String createAt;
 
   @Column(nullable = false)

@@ -46,11 +46,6 @@ public class UserService {
     userRepository.deleteById(id);
   }
 
-  public boolean authenticate(String email, String password) {
-    User user = userRepository.findByEmail(email);
-    return user != null && user.getPassword().equals(password);
-  }
-
   public User register(User user) {
     return userRepository.save(user);
   }
