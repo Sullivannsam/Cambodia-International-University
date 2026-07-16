@@ -3,6 +3,7 @@ package com.ciu.sys.Service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ciu.sys.Model.Admin;
@@ -14,6 +15,9 @@ public class AdminService {
 
   @Autowired
   private AdminRepository adminRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   public List<Admin> getListAdmins() {
     return adminRepository.findAll();
@@ -35,7 +39,7 @@ public class AdminService {
 
   public Admin authenticate(String email, String password) {
     Admin admin = adminRepository.findByEmail(email).orElse(null);
-    if (admin != null && admin.getPassword().equals(password) && "ADMIN".equals(admin.getRole())) {
+    if (admin != null && passwordEncoder.matches(password, admin.getPassword()) && "ADMIN".equals(admin.getRole())) {
       return admin;
     }
     return null;

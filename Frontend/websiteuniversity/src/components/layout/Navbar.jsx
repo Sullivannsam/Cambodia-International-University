@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
  
@@ -6,6 +6,14 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
+
+    useEffect(() => {
+        const closeOnResize = () => {
+            if (window.innerWidth > 768) setIsOpen(false);
+        };
+        window.addEventListener("resize", closeOnResize);
+        return () => window.removeEventListener("resize", closeOnResize);
+    }, []);
  
     const token = localStorage.getItem("token");
     const email = localStorage.getItem("email");
