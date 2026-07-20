@@ -16,7 +16,8 @@ const Navbar = () => {
     }, []);
  
     const token = localStorage.getItem("token");
-    const email = localStorage.getItem("email");
+    const userData = localStorage.getItem("user");
+    const email = localStorage.getItem("email") || (userData ? JSON.parse(userData).email : null);
  
     const logout = () => {
         localStorage.removeItem("token");
@@ -46,7 +47,7 @@ const Navbar = () => {
         }}>
             <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
- 
+  
                     {/* Brand Logo & Title */}
                     <a href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
                         <div style={{
@@ -72,6 +73,7 @@ const Navbar = () => {
                     <div style={{ display: "flex", alignItems: "center", gap: 32 }}
                         className="desktop-nav">
                         {[
+                            { label: "Home", href: "/" },
                             { label: "Course", href: "/public/course" },
                             { label: "About Us", href: "/public/aboutus" },
                             { label: "Contact", href: "/public/contact" },
@@ -133,17 +135,19 @@ const Navbar = () => {
                         {token ? (
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                                 {/* User avatar circle */}
-                                <div style={{
-                                    width: 34, height: 34, borderRadius: "50%",
-                                    background: "#2563eb", color: "white",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: 13, fontWeight: 700,
-                                }}>
-                                    {email ? email[0].toUpperCase() : "U"}
-                                </div>
-                                <span style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                    {email}
-                                </span>
+                                <a href="/user/settings" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+                                    <div style={{
+                                        width: 34, height: 34, borderRadius: "50%",
+                                        background: "#2563eb", color: "white",
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        fontSize: 13, fontWeight: 700,
+                                    }}>
+                                        {email ? email[0].toUpperCase() : "U"}
+                                    </div>
+                                    <span style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        {email}
+                                    </span>
+                                </a>
                                 <button onClick={logout} style={{
                                     background: "#ef4444", color: "white",
                                     fontSize: 13, fontWeight: 600,
@@ -210,6 +214,7 @@ const Navbar = () => {
                     boxShadow: "var(--nav-shadow)",
                 }}>
                     {[
+                        { label: "Home", href: "/" },
                         { label: "Course", href: "/public/course" },
                         { label: "About Us", href: "/public/aboutus" },
                         { label: "Contact", href: "/public/contact" },
@@ -219,7 +224,7 @@ const Navbar = () => {
                             {label}
                         </a>
                     ))}
- 
+                  
                     <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
                         <div style={{ position: "relative" }}>
                             <input type="text" placeholder="Search..."
@@ -238,7 +243,7 @@ const Navbar = () => {
                         </button>
                         {token ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>👤 {email}</span>
+                                <a href="/user/settings" style={{ color: "#2563eb", textDecoration: "none", fontSize: 14, fontWeight: 600, padding: "10px 0" }}>👤 {email}</a>
                                 <button onClick={logout} style={{ background: "#ef4444", color: "white", padding: "10px", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
                                     Logout
                                 </button>

@@ -10,10 +10,14 @@ import ContactUs from './components/public/ContactUs';
 import Footer from './components/layout/Footer';
 import SecondFooter from './components/layout/BlackFooter.jsx';
 import AdminLogin from './pages/admin/Login.jsx';
+import AdminRegister from './pages/admin/Register.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import Register from './components/forms/RegisterForm.jsx';
 import Login from './components/forms/LoginForm.jsx';
 import Enroll from './components/public/Enrollment.jsx'
+import StudentEmailForm from './components/public/StudentEmailForm.jsx'
+import ForgotPassword from './components/forms/ForgotPassword.jsx'
+import UserSettings from './pages/user/Settings.jsx'
 
 
 function App() {
@@ -40,6 +44,7 @@ function App() {
 
           {/* Admin pages */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
           
           <Route path = "/admin/dashboard" element = {
             <div>
@@ -84,7 +89,31 @@ function App() {
             </div>
            }/>
 
-          <Route path = "*" element = {
+           {/* Claim Student Email */}
+           <Route path="/public/claim-email" element={
+            <div>
+              <Navbar />
+              <StudentEmailForm />
+            </div>
+           }/>
+
+           {/* Forgot Password */}
+           <Route path="/public/forgot-password" element={
+            <div>
+              <Navbar />
+              <ForgotPassword />
+            </div>
+           }/>
+
+           {/* User Settings */}
+           <Route path="/user/settings" element={
+            <div>
+              <Navbar />
+              <UserSettings />
+            </div>
+           }/>
+
+           <Route path = "*" element = {
             <Navigate to =  "/" replace />
           }/>
           

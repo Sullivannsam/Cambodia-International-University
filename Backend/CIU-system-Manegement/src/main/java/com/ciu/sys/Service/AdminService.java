@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ciu.sys.Dto.AdminDto;
 import com.ciu.sys.Model.Admin;
 import com.ciu.sys.Repository.AdminRepository;
 import com.ciu.sys.exception.ResourceNotFoundException;
@@ -26,6 +27,10 @@ public class AdminService {
   public Admin getAdminById(Long id) {
     return adminRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+  }
+
+  public Admin adminRegisterAccount(Admin admin) {
+    return adminRepository.save(admin);
   }
 
   public Admin updateAdminById(Admin updateAdmin) {

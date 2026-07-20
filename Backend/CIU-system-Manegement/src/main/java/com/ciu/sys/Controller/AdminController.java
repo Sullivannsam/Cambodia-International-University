@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ciu.sys.Dto.AdminDto;
 import com.ciu.sys.Model.Admin;
 import com.ciu.sys.Service.AdminService;
 
@@ -25,6 +27,9 @@ public class AdminController {
 
   @Autowired
   private AdminService adminService;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   @PreAuthorize("hasRole ('ADMIN')")
   @GetMapping("/admin/{id}")
@@ -51,6 +56,19 @@ public class AdminController {
           "role", "ADMIN"));
     }
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
+  }
+
+  @PostMapping("/register/admin")
+  public ResponseEntity<?> adminRegister(@RequestBody AdminDto request) {
+
+    Admin admin = new Admin();
+    admin.setUsername(request.username());
+    admin.setEmail(request.email());
+    admin.setPassword(passwordEncoder.encode(request.password()));
+    admin.setRole(request.role());
+
+    adminService.adminRegisterAccount(admin);
+    return ResponseEntity.ok(Map.of("message", "Admin register Successful!"));
   }
 
   @PreAuthorize("hasRole ('ADMIN')")

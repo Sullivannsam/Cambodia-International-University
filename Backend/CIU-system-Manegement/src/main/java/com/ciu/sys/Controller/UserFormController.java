@@ -53,7 +53,7 @@ public class UserFormController {
   public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest request) {
     User user = new User();
     user.setUsername(request.username());
-    user.setPassword(passwordEncoder.encode(request.password(12)));
+    user.setPassword(passwordEncoder.encode(request.password()));
     user.setEmail(request.email());
     user.setPhone(request.phone());
     user.setAddress("");

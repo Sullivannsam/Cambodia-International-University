@@ -17,6 +17,15 @@ export const adminLogin = async (data) => {
     return response.json();
 };
 
+export const adminRegister = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/register/admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    return response.json();
+};
+
 export const loginUser = async (data) => {
     const response = await fetch(`${BASE_URL}/api/auth/login`, {
         method: "POST",

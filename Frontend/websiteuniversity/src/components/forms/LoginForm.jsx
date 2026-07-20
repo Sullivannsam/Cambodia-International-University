@@ -100,6 +100,12 @@ export default function Register() {
             </button>
           </div>
 
+          <div className="flex justify-end">
+            <a href="/public/forgot-password" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              Forgot Password?
+            </a>
+          </div>
+
           <label className="flex items-start gap-3 text-sm text-gray-500 cursor-pointer">
             <input type="checkbox" name="terms" checked={form.terms} onChange={handleChange}
               className="w-4 h-4 mt-0.5 accent-blue-600 rounded border-gray-300" required />
