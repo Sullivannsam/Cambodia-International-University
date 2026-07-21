@@ -99,6 +99,25 @@ export const getFeeGroupMembers = async (group) => {
     return response.json();
 };
 
+// ---------- Student Auth ----------
+export const studentLogin = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/students/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    return response.json();
+};
+
+export const studentRegister = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/students/register/account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    return response.json();
+};
+
 // ---------- Email Verification ----------
 export const verifyEmail = async (data) => {
     const response = await fetch(`${BASE_URL}/api/auth/verify`, {

@@ -184,6 +184,19 @@ export default function Register() {
           Already have an account?{' '}
           <a href="/public/login" className="text-blue-600 hover:text-blue-700 font-medium">Sign in</a>
         </p>
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-center text-xs text-gray-400 mb-2">Are you a student?</p>
+          <div className="flex gap-2">
+            <a href="/student/register"
+              className="flex-1 text-center py-2 px-3 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-lg hover:bg-indigo-100 transition">
+              Student Register
+            </a>
+            <a href="/student/login"
+              className="flex-1 text-center py-2 px-3 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-lg hover:bg-indigo-100 transition">
+              Student Login
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -18,6 +18,8 @@ import Enroll from './components/public/Enrollment.jsx'
 import StudentEmailForm from './components/public/StudentEmailForm.jsx'
 import ForgotPassword from './components/forms/ForgotPassword.jsx'
 import UserSettings from './pages/user/Settings.jsx'
+import StudentRegister from './pages/student/Register.jsx'
+import StudentLogin from './pages/student/Login.jsx'
 
 
 function App() {
@@ -104,6 +106,20 @@ function App() {
               <ForgotPassword />
             </div>
            }/>
+
+           {/* Student pages */}
+           <Route path="/student/register" element={
+             <div>
+               <Navbar />
+               <StudentRegister />
+             </div>
+           } />
+           <Route path="/student/login" element={
+             <div>
+               <Navbar />
+               <StudentLogin />
+             </div>
+           } />
 
            {/* User Settings */}
            <Route path="/user/settings" element={

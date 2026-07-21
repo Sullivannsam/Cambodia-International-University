@@ -7,5 +7,5 @@ import com.ciu.sys.Model.Student;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
-
+  Optional<Student> find
 }

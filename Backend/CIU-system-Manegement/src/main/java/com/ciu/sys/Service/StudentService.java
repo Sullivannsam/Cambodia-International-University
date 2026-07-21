@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.ciu.sys.Model.Student;
 import com.ciu.sys.Repository.StudentRepository;
+import com.ciu.sys.exception.ResourceNotFoundException;
 
 @Service
 public class StudentService {
@@ -20,5 +21,10 @@ public class StudentService {
 
   public List<Student> findAllStudent() {
     return studentRepository.findAll();
+  }
+
+  public Student findStudentById(Long id) {
+    return studentRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Student not found by id" + id));
   }
 }
