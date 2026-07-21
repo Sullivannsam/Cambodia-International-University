@@ -1,5 +1,6 @@
 package com.ciu.sys.Model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,8 +16,16 @@ public class Admin {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @Column(name = "Username")
   private String username;
+
+  @Column(name = "Password")
   private String password;
+
+  @Column(name = "Email", unique = true)
   private String email;
+
+  @Column(name = "Role")
   private String role;
 }

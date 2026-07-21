@@ -61,14 +61,19 @@ public class AdminController {
   @PostMapping("/register/admin")
   public ResponseEntity<?> adminRegister(@RequestBody AdminDto request) {
 
-    Admin admin = new Admin();
-    admin.setUsername(request.username());
-    admin.setEmail(request.email());
-    admin.setPassword(passwordEncoder.encode(request.password()));
-    admin.setRole(request.role());
+    try {
+      Admin admin = new Admin();
+      admin.setUsername(request.username());
+      admin.setEmail(request.email());
+      admin.setPassword(passwordEncoder.encode(request.password()));
+      admin.setRole(request.role());
 
-    adminService.adminRegisterAccount(admin);
-    return ResponseEntity.ok(Map.of("message", "Admin register Successful!"));
+      adminService.adminRegisterAccount(admin);
+      return ResponseEntity.ok(Map.of("message", "Admin registered successfully"));
+
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(Map.of("message", "Email already exist!"));
+    }
   }
 
   @PreAuthorize("hasRole ('ADMIN')")

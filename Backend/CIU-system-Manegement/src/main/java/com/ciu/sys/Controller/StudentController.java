@@ -34,7 +34,7 @@ public class StudentController {
     student.setPhone(request.phone());
 
     studentService.studentRegisterAccount(student);
-    return ResponseEntity.ok(Map.of("message", "Account create successful!"));
+    return ResponseEntity.ok(Map.of("message", "Account created successfully"));
 
   }
 
@@ -42,7 +42,7 @@ public class StudentController {
   public ResponseEntity<List<StudentDto>> listAllStudent() {
     List<Student> students = studentService.findAllStudent();
     List<StudentDto> dto = students.stream()
-        .map(s -> new StudentDto(s.getUsername(), s.getEmail(), s.getRole(), s.getPhone()))
+        .map(s -> new StudentDto(s.getUsername(), s.getEmail(), s.getPhone(), s.getRole(), s.isActive(), s.getDate()))
         .toList();
 
     return ResponseEntity.ok(dto);
