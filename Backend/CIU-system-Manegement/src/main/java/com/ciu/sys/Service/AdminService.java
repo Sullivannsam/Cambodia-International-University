@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.Dto.AdminDto;
 import com.ciu.sys.Model.Admin;
 import com.ciu.sys.Repository.AdminRepository;
 import com.ciu.sys.exception.ResourceNotFoundException;

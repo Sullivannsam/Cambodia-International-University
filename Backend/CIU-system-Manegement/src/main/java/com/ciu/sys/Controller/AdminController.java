@@ -44,7 +44,6 @@ public class AdminController {
     return adminService.getListAdmins();
   }
 
-  @PreAuthorize("hasRole ('ADMIN')")
   @PostMapping("/login/admin")
   public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Admin admin) {
     Admin found = adminService.authenticate(admin.getEmail(), admin.getPassword());
@@ -59,7 +58,6 @@ public class AdminController {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
   }
 
-  @PreAuthorize("hasRole ('ADMIN')")
   @PostMapping("/register/admin")
   public ResponseEntity<?> adminRegister(@RequestBody AdminDto request) {
 

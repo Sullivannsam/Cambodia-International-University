@@ -2,6 +2,7 @@ package com.ciu.sys.Controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,14 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.Dto.StudentDto;
-import com.ciu.sys.Model.Student;
+import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Service.StudentService;
 
 import jakarta.persistence.AttributeOverrides;
 
 @RestController
 @RequestMapping("/api/auth/students")
-public class StudentController {
+public class StudentAccountController {
 
   @Autowired
   private StudentService studentService;
@@ -34,7 +35,7 @@ public class StudentController {
 
   @PostMapping("/register/account")
   public ResponseEntity<?> studentRegisterAccount(@RequestBody StudentDto request) {
-    Student student = new Student();
+    StudentAccount student = new StudentAccount();
     student.setUsername(request.username());
     student.setPassword(passwordEncoder.encode(request.password()));
     student.setEmail(request.email());
@@ -44,9 +45,24 @@ public class StudentController {
     return ResponseEntity.ok(Map.of("message", "Account created successfully"));
   }
 
+  @PostMapping("/login/account")
+  public ResponseEntity<?> studentLogin(@RequestBody StudentDto request) {
+    Optional<StudentAccount> found = studentService.findByEmail(request.email());
+    if (found.isPresent() && passwordEncoder.matches(request.password(), found.get().getPassword())) {
+      return ResponseEntity.ok(Map.of(
+          "token", "student-token",
+          "message", "Login successfully",
+          "email", found.get().getEmail(),
+          "role", "STUDENT"));
+    } else {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid Credentials"));
+    }
+
+  }
+
   @PutMapping("/update/{id}")
   public ResponseEntity<?> updateStudentById(@PathVariable Long id, @RequestBody StudentDto dto) {
-    Student student = studentService.findStudentById(id);
+    StudentAccount student = studentService.findStudentById(id);
     student.setUsername(dto.username());
     student.setEmail(dto.email());
     student.setPhone(dto.phone());
@@ -58,7 +74,7 @@ public class StudentController {
 
   @GetMapping
   public ResponseEntity<List<StudentDto>> listAllStudent() {
-    List<Student> students = studentService.findAllStudent();
+    List<StudentAccount> students = studentService.findAllStudent();
     List<StudentDto> dto = students.stream()
         .map(s -> new StudentDto(s.getUsername(), s.getEmail(), s.getPassword(), s.getPhone()))
         .toList();
@@ -69,7 +85,7 @@ public class StudentController {
 
   @GetMapping("/{id}")
   public StudentDto listStudentById(@PathVariable Long id) {
-    Student student = studentService.findStudentById(id);
+    StudentAccount student = studentService.findStudentById(id);
     return new StudentDto(
         student.getUsername(),
         student.getEmail(),

@@ -36,6 +36,6 @@ public class StudentInfo {
   private String motherPhone;
 
   @OneToMany(mappedBy = "studentInfo")
-  private List<Student> students;
+  private List<StudentAccount> students;
 
 }
