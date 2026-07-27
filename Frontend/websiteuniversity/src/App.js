@@ -1,6 +1,5 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import logo from './logo.svg';
 import './App.css';
 import Homepage from './components/public/Homepage.jsx'
 import Navbar from './components/layout/Navbar';
@@ -42,7 +41,7 @@ function App() {
               <Homepage />
               <SecondFooter />
             </div>
-        }/>
+          }/>
 
           {/* Admin pages */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -53,17 +52,16 @@ function App() {
                <AdminDashboard />
             </div>
           }/>
- 
-          
+
           {/*Contact page */}
           <Route path="/public/contact" element={
             <div>
               <Navbar />
               <ContactUs />
             </div>
-           }/>
-          
-            {/*Login page */}
+          }/>
+
+          {/*Login page */}
           <Route path="/public/login" element={
             <div>
               <Navbar />
@@ -71,68 +69,67 @@ function App() {
                 <Login />
               </div>
             </div>
-           }/>
-         
+          }/>
+
           {/* Register page */}
-           <Route path="/public/register" element={
+          <Route path="/public/register" element={
             <div>
               <Navbar />
               <div className = "center-container">
                 <Register />
               </div>
             </div>
-           }/>
-         
+          }/>
+
           {/* Enroll page */}
-           <Route path="/public/content/enroll" element={
+          <Route path="/public/content/enroll" element={
             <div>
               <Navbar />
                 <Enroll />
             </div>
-           }/>
+          }/>
 
-           {/* Claim Student Email */}
-           <Route path="/public/claim-email" element={
+          {/* Claim Student Email */}
+          <Route path="/public/claim-email" element={
             <div>
               <Navbar />
               <StudentEmailForm />
             </div>
-           }/>
+          }/>
 
-           {/* Forgot Password */}
-           <Route path="/public/forgot-password" element={
+          {/* Forgot Password */}
+          <Route path="/public/forgot-password" element={
             <div>
               <Navbar />
               <ForgotPassword />
             </div>
-           }/>
+          }/>
 
-           {/* Student pages */}
-           <Route path="/student/register" element={
-             <div>
-               <Navbar />
-               <StudentRegister />
-             </div>
-           } />
-           <Route path="/student/login" element={
-             <div>
-               <Navbar />
-               <StudentLogin />
-             </div>
-           } />
+          {/* Student pages */}
+          <Route path="/student/register" element={
+            <div>
+              <Navbar />
+              <StudentRegister />
+            </div>
+          } />
+          <Route path="/student/login" element={
+            <div>
+              <Navbar />
+              <StudentLogin />
+            </div>
+          } />
 
-           {/* User Settings */}
-           <Route path="/user/settings" element={
+          {/* User Settings */}
+          <Route path="/user/settings" element={
             <div>
               <Navbar />
               <UserSettings />
             </div>
-           }/>
+          }/>
 
-           <Route path = "*" element = {
+          <Route path = "*" element = {
             <Navigate to =  "/" replace />
           }/>
-          
         </Routes>
       </BrowserRouter>
   );

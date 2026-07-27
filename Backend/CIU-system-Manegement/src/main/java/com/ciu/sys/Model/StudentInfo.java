@@ -7,7 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class StudentInfo {
   @Column(name = "Place_of_Birth")
   private String place;
 
-  @OneToOne(mappedBy = "studentInfo")
+  @OneToMany(mappedBy = "studentInfo")
   private List<StudentAccount> studentAccounts;
 
 }

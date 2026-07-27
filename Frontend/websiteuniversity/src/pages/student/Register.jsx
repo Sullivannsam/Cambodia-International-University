@@ -5,9 +5,7 @@ import { Link } from 'react-router-dom';
 
 export default function StudentRegister() {
   const [form, setForm] = useState({
-    username: '', email: '', password: '', phone: '',
-    placeOfBirth: '', fatherName: '', motherName: '',
-    fatherPhone: '', motherPhone: ''
+    username: '', email: '', password: '', phone: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

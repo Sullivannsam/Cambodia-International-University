@@ -37,8 +37,11 @@ public class AdminService {
   }
 
   public Admin deleteAdminById(Long id) {
-    adminRepository.deleteById(id);
-    return null;
+    Admin admin = adminRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Admin Not Found" + id));
+    adminRepository.delete(admin);
+    return admin;
+
   }
 
   public Admin authenticate(String email, String password) {

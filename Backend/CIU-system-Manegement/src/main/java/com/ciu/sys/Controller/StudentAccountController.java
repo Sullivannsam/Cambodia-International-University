@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.Dto.StudentDto;
+import com.ciu.sys.Dto.LoginRequest;
+import com.ciu.sys.Dto.StudentRequestDto;
+import com.ciu.sys.Dto.StudentResponse;
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Service.StudentService;
-
-import jakarta.persistence.AttributeOverrides;
 
 @RestController
 @RequestMapping("/api/auth/students")
@@ -34,7 +33,7 @@ public class StudentAccountController {
   private PasswordEncoder passwordEncoder;
 
   @PostMapping("/register/account")
-  public ResponseEntity<?> studentRegisterAccount(@RequestBody StudentDto request) {
+  public ResponseEntity<?> studentRegisterAccount(@RequestBody StudentRequestDto request) {
     StudentAccount student = new StudentAccount();
     student.setUsername(request.username());
     student.setPassword(passwordEncoder.encode(request.password()));
@@ -46,7 +45,7 @@ public class StudentAccountController {
   }
 
   @PostMapping("/login/account")
-  public ResponseEntity<?> studentLogin(@RequestBody StudentDto request) {
+  public ResponseEntity<?> studentLogin(@RequestBody LoginRequest request) {
     Optional<StudentAccount> found = studentService.findByEmail(request.email());
     if (found.isPresent() && passwordEncoder.matches(request.password(), found.get().getPassword())) {
       return ResponseEntity.ok(Map.of(
@@ -61,9 +60,10 @@ public class StudentAccountController {
   }
 
   @PutMapping("/update/{id}")
-  public ResponseEntity<?> updateStudentById(@PathVariable Long id, @RequestBody StudentDto dto) {
+  public ResponseEntity<?> updateStudentById(@PathVariable Long id, @RequestBody StudentRequestDto dto) {
     StudentAccount student = studentService.findStudentById(id);
     student.setUsername(dto.username());
+    student.setPassword(passwordEncoder.encode(dto.password()));
     student.setEmail(dto.email());
     student.setPhone(dto.phone());
 
@@ -73,10 +73,11 @@ public class StudentAccountController {
   }
 
   @GetMapping
-  public ResponseEntity<List<StudentDto>> listAllStudent() {
+  public ResponseEntity<List<StudentResponse>> listAllStudent() {
     List<StudentAccount> students = studentService.findAllStudent();
-    List<StudentDto> dto = students.stream()
-        .map(s -> new StudentDto(s.getUsername(), s.getEmail(), s.getPassword(), s.getPhone()))
+    List<StudentResponse> dto = students.stream()
+        .map(s -> new StudentResponse(s.getUsername(), s.getEmail(), s.getPhone(), s.getRole(), s.isActive(),
+            s.getDate()))
         .toList();
 
     return ResponseEntity.ok(dto);
@@ -84,12 +85,15 @@ public class StudentAccountController {
   }
 
   @GetMapping("/{id}")
-  public StudentDto listStudentById(@PathVariable Long id) {
+  public StudentResponse listStudentById(@PathVariable Long id) {
     StudentAccount student = studentService.findStudentById(id);
-    return new StudentDto(
+    return new StudentResponse(
         student.getUsername(),
         student.getEmail(),
-        student.getPhone());
+        student.getPhone(),
+        student.getRole(),
+        student.isActive(),
+        student.getDate());
   }
 
 }

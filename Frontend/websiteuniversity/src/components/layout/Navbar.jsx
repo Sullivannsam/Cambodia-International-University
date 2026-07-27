@@ -31,7 +31,10 @@ const Navbar = () => {
         fontWeight: 500,
         color: "var(--text-secondary)",
         textDecoration: "none",
-        transition: "color 0.2s",
+        transition: "color 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+        position: "relative",
+        paddingBottom: 4,
+        cursor: "pointer",
     };
  
     return (
@@ -79,9 +82,7 @@ const Navbar = () => {
                             { label: "Contact", href: "/public/contact" },
                             { label: "Enroll", href: "/public/content/enroll" },
                         ].map(({ label, href }) => (
-                            <a key={label} href={href} style={linkStyle}
-                                onMouseEnter={e => e.target.style.color = "#2563eb"}
-                                onMouseLeave={e => e.target.style.color = "#4b5563"}>
+                            <a key={label} href={href} className="nav-link" style={linkStyle}>
                                 {label}
                             </a>
                         ))}
@@ -114,10 +115,11 @@ const Navbar = () => {
                         </div>
 
                         {/* Dark Mode Toggle */}
-                        <button onClick={toggleTheme} style={{
+                        <button onClick={toggleTheme} className="theme-toggle" style={{
                             background: "none", border: "none", cursor: "pointer",
                             padding: 6, borderRadius: 8, color: "var(--text-secondary)",
                             display: "flex", alignItems: "center",
+                            transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s",
                         }}>
                             {theme === "dark" ? (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -160,21 +162,23 @@ const Navbar = () => {
                             </div>
                         ) : (
                             <>
-                                <a href="/public/login" style={{
+                                <a href="/public/login" className="btn-signin" style={{
                                     background: "transparent", color: "#2563eb",
                                     fontSize: 14, fontWeight: 600,
                                     padding: "8px 18px", borderRadius: 10,
                                     textDecoration: "none", whiteSpace: "nowrap",
                                     border: "1.5px solid #2563eb",
-                                    transition: "all 0.2s",
+                                    transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+                                    cursor: "pointer",
                                 }}>Sign In</a>
-                                <a href="/public/register" style={{
+                                <a href="/public/register" className="btn-signup" style={{
                                     background: "#2563eb", color: "white",
                                     fontSize: 14, fontWeight: 600,
                                     padding: "8px 18px", borderRadius: 10,
                                     textDecoration: "none", whiteSpace: "nowrap",
                                     boxShadow: "0 2px 8px rgba(37,99,235,0.3)",
-                                    transition: "all 0.2s",
+                                    transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+                                    cursor: "pointer",
                                 }}>Sign up</a>
                             </>
                         )}
@@ -192,8 +196,9 @@ const Navbar = () => {
                             padding: 6,
                             borderRadius: 8,
                             color: "var(--text-secondary)",
+                            transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s",
                         }}>
-                        <svg style={{ width: 24, height: 24 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg style={{ width: 24, height: 24, transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {isOpen
                                 ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                 : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />}
@@ -204,7 +209,7 @@ const Navbar = () => {
  
             {/* Mobile Menu */}
             {isOpen && (
-                <div style={{
+                <div className="mobile-menu" style={{
                     background: "var(--nav-bg)",
                     borderTop: "1px solid var(--border)",
                     padding: "12px 24px 20px",
@@ -220,7 +225,7 @@ const Navbar = () => {
                         { label: "Contact", href: "/public/contact" },
                         { label: "Enroll", href: "/enroll" },
                     ].map(({ label, href }) => (
-                        <a key={label} href={href} style={{ ...linkStyle, padding: "10px 0", display: "block", borderBottom: "1px solid var(--border)" }}>
+                        <a key={label} href={href} className="mobile-link" style={{ ...linkStyle, padding: "10px 0", display: "block", borderBottom: "1px solid var(--border)" }}>
                             {label}
                         </a>
                     ))}
@@ -260,6 +265,74 @@ const Navbar = () => {
  
             {/* Responsive styles via <style> tag */}
             <style>{`
+                .nav-link {
+                    will-change: transform;
+                }
+                .nav-link::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 50%;
+                    width: 0;
+                    height: 2px;
+                    background: #2563eb;
+                    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    border-radius: 2px;
+                }
+                .nav-link:hover::after {
+                    width: 100%;
+                    left: 0;
+                }
+                .nav-link:hover {
+                    color: #2563eb !important;
+                    transform: translateY(-2px);
+                }
+
+                .btn-signin {
+                    will-change: transform;
+                }
+                .btn-signin:hover {
+                    background: #2563eb !important;
+                    color: white !important;
+                    transform: translateY(-2px) scale(1.02);
+                    box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+                }
+                .btn-signup {
+                    will-change: transform;
+                }
+                .btn-signup:hover {
+                    transform: translateY(-2px) scale(1.02);
+                    box-shadow: 0 6px 24px rgba(37,99,235,0.45);
+                }
+
+                .theme-toggle:hover {
+                    transform: rotate(30deg) scale(1.1);
+                    color: #2563eb !important;
+                }
+
+                .mobile-menu {
+                    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                }
+                .mobile-link {
+                    animation: fadeInUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                    opacity: 0;
+                    will-change: transform, opacity;
+                }
+                .mobile-link:nth-child(1) { animation-delay: 0.04s; }
+                .mobile-link:nth-child(2) { animation-delay: 0.08s; }
+                .mobile-link:nth-child(3) { animation-delay: 0.12s; }
+                .mobile-link:nth-child(4) { animation-delay: 0.16s; }
+                .mobile-link:nth-child(5) { animation-delay: 0.20s; }
+
+                @keyframes slideDown {
+                    from { opacity: 0; transform: translateY(-12px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
                 @media (max-width: 768px) {
                     .desktop-nav { display: none !important; }
                     .desktop-actions { display: none !important; }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.Dto.AdminDto;
+import com.ciu.sys.Dto.LoginRequest;
 import com.ciu.sys.Model.Admin;
 import com.ciu.sys.Service.AdminService;
 
@@ -45,8 +46,8 @@ public class AdminController {
   }
 
   @PostMapping("/login/admin")
-  public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Admin admin) {
-    Admin found = adminService.authenticate(admin.getEmail(), admin.getPassword());
+  public ResponseEntity<Map<String, String>> adminLogin(@RequestBody LoginRequest request) {
+    Admin found = adminService.authenticate(request.getEmail(), request.getPassword());
     if (found != null) {
       return ResponseEntity.ok(Map.of(
           "token", "admin-token",
@@ -79,6 +80,7 @@ public class AdminController {
   @PreAuthorize("hasRole ('ADMIN')")
   @PutMapping("/{id}")
   public Admin updateAdminById(@PathVariable Long id, @RequestBody Admin updateAdmin) {
+    updateAdmin.setId(id);
     return adminService.updateAdminById(updateAdmin);
   }
 
