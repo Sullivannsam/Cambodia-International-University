@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.ciu.sys.Model.Admin;
-import com.ciu.sys.Repository.AdminRepository;
+import com.ciu.sys.model.admin.Admin;
+import com.ciu.sys.repository.admin.AdminRepository;
 
 @Configuration
 public class DataSeeder {
