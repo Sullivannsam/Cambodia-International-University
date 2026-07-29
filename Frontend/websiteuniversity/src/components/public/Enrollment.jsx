@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+
 const majors = ["Computer Science", "Business Administration", "Engineering", "Medicine", "Law", "Architecture", "Education", "Arts & Design"];
 const degrees = ["Bachelor's Degree", "Master's Degree", "PhD", "Associate Degree", "Diploma"];
 const years = ["Year 1", "Year 2", "Year 3", "Year 4"];
@@ -33,8 +35,38 @@ export default function Enrollment() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleConfirm = () => {
-    if (validate()) setPage("success");
+  const handleConfirm = async () => {
+    if (!validate()) return;
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/auth/enroll`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstNameEN: form.firstNameEN,
+          lastNameEN: form.lastNameEN,
+          firstNameKH: form.firstNameKH,
+          lastNameKH: form.lastNameKH,
+          age: parseInt(form.age),
+          birthDate: form.birthDate,
+          palceOfBirth: form.placeOfBirth,
+          sex: form.sex,
+          national: form.nationality,
+          phoneNumber: form.phone,
+          email: form.email,
+          startDate: form.startDate,
+          major: form.major,
+          year: form.year,
+          degree: form.degree,
+        }),
+      });
+      if (res.ok) {
+        setPage("success");
+      } else {
+        alert("Submission failed. Please try again.");
+      }
+    } catch {
+      alert("Server not reachable. Make sure the backend is running.");
+    }
   };
 
   const inputClass = (field) =>

@@ -5,6 +5,7 @@ import Homepage from './components/public/Homepage.jsx'
 import Navbar from './components/layout/Navbar';
 import SlideShow from './components/public/SlideShow';
 import AboutPage from './components/public/AboutPage';
+import AboutUs from './components/public/AboutUs';
 import ContactUs from './components/public/ContactUs';
 import Footer from './components/layout/Footer';
 import SecondFooter from './components/layout/BlackFooter.jsx';
@@ -50,6 +51,14 @@ function App() {
           <Route path = "/admin/dashboard" element = {
             <div>
                <AdminDashboard />
+            </div>
+          }/>
+
+          {/* About Us page */}
+          <Route path="/public/aboutus" element={
+            <div>
+              <Navbar />
+              <AboutUs />
             </div>
           }/>
 

@@ -14,4 +14,8 @@ public class ContactService {
   public Contact getUserContact() {
     return contactRepo.findById(1L).orElse(null);
   }
+
+  public Contact saveContact(Contact contact) {
+    return contactRepo.save(contact);
+  }
 }

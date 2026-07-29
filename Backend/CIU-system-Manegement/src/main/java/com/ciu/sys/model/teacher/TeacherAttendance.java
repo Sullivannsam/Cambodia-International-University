@@ -29,9 +29,9 @@ public class TeacherAttendance {
   @Column(name = "present")
   private boolean isPresent;
 
-  @OneToMany(mappedBy = "teacher")
-  private List<StudentClass> classes;
-
+  // @OneToMany(mappedBy = "teacher")
+  // private List<StudentClass> classes;
+  //
   @ManyToOne
   @JoinColumn(name = "teacher_id")
   private Teacher teacher;

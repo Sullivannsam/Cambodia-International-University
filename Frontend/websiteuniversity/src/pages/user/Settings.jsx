@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
 export default function Settings() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -13,6 +15,7 @@ export default function Settings() {
     confirmPassword: '',
   });
   const [message, setMessage] = useState('');
+  const [msgType, setMsgType] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,13 +38,46 @@ export default function Settings() {
     setForm(prev => ({ ...prev, [name]: value }));
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (form.newPassword && form.newPassword !== form.confirmPassword) {
+      setMsgType('error');
       setMessage('Passwords do not match.');
       return;
     }
-    setMessage('Changes saved! (Backend not connected yet)');
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    try {
+      const res = await fetch(`${BASE_URL}/api/auth/users/update/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: form.username,
+          phone: form.phone,
+          address: form.address,
+        }),
+      });
+      if (res.ok) {
+        setMsgType('success');
+        setMessage('Changes saved successfully!');
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          parsed.username = form.username;
+          localStorage.setItem('user', JSON.stringify(parsed));
+        }
+      } else {
+        const data = await res.json();
+        setMsgType('error');
+        setMessage(data.message || 'Failed to save changes.');
+      }
+    } catch {
+      setMsgType('error');
+      setMessage('Server not reachable.');
+    }
   }
 
   return (
@@ -50,7 +86,7 @@ export default function Settings() {
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Account Settings</h1>
 
         {message && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-md px-3 py-2 mb-6">
+          <div className={`${msgType === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'} border text-sm rounded-md px-3 py-2 mb-6`}>
             {message}
           </div>
         )}

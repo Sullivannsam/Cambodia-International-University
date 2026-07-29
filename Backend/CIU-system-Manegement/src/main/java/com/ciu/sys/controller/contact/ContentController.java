@@ -2,6 +2,8 @@ package com.ciu.sys.controller.contact;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +22,8 @@ public class ContentController {
     return contactService.getUserContact();
   }
 
-  @GetMapping("/home")
-  public String getHomepage() {
-    return "Hello String";
+  @PostMapping("/contact/report-message")
+  public Contact saveContact(@RequestBody Contact contact) {
+    return contactService.saveContact(contact);
   }
 }
-

@@ -101,7 +101,7 @@ export const getFeeGroupMembers = async (group) => {
 
 // ---------- Student Auth ----------
 export const studentLogin = async (data) => {
-    const response = await fetch(`${BASE_URL}/api/auth/students/login`, {
+    const response = await fetch(`${BASE_URL}/api/auth/students/login/account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -130,14 +130,14 @@ export const verifyEmail = async (data) => {
 
 // ---------- Contact ----------
 export const getContact = async () => {
-    const response = await fetch(`${BASE_URL}/api/contact`, {
+    const response = await fetch(`${BASE_URL}/api/public`, {
         headers: { "Content-Type": "application/json" },
     });
     return response.json();
 };
 
 export const sendContact = async (data) => {
-    const response = await fetch(`${BASE_URL}/api/contact`, {
+    const response = await fetch(`${BASE_URL}/api/public/contact/report-message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

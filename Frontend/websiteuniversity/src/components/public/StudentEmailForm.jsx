@@ -56,7 +56,7 @@ const StudentEmailForm = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/student/claim", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/student/claim`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
