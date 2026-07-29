@@ -2,8 +2,6 @@ package com.ciu.sys.model.enrollment;
 
 import java.sql.Date;
 
-import org.hibernate.annotations.Columns;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

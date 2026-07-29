@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.service.admin.DashboardService;
 
-import jakarta.websocket.server.PathParam;
-
 @RestController
 @RequestMapping("/api/admin/dashboard")
 public class DashboardController {
@@ -32,7 +30,7 @@ public class DashboardController {
 
   @GetMapping("/attendance/teacher")
   public List<Map<String, Object>> getAttendanceTeacher() {
-    return dashboardService.getAttendanceTacher();
+    return dashboardService.getAttendanceTeacher();
   }
 
   @GetMapping("/income")
@@ -46,12 +44,12 @@ public class DashboardController {
   }
 
   @GetMapping("/fee-groups")
-  public List<Stirng> getFeeGroupData() {
+  public List<String> getFeeGroupData() {
     return dashboardService.getFeeGroupData();
   }
 
   @GetMapping("/fee-groups/{group}")
-  public List<Map<Stirng, Object>> getFeeMemberData(@PathVariable String group) {
+  public List<Map<String, Object>> getFeeMemberData(@PathVariable String group) {
     return dashboardService.getFeeMemberData(group);
   }
 

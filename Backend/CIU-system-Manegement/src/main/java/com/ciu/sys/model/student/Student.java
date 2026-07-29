@@ -1,7 +1,7 @@
 package com.ciu.sys.model.student;
 
 import com.ciu.sys.model.finance.ExamResult;
-import com.ciu.sys.model.finance.PaymentResult;
+import com.ciu.sys.model.finance.Payment;
 import com.ciu.sys.model.finance.Scholarship;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,7 +27,7 @@ public class Student {
 
   @OneToOne
   @JoinColumn(name = "Payment_Result")
-  private PaymentResult paymentResult;
+  private Payment paymentResult;
 
   @OneToOne
   @JoinColumn(name = "Scholarship")

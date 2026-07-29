@@ -41,6 +41,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/auth/teacher/register/account").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/student/login/account").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/student/register/account").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/student/payment-fee").permitAll()
 
             // PUT Request
 
