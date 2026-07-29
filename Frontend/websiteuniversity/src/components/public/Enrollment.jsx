@@ -11,7 +11,7 @@ const nationalities = ["Cambodian", "Vietnamese", "Chinese", "Korean", "American
 const steps = ["Application", "Confirmation", "Success"];
 
 export default function Enrollment() {
-  const [page, setPage] = useState("form"); // form | success
+  const [page, setPage] = useState("form");
   const [errors, setErrors] = useState({});
   const [form, setForm] = useState({
     firstNameEN: "", lastNameEN: "", firstNameKH: "", lastNameKH: "",
@@ -69,16 +69,15 @@ export default function Enrollment() {
     }
   };
 
-  const inputClass = (field) =>
-    `w-full bg-white/10 border ${errors[field] ? "border-red-400" : "border-white/20"} rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all`;
+  const sharedInputStyle = {
+    borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none", transition: "border 0.2s",
+  };
 
-  const selectClass = (field) =>
-    `w-full bg-white/10 border ${errors[field] ? "border-red-400" : "border-white/20"} rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all appearance-none cursor-pointer`;
+  const getBorder = (field) => `1px solid ${errors[field] ? "#f87171" : "var(--border)"}`;
 
   return (
-    <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", minHeight: "100vh", background: "linear-gradient(135deg, #e8edf5 0%, #dde4f0 100%)" }}>
+    <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", minHeight: "100vh", background: "var(--bg-secondary)" }}>
 
-      {/* Google Font */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -87,19 +86,19 @@ export default function Enrollment() {
         .step-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
         .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
         .step-line { width: 40px; height: 2px; border-radius: 2px; }
-        select option { background: white; color: #334155; }
+        select option { background: var(--bg-card); color: var(--text-primary); }
+        input::placeholder { color: var(--text-muted); }
         .radio-group { display: flex; gap: 16px; }
-        .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #475569; }
+        .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: var(--text-secondary); }
         .radio-item input { accent-color: #3b82f6; width: 16px; height: 16px; cursor: pointer; }
         .error-msg { font-size: 11px; color: #f87171; margin-top: 3px; }
-        .field-label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-        .section-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-        .confirm-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-        .confirm-key { color: #64748b; font-weight: 500; }
-        .confirm-val { color: #1e293b; font-weight: 600; }
+        .field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .section-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .confirm-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .confirm-key { color: var(--text-muted); font-weight: 500; }
+        .confirm-val { color: var(--text-primary); font-weight: 600; }
       `}</style>
 
-            {/* Hero band */}
       <div style={{ background: "linear-gradient(90deg,#2563eb,#3b82f6)", padding: "32px 40px", textAlign: "center" }}>
         <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontWeight: 700, color: "white", marginBottom: 6 }}>
           Application for Enroll Class
@@ -108,7 +107,6 @@ export default function Enrollment() {
           After you submit the application you will receive an email from our University within 24 hours.
         </p>
 
-        {/* Step indicator */}
         <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
           <div className="step-bar">
             {steps.map((s, i) => {
@@ -131,21 +129,18 @@ export default function Enrollment() {
         </div>
       </div>
 
-      {/* Main card */}
       <div style={{ maxWidth: 860, margin: "40px auto", padding: "0 20px 60px" }}>
-        <div style={{ background: "white", borderRadius: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+        <div style={{ background: "#f3f4f6", borderRadius: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.1)", overflow: "hidden" }}>
 
-          {/* Card header */}
-          <div style={{ background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", padding: "20px 32px", borderBottom: "1px solid #e2e8f0" }}>
-            <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
-              <strong style={{ color: "#1e293b" }}>Cambodia International University</strong> — Official Enrollment Application Form.
+          <div style={{ background: "var(--bg-secondary)", padding: "20px 32px", borderBottom: "1px solid var(--border)" }}>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+              <strong style={{ color: "var(--text-primary)" }}>Cambodia International University</strong> — Official Enrollment Application Form.
               Please fill in all required fields marked with <span style={{ color: "#ef4444" }}>*</span>.
             </p>
           </div>
 
           {page === "form" && (
-            <div style={{ padding: "32px" }}>
-              {/* Student Info */}
+            <div style={{ padding: "32px", background: "#f9fafb" }}>
               <div className="section-header">Student Information</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
                 {[
@@ -156,7 +151,8 @@ export default function Enrollment() {
                 ].map(({ label, field, placeholder }) => (
                   <div key={field}>
                     <div className="field-label">{label}</div>
-                    <input className={inputClass(field)} placeholder={placeholder} value={form[field]} onChange={e => update(field, e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors[field] ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none", transition: "border 0.2s" }} />
+                    <input placeholder={placeholder} value={form[field]} onChange={e => update(field, e.target.value)}
+                      style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder(field), color: "var(--text-primary)" }} />
                     {errors[field] && <div className="error-msg">{errors[field]}</div>}
                   </div>
                 ))}
@@ -165,24 +161,27 @@ export default function Enrollment() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div>
                   <div className="field-label">Age *</div>
-                  <input className={inputClass("age")} placeholder="e.g. 20" type="number" min="15" max="60" value={form.age} onChange={e => update("age", e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors.age ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none" }} />
+                  <input placeholder="e.g. 20" type="number" min="15" max="60" value={form.age} onChange={e => update("age", e.target.value)}
+                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("age"), color: "var(--text-primary)" }} />
                   {errors.age && <div className="error-msg">{errors.age}</div>}
                 </div>
                 <div>
                   <div className="field-label">Date of Birth *</div>
-                  <input type="date" value={form.birthDate} onChange={e => update("birthDate", e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors.birthDate ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none", color: form.birthDate ? "#1e293b" : "#94a3b8" }} />
+                  <input type="date" value={form.birthDate} onChange={e => update("birthDate", e.target.value)}
+                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("birthDate"), color: form.birthDate ? "var(--text-primary)" : "var(--text-muted)" }} />
                   {errors.birthDate && <div className="error-msg">{errors.birthDate}</div>}
                 </div>
                 <div>
                   <div className="field-label">Place of Birth *</div>
-                  <input placeholder="City / Province" value={form.placeOfBirth} onChange={e => update("placeOfBirth", e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors.placeOfBirth ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none" }} />
+                  <input placeholder="City / Province" value={form.placeOfBirth} onChange={e => update("placeOfBirth", e.target.value)}
+                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("placeOfBirth"), color: "var(--text-primary)" }} />
                   {errors.placeOfBirth && <div className="error-msg">{errors.placeOfBirth}</div>}
                 </div>
                 <div>
                   <div className="field-label">Sex *</div>
                   <div className="radio-group" style={{ marginTop: 10 }}>
                     {["Male","Female"].map(s => (
-                      <label key={s} className="radio-item">
+                      <label key={s} className="radio-item" style={{color:'var(--text-secondary)'}}>
                         <input type="radio" name="sex" value={s} checked={form.sex === s} onChange={() => update("sex", s)} />
                         {s}
                       </label>
@@ -195,7 +194,8 @@ export default function Enrollment() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 36 }}>
                 <div>
                   <div className="field-label">Nationality *</div>
-                  <select value={form.nationality} onChange={e => update("nationality", e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors.nationality ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none", cursor: "pointer" }}>
+                  <select value={form.nationality} onChange={e => update("nationality", e.target.value)}
+                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("nationality"), color: "var(--text-primary)", cursor: "pointer" }}>
                     <option value="">Select nationality</option>
                     {nationalities.map(n => <option key={n}>{n}</option>)}
                   </select>
@@ -203,17 +203,18 @@ export default function Enrollment() {
                 </div>
                 <div>
                   <div className="field-label">Phone Number *</div>
-                  <input placeholder="+855 ..." value={form.phone} onChange={e => update("phone", e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors.phone ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none" }} />
+                  <input placeholder="+855 ..." value={form.phone} onChange={e => update("phone", e.target.value)}
+                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("phone"), color: "var(--text-primary)" }} />
                   {errors.phone && <div className="error-msg">{errors.phone}</div>}
                 </div>
                 <div>
                   <div className="field-label">Email Address *</div>
-                  <input placeholder="you@example.com" type="email" value={form.email} onChange={e => update("email", e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors.email ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none" }} />
+                  <input placeholder="you@example.com" type="email" value={form.email} onChange={e => update("email", e.target.value)}
+                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("email"), color: "var(--text-primary)" }} />
                   {errors.email && <div className="error-msg">{errors.email}</div>}
                 </div>
               </div>
 
-              {/* Class Info */}
               <div className="section-header">Class Information</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16 }}>
                 {[
@@ -224,7 +225,8 @@ export default function Enrollment() {
                 ].map(({ label, field, options, placeholder }) => (
                   <div key={field}>
                     <div className="field-label">{label}</div>
-                    <select value={form[field]} onChange={e => update(field, e.target.value)} style={{ background: "#f8fafc", border: `1px solid ${errors[field] ? "#f87171" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none", cursor: "pointer", color: form[field] ? "#1e293b" : "#94a3b8" }}>
+                    <select value={form[field]} onChange={e => update(field, e.target.value)}
+                      style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder(field), cursor: "pointer", color: form[field] ? "var(--text-primary)" : "var(--text-muted)" }}>
                       <option value="">{placeholder}</option>
                       {options.map(o => <option key={o} style={{ color: "#1e293b" }}>{o}</option>)}
                     </select>
@@ -233,10 +235,9 @@ export default function Enrollment() {
                 ))}
               </div>
 
-              {/* Buttons */}
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 40, paddingTop: 24, borderTop: "1px solid #f1f5f9" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 40, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
                 <button onClick={() => setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"" })}
-                  style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid #e2e8f0", background: "white", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
+                  style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
                   Cancel
                 </button>
                 <button onClick={handleConfirm}
@@ -250,17 +251,16 @@ export default function Enrollment() {
           {page === "success" && (
             <div style={{ padding: "60px 32px", textAlign: "center" }}>
               <div style={{ width: 72, height: 72, background: "linear-gradient(135deg,#22c55e,#16a34a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 32, boxShadow: "0 8px 25px rgba(34,197,94,0.35)" }}>✓</div>
-              <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: "#1e293b", marginBottom: 12 }}>Submit Successful</h2>
-              <p style={{ fontSize: 16, color: "#64748b", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 16px" }}>
+              <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: "var(--text-primary)", marginBottom: 12 }}>Submit Successful</h2>
+              <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 16px" }}>
                 Your application has been submitted successfully.<br />
                 You will receive our confirmation email within <strong>24 hours</strong>.
               </p>
-              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 24px", display: "inline-block", marginBottom: 36 }}>
-                <span style={{ fontSize: 13, color: "#15803d", fontWeight: 600 }}>📧 Confirmation sent to: {form.email || "your email"}</span>
+              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 12, padding: "14px 24px", display: "inline-block", marginBottom: 36 }}>
+                <span style={{ fontSize: 13, color: "var(--accent,#15803d)", fontWeight: 600 }}>📧 Confirmation sent to: {form.email || "your email"}</span>
               </div>
 
-              {/* Summary */}
-              <div style={{ background: "#f8fafc", borderRadius: 16, padding: "24px 28px", textAlign: "left", maxWidth: 500, margin: "0 auto 36px" }}>
+              <div style={{ background: "var(--bg-secondary)", borderRadius: 16, padding: "24px 28px", textAlign: "left", maxWidth: 500, margin: "0 auto 36px" }}>
                 <div className="section-header" style={{ marginBottom: 12 }}>Application Summary</div>
                 {[
                   ["Name", `${form.firstNameEN} ${form.lastNameEN}`],
@@ -284,8 +284,7 @@ export default function Enrollment() {
           )}
         </div>
 
-        {/* Footer */}
-        <p style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "#94a3b8" }}>
+        <p style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "var(--text-muted)" }}>
           This information provided by Cambodia International University 🇰🇭
         </p>
       </div>

@@ -54,7 +54,7 @@ export const getDashboardStats = async () => {
 
 // ---------- Student Attendance ----------
 export const getStudentAttendance = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/attendance/students`, {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/attendance/student`, {
         headers: authHeaders(),
     });
     return response.json();
@@ -62,7 +62,7 @@ export const getStudentAttendance = async () => {
 
 // ---------- Teacher Attendance ----------
 export const getTeacherAttendance = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/attendance/teachers`, {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/attendance/teacher`, {
         headers: authHeaders(),
     });
     return response.json();
@@ -70,14 +70,14 @@ export const getTeacherAttendance = async () => {
 
 // ---------- Income / Earnings ----------
 export const getIncomeData = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/income`, {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/income`, {
         headers: authHeaders(),
     });
     return response.json();
 };
 
 export const getEarnings = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/earnings`, {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/earnings`, {
         headers: authHeaders(),
     });
     return response.json();
@@ -85,7 +85,7 @@ export const getEarnings = async () => {
 
 // ---------- Fee Groups ----------
 export const getFeeGroups = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/fee-groups`, {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/fee-groups`, {
         headers: authHeaders(),
     });
     return response.json();
@@ -93,7 +93,7 @@ export const getFeeGroups = async () => {
 
 // ---------- Fee Group Members ----------
 export const getFeeGroupMembers = async (group) => {
-    const response = await fetch(`${BASE_URL}/api/admin/fee-groups/${encodeURIComponent(group)}`, {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/fee-groups/${encodeURIComponent(group)}`, {
         headers: authHeaders(),
     });
     return response.json();

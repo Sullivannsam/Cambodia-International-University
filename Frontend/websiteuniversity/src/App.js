@@ -20,7 +20,8 @@ import ForgotPassword from './components/forms/ForgotPassword.jsx'
 import UserSettings from './pages/user/Settings.jsx'
 import StudentRegister from './pages/student/Register.jsx'
 import StudentLogin from './pages/student/Login.jsx'
-
+import PaymentForm from './components/forms/PaymentForm.jsx'
+import SuccessToast from './components/common/SuccessToast.jsx'
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
               <SlideShow />
               <AboutPage />
               <Footer />
+              <SuccessToast />
             </div>
           } />
 
@@ -53,6 +55,7 @@ function App() {
                <AdminDashboard />
             </div>
           }/>
+          <Route path="/student/payments" element={<PaymentForm />} />
 
           {/* About Us page */}
           <Route path="/public/aboutus" element={

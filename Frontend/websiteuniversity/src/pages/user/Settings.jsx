@@ -80,121 +80,137 @@ export default function Settings() {
     }
   }
 
+  const inputClass = "w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Account Settings</h1>
+    <div className="min-h-screen py-12 px-4" style={{backgroundColor:'var(--bg-secondary)'}}>
+      <div className="max-w-2xl mx-auto rounded-xl shadow-sm p-8" style={{backgroundColor:'#f3f4f6'}}>
+        <h1 className="text-2xl font-bold mb-8" style={{color:'var(--text-primary)'}}>Account Settings</h1>
 
         {message && (
-          <div className={`${msgType === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'} border text-sm rounded-md px-3 py-2 mb-6`}>
+          <div className={`border text-sm rounded-md px-3 py-2 mb-6`}
+            style={{
+              color: msgType === 'error' ? 'var(--accent,#dc2626)' : 'var(--accent,#16a34a)',
+              backgroundColor: msgType === 'error' ? 'rgba(220,38,38,0.08)' : 'rgba(22,163,74,0.08)',
+              borderColor: msgType === 'error' ? 'rgba(220,38,38,0.2)' : 'rgba(22,163,74,0.2)',
+            }}>
             {message}
           </div>
         )}
 
-        <form onSubmit={handleSave} className="space-y-5">
+        <form onSubmit={handleSave} className="space-y-5" style={{background:'#f9fafb', padding:'24px', borderRadius:'12px'}}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Email</label>
             <input
               type="email"
               name="email"
               value={form.email}
               readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 text-sm"
+              className={`${inputClass} cursor-not-allowed`}
+              style={{backgroundColor:'var(--bg-secondary)', borderColor:'var(--border)', color:'var(--text-muted)'}}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Username</label>
             <input
               type="text"
               name="username"
               value={form.username}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
+              style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
               placeholder="Enter username"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Phone</label>
             <input
               type="text"
               name="phone"
               value={form.phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
+              style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
               placeholder="Enter phone number"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Address</label>
             <textarea
               name="address"
               value={form.address}
               onChange={handleChange}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
+              style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
               placeholder="Enter address"
             />
           </div>
 
-          <hr className="my-6" />
+          <hr className="my-6" style={{borderColor:'var(--border)'}} />
 
-          <h2 className="text-lg font-semibold text-gray-900">University Email</h2>
-          <p className="text-sm text-gray-600">
+          <h2 className="text-lg font-semibold" style={{color:'var(--text-primary)'}}>University Email</h2>
+          <p className="text-sm" style={{color:'var(--text-secondary)'}}>
             Claim your official <strong>@ciu.std.kh</strong> email address.
           </p>
           <a
             href="/public/claim-email"
-            className="inline-block bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-semibold hover:bg-blue-700 transition"
+            className="inline-block text-white py-2 px-4 rounded-md text-sm font-semibold transition"
+            style={{backgroundColor:'var(--accent,#2563eb)'}}
           >
             Get University Email
           </a>
 
-          <hr className="my-6" />
+          <hr className="my-6" style={{borderColor:'var(--border)'}} />
 
-          <h2 className="text-lg font-semibold text-gray-900">Change Password</h2>
+          <h2 className="text-lg font-semibold" style={{color:'var(--text-primary)'}}>Change Password</h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Current Password</label>
             <input
               type="password"
               name="currentPassword"
               value={form.currentPassword}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
+              style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
               placeholder="Enter current password"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>New Password</label>
             <input
               type="password"
               name="newPassword"
               value={form.newPassword}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
+              style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
               placeholder="Enter new password"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Confirm New Password</label>
             <input
               type="password"
               name="confirmPassword"
               value={form.confirmPassword}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
+              style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
               placeholder="Confirm new password"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-semibold hover:bg-blue-700 transition"
+            className="w-full text-white py-2 px-4 rounded-md text-sm font-semibold transition"
+            style={{backgroundColor:'var(--accent,#2563eb)'}}
           >
             Save Changes
           </button>

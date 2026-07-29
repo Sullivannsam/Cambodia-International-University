@@ -192,7 +192,7 @@ export default function AdminDashboard() {
             getDashboardStats().catch(() => ({ stats: [] })),
             getStudentAttendance().catch(() => []) ,
             getTeacherAttendance().catch(() => []) ,
-            getIncomeData().catch(() => ({ pie: [] })),
+            getIncomeData().catch(() => ({ TotalIncome: 0 })),
             getEarnings().catch(() => []),
             getFeeGroups().catch(() => []),
           ]);
@@ -200,7 +200,8 @@ export default function AdminDashboard() {
         setStats(Array.isArray(statsRes.stats) ? statsRes.stats : []);
         setStudents(Array.isArray(studentsRes) ? studentsRes : []);
         setTeachers(Array.isArray(teachersRes) ? teachersRes : []);
-        setIncomePie(Array.isArray(incomeRes.pie) ? incomeRes.pie : []);
+        const total = typeof incomeRes.TotalIncome === 'number' ? incomeRes.TotalIncome : 0;
+        setIncomePie([{ name: 'Total Income', value: Math.round(total), color: '#3E5EDB' }]);
 
         const monthly = Array.isArray(earningsRes) ? earningsRes : [];
         setEarnings(monthly);
