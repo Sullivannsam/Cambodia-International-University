@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const SlideShow = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const dragStartX = useRef(null);
+    const dragging = useRef(false);
     
     const slides = [
         {
@@ -46,10 +48,41 @@ const SlideShow = () => {
         setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     };
 
+    const handlePointerDown = (e) => {
+        dragging.current = true;
+        dragStartX.current = e.clientX;
+    };
+
+    const handlePointerMove = (e) => {
+        if (!dragging.current) return;
+        e.preventDefault();
+        const delta = e.clientX - dragStartX.current;
+        if (delta < -50) {
+            dragging.current = false;
+            nextSlide();
+        } else if (delta > 50) {
+            dragging.current = false;
+            prevSlide();
+        }
+    };
+
+    const handlePointerUp = () => {
+        dragging.current = false;
+        dragStartX.current = null;
+    };
+
     return (
         /* កែប្រែទំហំមកត្រឹម h-[350px] លើ Mobile និង h-[450px] លើ Desktop ដើម្បីឱ្យសមល្មមមើល (Attractive Size) */
         /* បន្ថែម rounded-t-[2rem] ឱ្យស៊ីគ្នានឹងកាត AboutPage ខាងក្រោម */
-        <div className="relative w-full h-[350px] lg:h-[450px] overflow-hidden bg-slate-100 rounded-t-[2rem] shadow-sm">
+        <div
+            className="relative w-full h-[350px] lg:h-[450px] overflow-hidden bg-slate-100 rounded-t-[2rem] shadow-sm select-none cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'pan-y' }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+        >
             
             {/* Slides */}
             {slides.map((slide, index) => (

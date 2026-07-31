@@ -14,10 +14,35 @@ const Navbar = () => {
         window.addEventListener("resize", closeOnResize);
         return () => window.removeEventListener("resize", closeOnResize);
     }, []);
- 
+
+    useEffect(() => {
+        const closeOnClickOutside = (e) => {
+            if (!e.target.closest(".admin-toggle-wrap")) closeAdminMenu();
+        };
+        document.addEventListener("click", closeOnClickOutside);
+        return () => document.removeEventListener("click", closeOnClickOutside);
+    }, []);
+
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
     const email = localStorage.getItem("email") || (userData ? JSON.parse(userData).email : null);
+    const role = localStorage.getItem("role");
+    const [adminOpen, setAdminOpen] = useState(false);
+    const [adminClosing, setAdminClosing] = useState(false);
+
+    const closeAdminMenu = () => {
+        setAdminOpen(false);
+        setAdminClosing(true);
+        setTimeout(() => setAdminClosing(false), 250);
+    };
+
+    const toggleAdminMenu = () => {
+        if (adminOpen) {
+            closeAdminMenu();
+        } else {
+            setAdminOpen(true);
+        }
+    };
  
     const logout = () => {
         localStorage.removeItem("token");
@@ -72,21 +97,23 @@ const Navbar = () => {
                         </span>
                     </a>
  
-                    {/* Desktop Nav Links */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 32 }}
-                        className="desktop-nav">
-                        {[
-                            { label: "Home", href: "/" },
-                            { label: "Course", href: "/public/course" },
-                            { label: "About Us", href: "/public/aboutus" },
-                            { label: "Contact", href: "/public/contact" },
-                            { label: "Enroll", href: "/public/content/enroll" },
-                        ].map(({ label, href }) => (
-                            <a key={label} href={href} className="nav-link" style={linkStyle}>
-                                {label}
-                            </a>
-                        ))}
-                    </div>
+                    {/* Desktop Nav Links (hidden for logged-in users, they use the hamburger) */}
+                    {!token && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 32 }}
+                            className="desktop-nav">
+                            {[
+                                { label: "Home", href: "/" },
+                                { label: "Course", href: "/public/course" },
+                                { label: "About Us", href: "/public/aboutus" },
+                                { label: "Contact", href: "/public/contact" },
+                                { label: "Enroll", href: "/public/content/enroll" },
+                            ].map(({ label, href }) => (
+                                <a key={label} href={href} className="nav-link" style={linkStyle}>
+                                    {label}
+                                </a>
+                            ))}
+                        </div>
+                    )}
  
                     {/* Search + Buttons */}
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}
@@ -132,6 +159,98 @@ const Navbar = () => {
                                 </svg>
                             )}
                         </button>
+
+                        {/* Account hamburger toggle (for every logged-in user) */}
+                        {token && (
+                            <div style={{ position: "relative" }} className="admin-toggle-wrap">
+                                <button
+                                    onClick={toggleAdminMenu}
+                                    style={{
+                                        background: "#2563eb", color: "white",
+                                        border: "none", cursor: "pointer",
+                                        padding: "8px 12px", borderRadius: 10,
+                                        display: "flex", alignItems: "center", gap: 6,
+                                        fontSize: 13, fontWeight: 600,
+                                        boxShadow: "0 2px 8px rgba(37,99,235,0.3)",
+                                    }}>
+                                    <span className={`burger-box${adminOpen ? " open" : ""}`}>
+                                        <span />
+                                        <span />
+                                        <span />
+                                    </span>
+                                    {role ? role.charAt(0) + role.slice(1).toLowerCase() : "Menu"}
+                                </button>
+                                {(adminOpen || adminClosing) && (
+                                    <div style={{
+                                        position: "absolute", right: 0, top: "calc(100% + 8px)",
+                                        background: "var(--nav-bg)", border: "1px solid var(--border)",
+                                        borderRadius: 12, boxShadow: "0 8px 28px rgba(0,0,0,0.15)",
+                                        minWidth: 220, padding: 8, zIndex: 60,
+                                        animation: adminOpen ? "slideDown 0.25s ease" : "slideUp 0.25s ease forwards",
+                                    }}>
+                                        <a href="/user/settings" onClick={closeAdminMenu} style={{
+                                            display: "flex", alignItems: "center", gap: 10,
+                                            padding: "10px 12px", borderRadius: 8,
+                                            color: "var(--text-primary)", textDecoration: "none",
+                                            fontSize: 14, fontWeight: 600,
+                                        }}>
+                                            <svg style={{ width: 16, height: 16, color: "#2563eb" }} fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Account Setting
+                                        </a>
+                                        {role === "ADMIN" && (
+                                            <a href="/admin/dashboard" onClick={closeAdminMenu} style={{
+                                                display: "flex", alignItems: "center", gap: 10,
+                                                padding: "10px 12px", borderRadius: 8,
+                                                color: "var(--text-primary)", textDecoration: "none",
+                                                fontSize: 14, fontWeight: 600,
+                                            }}>
+                                                <svg style={{ width: 16, height: 16, color: "#2563eb" }} fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                                </svg>
+                                                Admin Dashboard
+                                            </a>
+                                        )}
+                                        <div style={{ margin: "6px 0", borderTop: "1px solid var(--border)" }} />
+                                        {[
+                                            {
+                                                label: "Home", href: "/",
+                                                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />,
+                                            },
+                                            {
+                                                label: "Course", href: "/public/course",
+                                                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />,
+                                            },
+                                            {
+                                                label: "About Us", href: "/public/aboutus",
+                                                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+                                            },
+                                            {
+                                                label: "Contact", href: "/public/contact",
+                                                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />,
+                                            },
+                                            {
+                                                label: "Enroll", href: "/public/content/enroll",
+                                                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />,
+                                            },
+                                        ].map(({ label, href, icon }) => (
+                                            <a key={label} href={href} onClick={closeAdminMenu} style={{
+                                                display: "flex", alignItems: "center", gap: 10,
+                                                padding: "10px 12px", borderRadius: 8,
+                                                color: "var(--text-secondary)", textDecoration: "none",
+                                                fontSize: 14, fontWeight: 500,
+                                            }}>
+                                                <svg style={{ width: 16, height: 16, color: "#2563eb", flexShrink: 0 }} fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+                                                    {icon}
+                                                </svg>
+                                                {label}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Auth Buttons */}
                         {token ? (
@@ -310,6 +429,46 @@ const Navbar = () => {
                     color: #2563eb !important;
                 }
 
+                .admin-toggle-wrap a:hover {
+                    background: var(--hover-bg);
+                    color: #2563eb !important;
+                    transform: translateX(3px);
+                }
+
+                .burger-box {
+                    width: 16px;
+                    height: 16px;
+                    position: relative;
+                    flex-shrink: 0;
+                }
+
+                .burger-box span {
+                    position: absolute;
+                    left: 0;
+                    width: 100%;
+                    height: 2px;
+                    background: white;
+                    border-radius: 2px;
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+                }
+
+                .burger-box span:nth-child(1) { top: 2px; }
+                .burger-box span:nth-child(2) { top: 7px; }
+                .burger-box span:nth-child(3) { top: 12px; }
+
+                .burger-box.open span:nth-child(1) {
+                    transform: translateY(5px) rotate(45deg);
+                }
+
+                .burger-box.open span:nth-child(2) {
+                    opacity: 0;
+                    transform: translateX(8px);
+                }
+
+                .burger-box.open span:nth-child(3) {
+                    transform: translateY(-5px) rotate(-45deg);
+                }
+
                 .mobile-menu {
                     animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
                 }
@@ -327,6 +486,10 @@ const Navbar = () => {
                 @keyframes slideDown {
                     from { opacity: 0; transform: translateY(-12px); }
                     to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes slideUp {
+                    from { opacity: 1; transform: translateY(0); }
+                    to { opacity: 0; transform: translateY(-12px); }
                 }
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateY(10px); }

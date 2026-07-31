@@ -128,6 +128,28 @@ export const verifyEmail = async (data) => {
     return response.json();
 };
 
+// ---------- Account Lists ----------
+export const getStudentAccounts = async () => {
+    const response = await fetch(`${BASE_URL}/api/auth/students`, {
+        headers: authHeaders(),
+    });
+    return response.json();
+};
+
+export const getTeacherAccounts = async () => {
+    const response = await fetch(`${BASE_URL}/api/auth/teacher/list`, {
+        headers: authHeaders(),
+    });
+    return response.json();
+};
+
+export const getAdminAccounts = async () => {
+    const response = await fetch(`${BASE_URL}/api/auth/account/admin`, {
+        headers: authHeaders(),
+    });
+    return response.json();
+};
+
 // ---------- Contact ----------
 export const getContact = async () => {
     const response = await fetch(`${BASE_URL}/api/public`, {

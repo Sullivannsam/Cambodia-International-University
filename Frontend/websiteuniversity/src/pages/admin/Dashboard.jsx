@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import {
   getDashboardStats, getStudentAttendance, getTeacherAttendance,
-  getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers
+  getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers,
+  getStudentAccounts, getTeacherAccounts, getAdminAccounts
 } from "../../services/endpoints";
 
 const NAV = [
@@ -134,6 +135,65 @@ function GroupSection({ title, members }) {
   );
 }
 
+function AccountTable({ title, accounts, query }) {
+  const rows = Array.isArray(accounts) ? accounts : [];
+  const q = (query || "").toString().toLowerCase().trim();
+  const filtered = q
+    ? rows.filter((a) => {
+        const name = (a.username || "").toString().toLowerCase();
+        const id = (a.id === null || a.id === undefined ? "" : a.id.toString().toLowerCase());
+        return name.includes(q) || id.includes(q);
+      })
+    : rows;
+  return (
+    <div className="panel">
+      <div className="panel-title">{title} ({filtered.length})</div>
+      {q && filtered.length === 0 ? (
+        <div style={{
+          background: "#FBE3E0", border: "1px solid #E0665A",
+          color: "#D2483C", borderRadius: 10, padding: "12px 16px",
+          fontSize: 13, fontWeight: 600,
+        }}>
+          account "{query}" doesn't exist in table
+        </div>
+      ) : filtered.length > 0 ? (
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB" }}>
+              <th style={{ padding: "10px 12px" }}>ID</th>
+              <th style={{ padding: "10px 12px" }}>Username</th>
+              <th style={{ padding: "10px 12px" }}>Email</th>
+              <th style={{ padding: "10px 12px" }}>Phone</th>
+              <th style={{ padding: "10px 12px" }}>Role</th>
+              <th style={{ padding: "10px 12px" }}>Status</th>
+              <th style={{ padding: "10px 12px" }}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((a, i) => (
+              <tr key={i} style={{ borderBottom: "1px solid #F0EEE9" }}>
+                <td style={{ padding: "10px 12px", fontWeight: 700, color: "#3E5EDB" }}>{a.id ?? "-"}</td>
+                <td style={{ padding: "10px 12px", fontWeight: 600, color: "#182644" }}>{a.username || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>{a.email || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>{a.phone || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>{a.role || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>
+                  <span style={{ color: a.active === false ? "#D2483C" : "#2E9E6C", fontWeight: 700 }}>
+                    {a.active === false ? "Inactive" : "Active"}
+                  </span>
+                </td>
+                <td style={{ padding: "10px 12px" }}>{a.date || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="date-label">No accounts found.</div>
+      )}
+    </div>
+  );
+}
+
 function Placeholder({ title }) {
   return (
     <div className="placeholder">
@@ -158,6 +218,9 @@ export default function AdminDashboard() {
   const [active, setActive] = useState("overview");
   const [studentQuery, setStudentQuery] = useState("");
   const [teacherQuery, setTeacherQuery] = useState("");
+  const [studentAccQuery, setStudentAccQuery] = useState("");
+  const [teacherAccQuery, setTeacherAccQuery] = useState("");
+  const [adminAccQuery, setAdminAccQuery] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -168,6 +231,9 @@ export default function AdminDashboard() {
   const [earnings, setEarnings] = useState([]);
   const [feeGroups, setFeeGroups] = useState([]);
   const [feeGroupMembers, setFeeGroupMembers] = useState({});
+  const [studentAccounts, setStudentAccounts] = useState([]);
+  const [teacherAccounts, setTeacherAccounts] = useState([]);
+  const [adminAccounts, setAdminAccounts] = useState([]);
 
   const user = useMemo(() => {
     try {
@@ -215,6 +281,15 @@ export default function AdminDashboard() {
           memberMap[g] = Array.isArray(res) ? res : [];
         }
         setFeeGroupMembers(memberMap);
+
+        const [stuAcc, teaAcc, admAcc] = await Promise.all([
+          getStudentAccounts().catch(() => []),
+          getTeacherAccounts().catch(() => []),
+          getAdminAccounts().catch(() => []),
+        ]);
+        setStudentAccounts(Array.isArray(stuAcc) ? stuAcc : []);
+        setTeacherAccounts(Array.isArray(teaAcc) ? teaAcc : []);
+        setAdminAccounts(Array.isArray(admAcc) ? admAcc : []);
       } catch (err) {
         setError("Failed to load dashboard data. Make sure the backend server is running.");
       } finally {
@@ -234,7 +309,7 @@ export default function AdminDashboard() {
   const activeLabel =
     NAV.flatMap((s) => s.items).find((i) => i.key === active)?.label || "Overview";
 
-  if (!localStorage.getItem("token")) {
+  if (localStorage.getItem("role") !== "ADMIN") {
     window.location.href = "/";
     return null;
   }
@@ -242,6 +317,7 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("role");
     window.location.href = "/";
   };
 
@@ -493,7 +569,16 @@ export default function AdminDashboard() {
             <div className="topbar-title">Welcome Admin Dashboard</div>
             <div className="topbar-sub">CIU System Admin</div>
           </div>
-          <button className="logout-btn" onClick={handleLogout}><LogOut size={15} /> Logout</button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              className="logout-btn"
+              style={{ background: "#182644" }}
+              onClick={() => (window.location.href = "/")}
+            >
+              <LayoutGrid size={15} /> Visit Public Page
+            </button>
+            <button className="logout-btn" onClick={handleLogout}><LogOut size={15} /> Logout</button>
+          </div>
         </div>
 
         <div className="content">
@@ -620,7 +705,58 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && !["overview", "income", "student-att", "teacher-att"].includes(active) && (
+          {!loading && active === "student-acc" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+                <div className="search-box">
+                  <Search size={15} />
+                  <input
+                    placeholder="Search student by ID, name, email..."
+                    value={studentAccQuery}
+                    onChange={(e) => setStudentAccQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+              <AccountTable title="Student Accounts" accounts={studentAccounts} query={studentAccQuery} />
+            </>
+          )}
+
+          {!loading && active === "teacher-acc" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+                <div className="search-box">
+                  <Search size={15} />
+                  <input
+                    placeholder="Search teacher by ID, name, email..."
+                    value={teacherAccQuery}
+                    onChange={(e) => setTeacherAccQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+              <AccountTable title="Teacher Accounts" accounts={teacherAccounts} query={teacherAccQuery} />
+            </>
+          )}
+
+          {!loading && active === "admin-acc" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+                <div className="search-box">
+                  <Search size={15} />
+                  <input
+                    placeholder="Search admin by ID, name, email..."
+                    value={adminAccQuery}
+                    onChange={(e) => setAdminAccQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+              <AccountTable title="Admin Accounts" accounts={adminAccounts} query={adminAccQuery} />
+            </>
+          )}
+
+          {!loading && !["overview", "income", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc"].includes(active) && (
             <Placeholder title={activeLabel} />
           )}
         </div>

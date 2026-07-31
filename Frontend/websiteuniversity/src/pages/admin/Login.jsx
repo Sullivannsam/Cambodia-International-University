@@ -32,6 +32,7 @@ export default function Login() {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role || "ADMIN");
         localStorage.setItem("user", JSON.stringify({ email: data.email, username: data.username }));
         window.location.href = "/admin/dashboard";
       } else {
