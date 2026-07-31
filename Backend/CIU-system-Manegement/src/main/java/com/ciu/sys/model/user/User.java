@@ -44,4 +44,10 @@ public class User {
   @Column(nullable = false)
   private String phone;
 
+  @Column(name = "suspended", columnDefinition = "BOOLEAN DEFAULT FALSE")
+  private boolean suspended;
+
+  @Column(name = "suspended_message")
+  private String suspendedMessage;
+
 }

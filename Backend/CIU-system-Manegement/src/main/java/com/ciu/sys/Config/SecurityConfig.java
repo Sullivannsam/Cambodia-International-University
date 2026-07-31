@@ -46,8 +46,13 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/auth/students/login/account").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/students/register/account").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/student/payment-fee").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/verification/register").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/verification/verify").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/verification/resend").permitAll()
 
             // PUT Request
+            .requestMatchers(HttpMethod.PUT, "/api/auth/users/suspend/account/{id}").permitAll()
+            .requestMatchers(HttpMethod.PUT, "/api/auth/users/unsuspend/account/{id}").permitAll()
 
             // DELETE Request
             .anyRequest().authenticated());

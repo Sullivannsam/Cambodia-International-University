@@ -10,6 +10,6 @@ import com.ciu.sys.model.user.Verification;
 @Repository
 public interface VerificationRepository extends JpaRepository<Verification, Long> {
 
-  Optional<Verification> findByEmail(String email);
+  Optional<Verification> findTopByEmailOrderByIdDesc(String email);
 
 }

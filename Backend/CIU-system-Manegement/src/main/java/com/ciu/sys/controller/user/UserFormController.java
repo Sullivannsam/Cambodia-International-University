@@ -37,6 +37,12 @@ public class UserFormController {
 
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
+    User user = userService.findUserByEmail(request.email());
+    if (user != null && user.isSuspended()) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+          "message", user.getSuspendedMessage() != null ? user.getSuspendedMessage()
+              : "Your account has been suspended."));
+    }
     try {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(request.email(), request.password()));

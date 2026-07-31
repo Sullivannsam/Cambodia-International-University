@@ -1,6 +1,7 @@
 package com.ciu.sys.controller.user;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,13 +39,22 @@ public class UserController {
 
   @PutMapping("/update/{id}")
   public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User updateUser) {
-    User findId = userService.updateUserById(updateUser);
-
-    if (findId != null) {
-      return new ResponseEntity<>(findId, HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    return userService.findUserOptional(id)
+        .map(existing -> {
+          if (updateUser.getUsername() != null)
+            existing.setUsername(updateUser.getUsername());
+          if (updateUser.getEmail() != null)
+            existing.setEmail(updateUser.getEmail());
+          if (updateUser.getPhone() != null)
+            existing.setPhone(updateUser.getPhone());
+          if (updateUser.getRole() != null)
+            existing.setRole(updateUser.getRole());
+          if (updateUser.getCourse() != null)
+            existing.setCourse(updateUser.getCourse());
+          existing.setActive(updateUser.isActive());
+          return new ResponseEntity<>(userService.register(existing), HttpStatus.OK);
+        })
+        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
   @DeleteMapping("/delete/{id}")
@@ -60,6 +71,23 @@ public class UserController {
   @GetMapping("/email")
   public User findUserByEmail(@RequestParam String userEmail) {
     return userService.findUserByEmail(userEmail);
+  }
+
+  @PutMapping("/suspend/account/{id}")
+  public ResponseEntity<Map<String, String>> suspendAccount(@PathVariable Long id,
+      @RequestBody Map<String, String> body) {
+
+    return userService.suspended(id, body.get("message"))
+        .map(u -> ResponseEntity.ok(Map.of("message", "User Suspended")))
+        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found")));
+
+  }
+
+  @PutMapping("/unsuspend/account/{id}")
+  public ResponseEntity<Map<String, String>> unSuspendAccount(@PathVariable Long id) {
+    return userService.Unsuspended(id)
+        .map(u -> ResponseEntity.ok(Map.of("message", "User Restore!")))
+        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found")));
   }
 
 }

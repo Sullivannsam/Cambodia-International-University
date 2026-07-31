@@ -1,6 +1,8 @@
 package com.ciu.sys.service.user;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,21 +33,49 @@ public class UserService {
         .orElse(new User());
   }
 
+  public Optional<User> findUserOptional(Long id) {
+    return userRepository.findById(id);
+  }
+
   public List<UserDto> getListUser() {
     return userRepository.findAll()
         .stream()
         .map(user -> new UserDto(
+            user.getId(),
             user.getUsername(),
             user.getEmail(),
             user.getAddress(),
             user.getRole(),
             user.isActive(),
             user.getCreateAt(),
-            user.getPhone()
+            user.getPhone(),
+            user.getCourse(),
+            user.isSuspended(),
+            user.getSuspendedMessage()
 
         ))
         .collect(Collectors.toList());
 
+  }
+
+  public Optional<User> suspended(Long id, String message) {
+    return userRepository.findById(id).map(user -> {
+      user.setSuspended(true);
+      user.setActive(false);
+      user.setSuspendedMessage(message);
+
+      return userRepository.save(user);
+    });
+  }
+
+  public Optional<User> Unsuspended(Long id) {
+    return userRepository.findById(id).map(user -> {
+      user.setSuspended(false);
+      user.setActive(true);
+      user.setSuspendedMessage(null);
+
+      return userRepository.save(user);
+    });
   }
 
   public User updateUserById(User updateUser) {
@@ -69,21 +99,21 @@ public class UserService {
   }
 
   public String generateCode() {
-    return String.valueOf((int) (Math.random() * 900000) + 100000);
+    return String.valueOf((int) ((Math.random() * 900000) + 100000));
   }
 
-  public void sentVerificationEmail(String email, String code) {
+  public void sendVerificationEmail(String email, String code) {
     SimpleMailMessage msg = new SimpleMailMessage();
     msg.setTo(email);
     msg.setSubject("Your Verification Code");
-    msg.setText("Your CIU Verification is" + code + " It Expired in 10 minutes.");
+    msg.setText("Your CIU Verification is " + code + " It Expired in 10 minutes.");
     mailSender.send(msg);
   }
 
-  public void creteVerificationCode(String email, String code) {
+  public void createVerificationCode(String email, String code) {
     Verification v = new Verification();
     v.setEmail(email);
-    v.set(code);
+    v.setCode(code);
     v.setExpiresAt(LocalDateTime.now().plusMinutes(10));
     v.setUsed(false);
 
@@ -91,19 +121,19 @@ public class UserService {
   }
 
   public boolean verifyCode(String email, String code) {
-    return verificationRepo.findByEmail(email)
+    return verificationRepo.findTopByEmailOrderByIdDesc(email)
         .map(v -> !v.isUsed()
             && v.getCode().equals(code)
             && v.getExpiresAt().isAfter(LocalDateTime.now()))
         .orElse(false);
   }
 
-  public void markCodeUsed() {
-    verificationRepo.findByEmail(email)
-        .ifPresent(v -> {
-          v.setUsed(true);
-          verificationRepo.save(v);
-        });
+  public void markCodeUsed(String email) {
+    verificationRepo.findTopByEmailOrderByIdDesc(email).ifPresent(v -> {
+      v.setUsed(true);
+      verificationRepo.save(v);
+    });
+
   }
 
 }
