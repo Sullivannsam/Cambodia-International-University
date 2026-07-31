@@ -44,6 +44,12 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Mail (email verification) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!--  MySQL Database -->
         <dependency>
             <groupId>com.mysql</groupId>
