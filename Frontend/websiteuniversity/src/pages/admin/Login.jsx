@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { adminLogin } from '../../services/endpoints';
+import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/common/Spinner';
 
 export default function Login() {
@@ -7,6 +8,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -34,7 +36,7 @@ export default function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role || "ADMIN");
         localStorage.setItem("user", JSON.stringify({ email: data.email, username: data.username }));
-        window.location.href = "/admin/dashboard";
+        navigate("/admin/dashboard", { state: { loginSuccess: true } });
       } else {
         setError(data.message || 'Invalid email or password.');
       }

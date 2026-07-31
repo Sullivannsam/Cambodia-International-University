@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import Spinner from '../common/Spinner';
  
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
+    const [adminOpen, setAdminOpen] = useState(false);
+    const [adminClosing, setAdminClosing] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     useEffect(() => {
         const closeOnResize = () => {
@@ -21,16 +26,18 @@ const Navbar = () => {
         };
         document.addEventListener("click", closeOnClickOutside);
         return () => document.removeEventListener("click", closeOnClickOutside);
-    }, []);
+    }, [adminOpen]);
 
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
     const email = localStorage.getItem("email") || (userData ? JSON.parse(userData).email : null);
     const role = localStorage.getItem("role");
-    const [adminOpen, setAdminOpen] = useState(false);
-    const [adminClosing, setAdminClosing] = useState(false);
+    const roleLabel = role && role !== "undefined" && role !== "null"
+        ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+        : "User";
 
     const closeAdminMenu = () => {
+        if (!adminOpen) return;
         setAdminOpen(false);
         setAdminClosing(true);
         setTimeout(() => setAdminClosing(false), 250);
@@ -43,12 +50,21 @@ const Navbar = () => {
             setAdminOpen(true);
         }
     };
- 
+
     const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        localStorage.removeItem("email");
-        navigate("/");
+        setShowLogoutConfirm(true);
+    };
+
+    const confirmLogout = () => {
+        setShowLogoutConfirm(false);
+        setLoggingOut(true);
+        setTimeout(() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("email");
+            setLoggingOut(false);
+            navigate("/", { state: { logoutSuccess: true } });
+        }, 2000);
     };
  
     const linkStyle = {
@@ -63,6 +79,7 @@ const Navbar = () => {
     };
  
     return (
+        <>
         <nav style={{
             position: "sticky",
             top: 0,
@@ -178,7 +195,7 @@ const Navbar = () => {
                                         <span />
                                         <span />
                                     </span>
-                                    {role ? role.charAt(0) + role.slice(1).toLowerCase() : "Menu"}
+                                    {roleLabel}
                                 </button>
                                 {(adminOpen || adminClosing) && (
                                     <div style={{
@@ -382,6 +399,62 @@ const Navbar = () => {
                 </div>
             )}
  
+        </nav>
+
+        {/* Logout confirmation modal (outside <nav> so the nav's backdrop-filter can't trap fixed positioning) */}
+        {showLogoutConfirm && (
+                <div style={{
+                    position: "fixed", inset: 0, zIndex: 9998,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "rgba(0,0,0,0.5)",
+                    backdropFilter: "blur(4px)",
+                    animation: "modalFade 0.25s ease",
+                }}>
+                    <div style={{
+                        background: "var(--nav-bg)",
+                        borderRadius: 16,
+                        padding: "28px 32px",
+                        width: "min(90vw, 400px)",
+                        textAlign: "center",
+                        boxShadow: "0 12px 40px rgba(0,0,0,0.2)",
+                        animation: "modalPop 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}>
+                        <div style={{
+                            width: 56, height: 56, margin: "0 auto 16px",
+                            borderRadius: "50%",
+                            background: "#FBE3E0", color: "#ef4444",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </div>
+                        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+                            Are you sure you want to logout?
+                        </h3>
+                        <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
+                            <button onClick={() => setShowLogoutConfirm(false)} style={{
+                                flex: 1, padding: "11px 0", borderRadius: 10,
+                                border: "1.5px solid var(--border)", background: "var(--input-bg)",
+                                color: "var(--text-secondary)", fontSize: 14, fontWeight: 600,
+                                cursor: "pointer",
+                            }}>
+                                Cancel
+                            </button>
+                            <button onClick={confirmLogout} style={{
+                                flex: 1, padding: "11px 0", borderRadius: 10,
+                                border: "none", background: "#ef4444", color: "white",
+                                fontSize: 14, fontWeight: 600, cursor: "pointer",
+                            }}>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {loggingOut && <Spinner text="Logging out..." />}
+
             {/* Responsive styles via <style> tag */}
             <style>{`
                 .nav-link {
@@ -491,6 +564,14 @@ const Navbar = () => {
                     from { opacity: 1; transform: translateY(0); }
                     to { opacity: 0; transform: translateY(-12px); }
                 }
+                @keyframes modalFade {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes modalPop {
+                    from { opacity: 0; transform: scale(0.9); }
+                    to { opacity: 1; transform: scale(1); }
+                }
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
@@ -502,7 +583,7 @@ const Navbar = () => {
                     .mobile-menu-btn { display: flex !important; }
                 }
             `}</style>
-        </nav>
+        </>
     );
 };
  

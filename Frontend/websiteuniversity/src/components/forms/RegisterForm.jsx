@@ -30,7 +30,7 @@ export default function Register() {
       if (data.token) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("email", data.email);
-        localStorage.setItem("role", data.role);
+        localStorage.setItem("role", data.role || "USER");
         window.location.href = "/";
       } else {
         setRegisteredEmail(form.email);

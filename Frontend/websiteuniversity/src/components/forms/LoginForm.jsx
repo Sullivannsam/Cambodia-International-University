@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { loginUser } from '../../services/endpoints.js';
+import { useNavigate } from 'react-router-dom';
 import Spinner from '../common/Spinner';
 
 export default function Register() {
@@ -7,6 +8,7 @@ export default function Register() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -22,8 +24,8 @@ export default function Register() {
       if (data.token) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("email", data.email);
-        localStorage.setItem("role", data.role);
-        window.location.href = "/";
+        localStorage.setItem("role", data.role || "USER");
+        navigate("/", { state: { loginSuccess: true } });
       } else {
         setError(data.message || "Registration failed");
       }

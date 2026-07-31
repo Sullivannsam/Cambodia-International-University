@@ -53,6 +53,7 @@ function App() {
           <Route path = "/admin/dashboard" element = {
             <div>
                <AdminDashboard />
+               <SuccessToast />
             </div>
           }/>
           <Route path="/student/payments" element={<PaymentForm />} />

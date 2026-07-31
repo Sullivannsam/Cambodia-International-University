@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { studentLogin } from '../../services/endpoints';
 import Spinner from '../../components/common/Spinner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function StudentLogin() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -23,7 +24,7 @@ export default function StudentLogin() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', data.email);
         localStorage.setItem('role', data.role || 'STUDENT');
-        window.location.href = '/';
+        navigate('/', { state: { loginSuccess: true } });
       } else {
         setError(data.message || 'Invalid credentials');
       }

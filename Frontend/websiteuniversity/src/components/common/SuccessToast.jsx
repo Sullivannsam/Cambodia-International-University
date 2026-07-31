@@ -4,15 +4,32 @@ import { useLocation } from 'react-router-dom';
 export default function SuccessToast() {
   const location = useLocation();
   const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (location.state?.paymentSuccess) {
+    const state = location.state || {};
+    if (state.loginSuccess) {
+      setMessage("Logged in successfully!");
       setVisible(true);
       window.history.replaceState({}, document.title);
       const timer = setTimeout(() => setVisible(false), 4000);
       return () => clearTimeout(timer);
     }
-  }, [location.state?.paymentSuccess]);
+    if (state.paymentSuccess) {
+      setMessage("Payment submitted successfully!");
+      setVisible(true);
+      window.history.replaceState({}, document.title);
+      const timer = setTimeout(() => setVisible(false), 4000);
+      return () => clearTimeout(timer);
+    }
+    if (state.logoutSuccess) {
+      setMessage("Logged out successfully!");
+      setVisible(true);
+      window.history.replaceState({}, document.title);
+      const timer = setTimeout(() => setVisible(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state?.loginSuccess, location.state?.paymentSuccess, location.state?.logoutSuccess]);
 
   if (!visible) return null;
 
@@ -28,7 +45,7 @@ export default function SuccessToast() {
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
         <polyline points="22 4 12 14.01 9 11.01" />
       </svg>
-      Payment submitted successfully!
+      {message}
     </div>
   );
 }

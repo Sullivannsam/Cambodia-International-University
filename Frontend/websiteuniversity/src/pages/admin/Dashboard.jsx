@@ -13,6 +13,7 @@ import {
   getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers,
   getStudentAccounts, getTeacherAccounts, getAdminAccounts
 } from "../../services/endpoints";
+import LogoutModal from "../../components/common/LogoutModal";
 
 const NAV = [
   {
@@ -314,13 +315,6 @@ export default function AdminDashboard() {
     return null;
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
-    window.location.href = "/";
-  };
-
   return (
     <div className="app">
       <style>{`
@@ -577,7 +571,7 @@ export default function AdminDashboard() {
             >
               <LayoutGrid size={15} /> Visit Public Page
             </button>
-            <button className="logout-btn" onClick={handleLogout}><LogOut size={15} /> Logout</button>
+            <LogoutModal className="logout-btn" style={{ background: "#ef4444" }}><LogOut size={15} /> Logout</LogoutModal>
           </div>
         </div>
 
