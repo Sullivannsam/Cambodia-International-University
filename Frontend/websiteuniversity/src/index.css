@@ -11,6 +11,10 @@
   --footer-bg: #ffffff;
   --input-bg: #ffffff;
   --hover-bg: #f3f4f6;
+  --public-page-bg: #e8ecf5;
+  --public-hero-bg: linear-gradient(120deg,#e8ecf5 0%,#d4dce8 60%,#c8d5e8 100%);
+  --public-section-bg: linear-gradient(180deg,#dce3ef 0%,#e8f0e8 100%);
+  --public-hero-text: #1e293b;
 }
 
 .dark {
@@ -26,6 +30,10 @@
   --footer-bg: #0f172a;
   --input-bg: #1e293b;
   --hover-bg: #334155;
+  --public-page-bg: #0f172a;
+  --public-hero-bg: linear-gradient(120deg,#111c33 0%,#16213e 60%,#1b2a4a 100%);
+  --public-section-bg: linear-gradient(180deg,#0f172a 0%,#111d2f 60%,#0d1b2a 100%);
+  --public-hero-text: #e2e8f0;
 }
 
 body {
@@ -57,4 +65,12 @@ input:focus, select:focus, textarea:focus {
   min-height: 100vh; 
   background-color: var(--bg-secondary); 
 } 
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 

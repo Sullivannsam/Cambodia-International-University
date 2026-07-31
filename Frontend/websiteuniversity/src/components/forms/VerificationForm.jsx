@@ -1,11 +1,15 @@
 import { useState, useRef } from 'react';
 import Spinner from '../common/Spinner';
-import { verifyEmail } from '../../services/endpoints';
+import { verifyEmail, resendCode } from '../../services/endpoints';
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function VerificationForm({ email, onVerified }) {
+  const { t } = useLanguage();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const inputs = useRef([]);
 
   const handleChange = (index, value) => {
@@ -29,7 +33,7 @@ export default function VerificationForm({ email, onVerified }) {
     setError('');
     const fullCode = code.join('');
     if (fullCode.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError(t('Please enter all 6 digits'));
       return;
     }
     setLoading(true);
@@ -38,15 +42,29 @@ export default function VerificationForm({ email, onVerified }) {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', data.email);
-        localStorage.setItem('role', data.role);
+        localStorage.setItem('role', data.role || "USER");
         onVerified();
       } else {
-        setError(data.message || 'Invalid code');
+        setError(data.message || t('Invalid code'));
       }
     } catch {
-      setError('Server error, please try again');
+      setError(t('Server error, please try again'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError('');
+    setResendMessage('');
+    setResending(true);
+    try {
+      const data = await resendCode({ email });
+      setResendMessage(data.message || t('New code sent'));
+    } catch {
+      setError(t('Server error, please try again'));
+    } finally {
+      setResending(false);
     }
   };
 
@@ -59,9 +77,9 @@ export default function VerificationForm({ email, onVerified }) {
           </svg>
         </div>
 
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Verify your email</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{t("Verify your email")}</h2>
         <p className="text-sm text-gray-500 mb-6">
-          We sent a 6-digit code to<br />
+          {t("We sent a 6-digit code to")}<br />
           <span className="font-medium text-gray-700">{email}</span>
         </p>
 
@@ -86,18 +104,20 @@ export default function VerificationForm({ email, onVerified }) {
 
           <button type="submit" disabled={loading}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed">
-            Verify email
+            {t("Verify email")}
           </button>
         </form>
 
         <p className="text-xs text-gray-400 mt-4">
-          Didn't receive the code?{' '}
-          <button className="text-blue-600 hover:text-blue-700 font-medium bg-transparent border-none cursor-pointer">
-            Resend
+          {t("Didn't receive the code?")}{' '}
+          <button type="button" disabled={resending} onClick={handleResend}
+            className="text-blue-600 hover:text-blue-700 font-medium bg-transparent border-none cursor-pointer disabled:opacity-50">
+            {resending ? t('Sending...') : t('Resend')}
           </button>
         </p>
+        {resendMessage && <p className="text-green-600 text-xs text-center mt-2">{resendMessage}</p>}
 
-        {loading && <Spinner text="Verifying..." />}
+        {loading && <Spinner text={t("Verifying...")} />}
       </div>
     </div>
   );

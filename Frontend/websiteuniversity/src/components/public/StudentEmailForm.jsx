@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const departments = [
   "Computer Science",
@@ -14,6 +15,7 @@ const departments = [
 ];
 
 const StudentEmailForm = () => {
+  const { t } = useLanguage();
   const token = localStorage.getItem("token");
   const userEmail = localStorage.getItem("email") || "";
 
@@ -36,9 +38,9 @@ const StudentEmailForm = () => {
 
   const validate = () => {
     const errs = {};
-    if (!form.studentId.trim()) errs.studentId = "Student ID is required";
-    if (!form.department) errs.department = "Select your department";
-    if (!form.year) errs.year = "Select your year";
+    if (!form.studentId.trim()) errs.studentId = t("Student ID is required");
+    if (!form.department) errs.department = t("Select your department");
+    if (!form.year) errs.year = t("Select your year");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -71,10 +73,10 @@ const StudentEmailForm = () => {
         setEmail(data.email);
         setStep(2);
       } else {
-        setMsg({ type: "error", text: data.message || "No student record found." });
+        setMsg({ type: "error", text: data.message || t("No student record found.") });
       }
     } catch {
-      setMsg({ type: "error", text: "Backend not reachable. Make sure the server is running." });
+      setMsg({ type: "error", text: t("Backend not reachable. Make sure the server is running.") });
     } finally {
       setLoading(false);
     }
@@ -87,8 +89,8 @@ const StudentEmailForm = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--bg-secondary)" }}>
         <div className="rounded-2xl shadow-lg p-8 w-full max-w-md text-center" style={{backgroundColor:'var(--bg-card)'}}>
-          <p style={{color:'var(--text-primary)'}} className="font-medium">Please log in first to claim your student email.</p>
-          <a href="/public/login" className="inline-block mt-4 px-6 py-2 text-white rounded-xl text-sm font-semibold transition" style={{backgroundColor:'var(--accent,#2563eb)'}}>Go to Login</a>
+          <p style={{color:'var(--text-primary)'}} className="font-medium">{t("Please log in first to claim your student email.")}</p>
+          <a href="/public/login" className="inline-block mt-4 px-6 py-2 text-white rounded-xl text-sm font-semibold transition" style={{backgroundColor:'var(--accent,#2563eb)'}}>{t("Go to Login")}</a>
         </div>
       </div>
     );
@@ -103,26 +105,26 @@ const StudentEmailForm = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{color:'var(--text-primary)'}}>Email Generated!</h2>
+          <h2 className="text-xl font-bold mb-2" style={{color:'var(--text-primary)'}}>{t("Email Generated!")}</h2>
           <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>
-            Your student email has been created successfully.
+            {t("Your student email has been created successfully.")}
           </p>
           <div className="border rounded-xl p-4 mb-6" style={{backgroundColor:'var(--bg-secondary)', borderColor:'var(--border)'}}>
-            <p className="text-xs font-medium mb-1" style={{color:'var(--accent,#2563eb)'}}>Your student email:</p>
+            <p className="text-xs font-medium mb-1" style={{color:'var(--accent,#2563eb)'}}>{t("Your student email:")}</p>
             <p className="text-lg font-bold" style={{color:'var(--text-primary)'}}>{email}</p>
           </div>
           <div className="rounded-xl p-4 mb-6 text-left text-sm space-y-1" style={{backgroundColor:'var(--bg-secondary)'}}>
-            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>Account Email:</span> {userEmail}</p>
-            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>Student ID:</span> {form.studentId}</p>
-            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>Department:</span> {form.department}</p>
-            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>Year:</span> {form.year}</p>
+            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>{t("Account Email:")}</span> {userEmail}</p>
+            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>{t("Student ID:")}</span> {form.studentId}</p>
+            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>{t("Department:")}</span> {form.department}</p>
+            <p style={{color:'var(--text-secondary)'}}><span className="font-medium" style={{color:'var(--text-primary)'}}>{t("Year:")}</span> {form.year}</p>
           </div>
           <button
             onClick={() => { setStep(1); setEmail(""); setMsg({ type: "", text: "" }); }}
             className="w-full py-3 text-white font-semibold rounded-xl transition"
             style={{backgroundColor:'var(--accent,#2563eb)'}}
           >
-            Claim Another
+            {t("Claim Another")}
           </button>
         </div>
       </div>
@@ -138,18 +140,18 @@ const StudentEmailForm = () => {
               <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold" style={{color:'var(--text-primary)'}}>Claim Your Student Email</h2>
-          <p className="text-sm mt-1" style={{color:'var(--text-secondary)'}}>Verify your student identity to get a <strong>@ciu.std.kh</strong> email</p>
+          <h2 className="text-xl font-bold" style={{color:'var(--text-primary)'}}>{t("Claim Your Student Email")}</h2>
+          <p className="text-sm mt-1" style={{color:'var(--text-secondary)'}}>{t("Verify your student identity to get a")} <strong>@ciu.std.kh</strong> {t("email")}</p>
         </div>
 
         <div className="rounded-xl p-4 mb-5 space-y-2 text-sm" style={{backgroundColor:'var(--bg-secondary)'}}>
-          <div className="flex justify-between"><span style={{color:'var(--text-muted)'}}>Account Email</span><span className="font-medium" style={{color:'var(--text-primary)'}}>{userEmail}</span></div>
+          <div className="flex justify-between"><span style={{color:'var(--text-muted)'}}>{t("Account Email")}</span><span className="font-medium" style={{color:'var(--text-primary)'}}>{userEmail}</span></div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>Student ID</label>
-            <input name="studentId" value={form.studentId} onChange={handleChange} placeholder="e.g. CS-2024-001"
+            <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>{t("Student ID")}</label>
+            <input name="studentId" value={form.studentId} onChange={handleChange} placeholder={t("e.g. CS-2024-001")}
               className={inputClass("studentId")}
               style={{backgroundColor:'var(--input-bg)', borderColor: errors.studentId ? '#f87171' : 'var(--border)', color:'var(--text-primary)'}} />
             {errors.studentId && <p className="text-xs mt-1" style={{color:'var(--accent,#ef4444)'}}>{errors.studentId}</p>}
@@ -157,22 +159,22 @@ const StudentEmailForm = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>Department</label>
+              <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>{t("Department")}</label>
               <select name="department" value={form.department} onChange={handleChange}
                 className={inputClass("department")}
                 style={{backgroundColor:'var(--input-bg)', borderColor: errors.department ? '#f87171' : 'var(--border)', color:'var(--text-primary)'}}>
-                <option value="">Select...</option>
-                {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+                <option value="">{t("Select...")}</option>
+                {departments.map((d) => <option key={d} value={d}>{t(d)}</option>)}
               </select>
               {errors.department && <p className="text-xs mt-1" style={{color:'var(--accent,#ef4444)'}}>{errors.department}</p>}
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>Year</label>
+              <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>{t("Year")}</label>
               <select name="year" value={form.year} onChange={handleChange}
                 className={inputClass("year")}
                 style={{backgroundColor:'var(--input-bg)', borderColor: errors.year ? '#f87171' : 'var(--border)', color:'var(--text-primary)'}}>
-                <option value="">Select...</option>
-                {[1, 2, 3, 4, 5].map((y) => <option key={y} value={`Year ${y}`}>Year {y}</option>)}
+                <option value="">{t("Select...")}</option>
+                {[1, 2, 3, 4, 5].map((y) => <option key={y} value={`Year ${y}`}>{t(`Year ${y}`)}</option>)}
               </select>
               {errors.year && <p className="text-xs mt-1" style={{color:'var(--accent,#ef4444)'}}>{errors.year}</p>}
             </div>
@@ -195,11 +197,11 @@ const StudentEmailForm = () => {
             className="w-full py-3 text-white font-semibold rounded-xl transition mt-2 disabled:opacity-60"
             style={{backgroundColor:'var(--accent,#2563eb)'}}
           >
-            {loading ? "Verifying..." : "Claim Email"}
+            {loading ? t("Verifying...") : t("Claim Email")}
           </button>
 
           <p className="text-xs text-center mt-3" style={{color:'var(--text-muted)'}}>
-            Your email will be: <strong style={{color:'var(--text-secondary)'}}>firstname.lastname@ciu.std.kh</strong>
+            {t("Your email will be:")} <strong style={{color:'var(--text-secondary)'}}>firstname.lastname@ciu.std.kh</strong>
           </p>
         </div>
       </div>

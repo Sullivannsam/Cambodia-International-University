@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
 
@@ -11,6 +12,7 @@ const nationalities = ["Cambodian", "Vietnamese", "Chinese", "Korean", "American
 const steps = ["Application", "Confirmation", "Success"];
 
 export default function Enrollment() {
+  const { t } = useLanguage();
   const [page, setPage] = useState("form");
   const [errors, setErrors] = useState({});
   const [form, setForm] = useState({
@@ -28,9 +30,9 @@ export default function Enrollment() {
   const validate = () => {
     const required = ["firstNameEN","lastNameEN","age","birthDate","placeOfBirth","sex","nationality","phone","email","startDate","major","year","degree"];
     const errs = {};
-    required.forEach(k => { if (!form[k]) errs[k] = "Required"; });
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Invalid email";
-    if (form.age && (isNaN(form.age) || +form.age < 15 || +form.age > 60)) errs.age = "Must be 15–60";
+    required.forEach(k => { if (!form[k]) errs[k] = t("Required"); });
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t("Invalid email");
+    if (form.age && (isNaN(form.age) || +form.age < 15 || +form.age > 60)) errs.age = t("Must be 15–60");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -62,10 +64,10 @@ export default function Enrollment() {
       if (res.ok) {
         setPage("success");
       } else {
-        alert("Submission failed. Please try again.");
+        alert(t("Submission failed. Please try again."));
       }
     } catch {
-      alert("Server not reachable. Make sure the backend is running.");
+      alert(t("Server not reachable. Make sure the backend is running."));
     }
   };
 
@@ -101,10 +103,10 @@ export default function Enrollment() {
 
       <div style={{ background: "linear-gradient(90deg,#2563eb,#3b82f6)", padding: "32px 40px", textAlign: "center" }}>
         <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontWeight: 700, color: "white", marginBottom: 6 }}>
-          Application for Enroll Class
+          {t("Application for Enroll Class")}
         </h1>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.6 }}>
-          After you submit the application you will receive an email from our University within 24 hours.
+          {t("After you submit the application you will receive an email from our University within 24 hours.")}
         </p>
 
         <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
@@ -119,7 +121,7 @@ export default function Enrollment() {
                     <div className="step-dot" style={{ background: active ? "white" : done ? "#22c55e" : "rgba(255,255,255,0.2)", color: active ? "#3b82f6" : done ? "white" : "rgba(255,255,255,0.5)" }}>
                       {done ? "✓" : i + 1}
                     </div>
-                    <span style={{ color: active ? "white" : done ? "#bbf7d0" : "rgba(255,255,255,0.5)", fontSize: 13 }}>{s}</span>
+                    <span style={{ color: active ? "white" : done ? "#bbf7d0" : "rgba(255,255,255,0.5)", fontSize: 13 }}>{t(s)}</span>
                   </div>
                   {i < steps.length - 1 && <div className="step-line" style={{ background: done ? "#22c55e" : "rgba(255,255,255,0.2)" }} />}
                 </div>
@@ -134,20 +136,20 @@ export default function Enrollment() {
 
           <div style={{ background: "var(--bg-secondary)", padding: "20px 32px", borderBottom: "1px solid var(--border)" }}>
             <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-              <strong style={{ color: "var(--text-primary)" }}>Cambodia International University</strong> — Official Enrollment Application Form.
-              Please fill in all required fields marked with <span style={{ color: "#ef4444" }}>*</span>.
+              <strong style={{ color: "var(--text-primary)" }}>{t("Cambodia International University")}</strong> {t("— Official Enrollment Application Form.")}
+              {t("Please fill in all required fields marked with")} <span style={{ color: "#ef4444" }}>*</span>.
             </p>
           </div>
 
           {page === "form" && (
             <div style={{ padding: "32px", background: "#f9fafb" }}>
-              <div className="section-header">Student Information</div>
+              <div className="section-header">{t("Student Information")}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
                 {[
-                  { label: "First Name (EN) *", field: "firstNameEN", placeholder: "e.g. Sophea" },
-                  { label: "Last Name (EN) *", field: "lastNameEN", placeholder: "e.g. Chan" },
-                  { label: "First Name (KH)", field: "firstNameKH", placeholder: "ឈ្មោះ" },
-                  { label: "Last Name (KH)", field: "lastNameKH", placeholder: "នាមត្រកូល" },
+                  { label: t("First Name (EN) *"), field: "firstNameEN", placeholder: t("e.g. Sophea") },
+                  { label: t("Last Name (EN) *"), field: "lastNameEN", placeholder: t("e.g. Chan") },
+                  { label: t("First Name (KH)"), field: "firstNameKH", placeholder: "ឈ្មោះ" },
+                  { label: t("Last Name (KH)"), field: "lastNameKH", placeholder: "នាមត្រកូល" },
                 ].map(({ label, field, placeholder }) => (
                   <div key={field}>
                     <div className="field-label">{label}</div>
@@ -160,30 +162,30 @@ export default function Enrollment() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div>
-                  <div className="field-label">Age *</div>
-                  <input placeholder="e.g. 20" type="number" min="15" max="60" value={form.age} onChange={e => update("age", e.target.value)}
+                  <div className="field-label">{t("Age *")}</div>
+                  <input placeholder={t("e.g. 20")} type="number" min="15" max="60" value={form.age} onChange={e => update("age", e.target.value)}
                     style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("age"), color: "var(--text-primary)" }} />
                   {errors.age && <div className="error-msg">{errors.age}</div>}
                 </div>
                 <div>
-                  <div className="field-label">Date of Birth *</div>
+                  <div className="field-label">{t("Date of Birth *")}</div>
                   <input type="date" value={form.birthDate} onChange={e => update("birthDate", e.target.value)}
                     style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("birthDate"), color: form.birthDate ? "var(--text-primary)" : "var(--text-muted)" }} />
                   {errors.birthDate && <div className="error-msg">{errors.birthDate}</div>}
                 </div>
                 <div>
-                  <div className="field-label">Place of Birth *</div>
-                  <input placeholder="City / Province" value={form.placeOfBirth} onChange={e => update("placeOfBirth", e.target.value)}
+                  <div className="field-label">{t("Place of Birth *")}</div>
+                  <input placeholder={t("City / Province")} value={form.placeOfBirth} onChange={e => update("placeOfBirth", e.target.value)}
                     style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("placeOfBirth"), color: "var(--text-primary)" }} />
                   {errors.placeOfBirth && <div className="error-msg">{errors.placeOfBirth}</div>}
                 </div>
                 <div>
-                  <div className="field-label">Sex *</div>
+                  <div className="field-label">{t("Sex *")}</div>
                   <div className="radio-group" style={{ marginTop: 10 }}>
                     {["Male","Female"].map(s => (
                       <label key={s} className="radio-item" style={{color:'var(--text-secondary)'}}>
                         <input type="radio" name="sex" value={s} checked={form.sex === s} onChange={() => update("sex", s)} />
-                        {s}
+                        {t(s)}
                       </label>
                     ))}
                   </div>
@@ -193,42 +195,42 @@ export default function Enrollment() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 36 }}>
                 <div>
-                  <div className="field-label">Nationality *</div>
+                  <div className="field-label">{t("Nationality *")}</div>
                   <select value={form.nationality} onChange={e => update("nationality", e.target.value)}
                     style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("nationality"), color: "var(--text-primary)", cursor: "pointer" }}>
-                    <option value="">Select nationality</option>
-                    {nationalities.map(n => <option key={n}>{n}</option>)}
+                    <option value="">{t("Select nationality")}</option>
+                    {nationalities.map(n => <option key={n} value={n}>{t(n)}</option>)}
                   </select>
                   {errors.nationality && <div className="error-msg">{errors.nationality}</div>}
                 </div>
                 <div>
-                  <div className="field-label">Phone Number *</div>
+                  <div className="field-label">{t("Phone Number *")}</div>
                   <input placeholder="+855 ..." value={form.phone} onChange={e => update("phone", e.target.value)}
                     style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("phone"), color: "var(--text-primary)" }} />
                   {errors.phone && <div className="error-msg">{errors.phone}</div>}
                 </div>
                 <div>
-                  <div className="field-label">Email Address *</div>
+                  <div className="field-label">{t("Email Address *")}</div>
                   <input placeholder="you@example.com" type="email" value={form.email} onChange={e => update("email", e.target.value)}
                     style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("email"), color: "var(--text-primary)" }} />
                   {errors.email && <div className="error-msg">{errors.email}</div>}
                 </div>
               </div>
 
-              <div className="section-header">Class Information</div>
+              <div className="section-header">{t("Class Information")}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16 }}>
                 {[
-                  { label: "Start Date *", field: "startDate", options: startDates, placeholder: "Select start date" },
-                  { label: "Major *", field: "major", options: majors, placeholder: "Select major" },
-                  { label: "Year *", field: "year", options: years, placeholder: "Select year" },
-                  { label: "Degree *", field: "degree", options: degrees, placeholder: "Select degree" },
+                  { label: t("Start Date *"), field: "startDate", options: startDates, placeholder: t("Select start date") },
+                  { label: t("Major *"), field: "major", options: majors, placeholder: t("Select major") },
+                  { label: t("Year *"), field: "year", options: years, placeholder: t("Select year") },
+                  { label: t("Degree *"), field: "degree", options: degrees, placeholder: t("Select degree") },
                 ].map(({ label, field, options, placeholder }) => (
                   <div key={field}>
                     <div className="field-label">{label}</div>
                     <select value={form[field]} onChange={e => update(field, e.target.value)}
                       style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder(field), cursor: "pointer", color: form[field] ? "var(--text-primary)" : "var(--text-muted)" }}>
                       <option value="">{placeholder}</option>
-                      {options.map(o => <option key={o} style={{ color: "#1e293b" }}>{o}</option>)}
+                      {options.map(o => <option key={o} value={o} style={{ color: "#1e293b" }}>{t(o)}</option>)}
                     </select>
                     {errors[field] && <div className="error-msg">{errors[field]}</div>}
                   </div>
@@ -238,11 +240,11 @@ export default function Enrollment() {
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 40, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
                 <button onClick={() => setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"" })}
                   style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
-                  Cancel
+                  {t("Cancel")}
                 </button>
                 <button onClick={handleConfirm}
                   style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.4)", transition: "all 0.2s" }}>
-                  Confirm & Submit →
+                  {t("Confirm & Submit →")}
                 </button>
               </div>
             </div>
@@ -251,17 +253,17 @@ export default function Enrollment() {
           {page === "success" && (
             <div style={{ padding: "60px 32px", textAlign: "center" }}>
               <div style={{ width: 72, height: 72, background: "linear-gradient(135deg,#22c55e,#16a34a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 32, boxShadow: "0 8px 25px rgba(34,197,94,0.35)" }}>✓</div>
-              <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: "var(--text-primary)", marginBottom: 12 }}>Submit Successful</h2>
+              <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: "var(--text-primary)", marginBottom: 12 }}>{t("Submit Successful")}</h2>
               <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 16px" }}>
-                Your application has been submitted successfully.<br />
-                You will receive our confirmation email within <strong>24 hours</strong>.
+                {t("Your application has been submitted successfully.")}<br />
+                {t("You will receive our confirmation email within")} <strong>24 hours</strong>.
               </p>
               <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 12, padding: "14px 24px", display: "inline-block", marginBottom: 36 }}>
-                <span style={{ fontSize: 13, color: "var(--accent,#15803d)", fontWeight: 600 }}>📧 Confirmation sent to: {form.email || "your email"}</span>
+                <span style={{ fontSize: 13, color: "var(--accent,#15803d)", fontWeight: 600 }}>📧 {t("Confirmation sent to:")} {form.email || t("your email")}</span>
               </div>
 
               <div style={{ background: "var(--bg-secondary)", borderRadius: 16, padding: "24px 28px", textAlign: "left", maxWidth: 500, margin: "0 auto 36px" }}>
-                <div className="section-header" style={{ marginBottom: 12 }}>Application Summary</div>
+                <div className="section-header" style={{ marginBottom: 12 }}>{t("Application Summary")}</div>
                 {[
                   ["Name", `${form.firstNameEN} ${form.lastNameEN}`],
                   ["Major", form.major],
@@ -270,7 +272,7 @@ export default function Enrollment() {
                   ["Year", form.year],
                 ].map(([k, v]) => (
                   <div className="confirm-row" key={k}>
-                    <span className="confirm-key">{k}</span>
+                    <span className="confirm-key">{t(k)}</span>
                     <span className="confirm-val">{v}</span>
                   </div>
                 ))}
@@ -278,14 +280,14 @@ export default function Enrollment() {
 
               <button onClick={() => { setPage("form"); setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"" }); }}
                 style={{ padding: "14px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.35)" }}>
-                ← Back to Home
+                {t("← Back to Home")}
               </button>
             </div>
           )}
         </div>
 
         <p style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "var(--text-muted)" }}>
-          This information provided by Cambodia International University 🇰🇭
+          {t("This information provided by Cambodia International University")} 🇰🇭
         </p>
       </div>
     </div>

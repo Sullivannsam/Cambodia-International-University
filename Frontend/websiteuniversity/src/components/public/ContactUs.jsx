@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { sendContact } from '../../services/endpoints';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ContactUs = () => {
+  const { t } = useLanguage();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +32,7 @@ const ContactUs = () => {
       });
       setIsSubmitted(true);
     } catch {
-      setError('Failed to send message. Please try again.');
+      setError(t('Failed to send message. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -52,13 +54,13 @@ const ContactUs = () => {
         <div className="rounded-2xl shadow-xl p-10 w-full flex flex-col relative" style={{backgroundColor:'var(--bg-card)'}}>
 
           <div className="w-full mb-4 text-left">
-            <p className="text-sm font-medium leading-tight" style={{color:'var(--text-secondary)'}}>All of responsibility is provide by us</p>
-            <p className="text-xs" style={{color:'var(--text-muted)'}}>contact us for more information about our University.</p>
+            <p className="text-sm font-medium leading-tight" style={{color:'var(--text-secondary)'}}>{t('All of responsibility is provide by us')}</p>
+            <p className="text-xs" style={{color:'var(--text-muted)'}}>{t('contact us for more information about our University.')}</p>
           </div>
 
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold inline-block pb-1 pr-6 tracking-wide border-b-2" style={{color:'var(--text-primary)', borderColor:'var(--text-primary)'}}>
-              Contact us
+              {t('Contact us')}
             </h1>
           </div>
 
@@ -68,28 +70,28 @@ const ContactUs = () => {
               <div className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>Tell us your username*</label>
+                    <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>{t('Tell us your username*')}</label>
                     <input
                       type="text"
                       name="username"
                       required
                       value={formData.username}
                       onChange={handleChange}
-                      placeholder="Please enter your username"
+                      placeholder={t('Please enter your username')}
                       className="w-full border rounded px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition"
                       style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>Tell us your Phone number*</label>
+                    <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>{t('Tell us your Phone number*')}</label>
                     <input
                       type="tel"
                       name="phone"
                       required
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="Please enter your phone number"
+                      placeholder={t('Please enter your phone number')}
                       className="w-full border rounded px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition"
                       style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
                     />
@@ -98,14 +100,14 @@ const ContactUs = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>Tell us your email*</label>
+                    <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>{t('Tell us your email*')}</label>
                     <input
                       type="email"
                       name="email"
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="Please enter your email"
+                      placeholder={t('Please enter your email')}
                       className="w-full border rounded px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition"
                       style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
                     />
@@ -113,14 +115,14 @@ const ContactUs = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>Tell us about your message*</label>
+                  <label className="text-sm font-semibold block" style={{color:'var(--text-primary)'}}>{t('Tell us about your message*')}</label>
                   <textarea
                     name="message"
                     required
                     rows="12"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Your message here..."
+                    placeholder={t('Your message here...')}
                     className="w-full border rounded px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition resize-none"
                     style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
                   ></textarea>
@@ -134,14 +136,14 @@ const ContactUs = () => {
                   className="font-semibold text-sm px-8 py-2.5 rounded transition shadow-sm"
                   style={{backgroundColor:'var(--hover-bg)', color:'var(--text-primary)'}}
                 >
-                  Cancel
+                  {t('Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold text-sm px-8 py-2.5 rounded transition shadow-sm disabled:opacity-50"
                 >
-                  {loading ? 'Sending...' : 'Confirm'}
+                  {loading ? t('Sending...') : t('Confirm')}
                 </button>
               </div>
             </form>
@@ -155,13 +157,13 @@ const ContactUs = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-2" style={{color:'var(--text-primary)'}}>Error</h3>
+                <h3 className="text-xl font-bold mb-2" style={{color:'var(--text-primary)'}}>{t('Error')}</h3>
                 <p className="text-base mb-6" style={{color:'var(--text-secondary)'}}>{error}</p>
                 <button
                   onClick={() => setError('')}
                   className="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl text-base transition"
                 >
-                  Close
+                  {t('Close')}
                 </button>
               </div>
             </div>
@@ -171,7 +173,7 @@ const ContactUs = () => {
             <div className="flex flex-col items-center justify-center flex-grow text-center space-y-8 my-auto py-8 animate-[fadeIn_0.2s_ease-in]">
 
               <div className="flex items-center space-x-3 justify-center">
-                <h2 className="text-2xl font-extrabold tracking-wide" style={{color:'var(--text-primary)'}}>Submit Successful</h2>
+                <h2 className="text-2xl font-extrabold tracking-wide" style={{color:'var(--text-primary)'}}>{t('Submit Successful')}</h2>
                 <div className="bg-green-500 text-white rounded-full p-1">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -180,9 +182,9 @@ const ContactUs = () => {
               </div>
 
               <div className="text-base max-w-md leading-relaxed space-y-1 font-medium" style={{color:'var(--text-secondary)'}}>
-                <p>Your Application has been submit successfully</p>
-                <p>you will received our email in 24h after</p>
-                <p>the application has been submit</p>
+                <p>{t('Your Application has been submit successfully')}</p>
+                <p>{t('you will received our email in 24h after')}</p>
+                <p>{t('the application has been submit')}</p>
               </div>
 
               <button
@@ -191,7 +193,7 @@ const ContactUs = () => {
                 style={{backgroundColor:'var(--hover-bg)', color:'var(--text-primary)'}}
               >
                   <a href="/" style={{color:'inherit', textDecoration:'none'}}>
-                    Back to Home
+                    {t('Back to Home')}
                   </a>
               </button>
 
@@ -208,9 +210,9 @@ const ContactUs = () => {
       </main>
 
       <footer className="w-full max-w-7xl mx-auto px-8 py-5 z-10 flex items-center justify-between text-sm font-medium" style={{color:'var(--text-muted)'}}>
-        <span>This contact provided by our University.</span>
+        <span>{t('This contact provided by our University.')}</span>
         <div className="flex items-center space-x-1.5">
-          <span>Cambodia</span>
+          <span>{t('Cambodia')}</span>
         </div>
       </footer>
     </div>

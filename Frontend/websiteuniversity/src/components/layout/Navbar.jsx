@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import Spinner from '../common/Spinner';
  
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
+    const { t, lang, setLang } = useLanguage();
     const [adminOpen, setAdminOpen] = useState(false);
     const [adminClosing, setAdminClosing] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -35,6 +37,12 @@ const Navbar = () => {
     const roleLabel = role && role !== "undefined" && role !== "null"
         ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
         : "User";
+
+    const dashboardLink = {
+        ADMIN: { href: "/admin/dashboard", label: "Admin Dashboard" },
+        STUDENT: { href: "/student/dashboard", label: "Student Dashboard" },
+        TEACHER: { href: "/teacher/dashboard", label: "Teacher Dashboard" },
+    }[role];
 
     const closeAdminMenu = () => {
         if (!adminOpen) return;
@@ -119,11 +127,11 @@ const Navbar = () => {
                         <div style={{ display: "flex", alignItems: "center", gap: 32 }}
                             className="desktop-nav">
                             {[
-                                { label: "Home", href: "/" },
-                                { label: "Course", href: "/public/course" },
-                                { label: "About Us", href: "/public/aboutus" },
-                                { label: "Contact", href: "/public/contact" },
-                                { label: "Enroll", href: "/public/content/enroll" },
+                                { label: t("home"), href: "/" },
+                                { label: t("course"), href: "/public/course" },
+                                { label: t("aboutUs"), href: "/public/aboutus" },
+                                { label: t("contact"), href: "/public/contact" },
+                                { label: t("enroll"), href: "/public/content/enroll" },
                             ].map(({ label, href }) => (
                                 <a key={label} href={href} className="nav-link" style={linkStyle}>
                                     {label}
@@ -139,7 +147,7 @@ const Navbar = () => {
                         <div style={{ position: "relative" }}>
                                 <input
                                     type="text"
-                                    placeholder="Search..."
+                                    placeholder={t("search")}
                                     style={{
                                         width: 176,
                                         background: "var(--input-bg)",
@@ -157,6 +165,21 @@ const Navbar = () => {
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
+
+                        {/* Language Toggle */}
+                        <button
+                            onClick={() => setLang(lang === "en" ? "kh" : "en")}
+                            title={lang === "en" ? "ភាសាខ្មែរ" : "English"}
+                            style={{
+                                background: "none", border: "1.5px solid var(--border)", cursor: "pointer",
+                                padding: "4px 10px", borderRadius: 8, color: "var(--text-secondary)",
+                                fontSize: 12, fontWeight: 800, letterSpacing: "0.04em",
+                                display: "flex", alignItems: "center",
+                                transition: "border-color 0.2s, color 0.2s",
+                            }}
+                        >
+                            {lang === "en" ? "KH" : "EN"}
+                        </button>
 
                         {/* Dark Mode Toggle */}
                         <button onClick={toggleTheme} className="theme-toggle" style={{
@@ -216,8 +239,8 @@ const Navbar = () => {
                                             </svg>
                                             Account Setting
                                         </a>
-                                        {role === "ADMIN" && (
-                                            <a href="/admin/dashboard" onClick={closeAdminMenu} style={{
+                                        {dashboardLink && (
+                                            <a href={dashboardLink.href} onClick={closeAdminMenu} style={{
                                                 display: "flex", alignItems: "center", gap: 10,
                                                 padding: "10px 12px", borderRadius: 8,
                                                 color: "var(--text-primary)", textDecoration: "none",
@@ -226,29 +249,43 @@ const Navbar = () => {
                                                 <svg style={{ width: 16, height: 16, color: "#2563eb" }} fill="none" stroke="#2563eb" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                                                 </svg>
-                                                Admin Dashboard
+                                                {t(dashboardLink.label)}
+                                            </a>
+                                        )}
+                                        {role === "STUDENT" && (
+                                            <a href="/student/payments" onClick={closeAdminMenu} style={{
+                                                display: "flex", alignItems: "center", gap: 10,
+                                                padding: "10px 12px", borderRadius: 8,
+                                                color: "var(--text-primary)", textDecoration: "none",
+                                                fontSize: 14, fontWeight: 600,
+                                            }}>
+                                                <svg style={{ width: 16, height: 16, color: "#2563eb" }} fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+                                                    <rect x="2" y="5" width="20" height="14" rx="2" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 10h20" />
+                                                </svg>
+                                                {t("Make a Payment")}
                                             </a>
                                         )}
                                         <div style={{ margin: "6px 0", borderTop: "1px solid var(--border)" }} />
                                         {[
                                             {
-                                                label: "Home", href: "/",
+                                                label: t("home"), href: "/",
                                                 icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />,
                                             },
                                             {
-                                                label: "Course", href: "/public/course",
+                                                label: t("course"), href: "/public/course",
                                                 icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />,
                                             },
                                             {
-                                                label: "About Us", href: "/public/aboutus",
+                                                label: t("aboutUs"), href: "/public/aboutus",
                                                 icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
                                             },
                                             {
-                                                label: "Contact", href: "/public/contact",
+                                                label: t("contact"), href: "/public/contact",
                                                 icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />,
                                             },
                                             {
-                                                label: "Enroll", href: "/public/content/enroll",
+                                                label: t("enroll"), href: "/public/content/enroll",
                                                 icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />,
                                             },
                                         ].map(({ label, href, icon }) => (
@@ -306,7 +343,7 @@ const Navbar = () => {
                                     border: "1.5px solid #2563eb",
                                     transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
                                     cursor: "pointer",
-                                }}>Sign In</a>
+                                }}>{t("signIn")}</a>
                                 <a href="/public/register" className="btn-signup" style={{
                                     background: "#2563eb", color: "white",
                                     fontSize: 14, fontWeight: 600,
@@ -315,7 +352,7 @@ const Navbar = () => {
                                     boxShadow: "0 2px 8px rgba(37,99,235,0.3)",
                                     transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
                                     cursor: "pointer",
-                                }}>Sign up</a>
+                                }}>{t("signUp")}</a>
                             </>
                         )}
                     </div>
@@ -355,11 +392,11 @@ const Navbar = () => {
                     boxShadow: "var(--nav-shadow)",
                 }}>
                     {[
-                        { label: "Home", href: "/" },
-                        { label: "Course", href: "/public/course" },
-                        { label: "About Us", href: "/public/aboutus" },
-                        { label: "Contact", href: "/public/contact" },
-                        { label: "Enroll", href: "/enroll" },
+                        { label: t("home"), href: "/" },
+                        { label: t("course"), href: "/public/course" },
+                        { label: t("aboutUs"), href: "/public/aboutus" },
+                        { label: t("contact"), href: "/public/contact" },
+                        { label: t("enroll"), href: "/enroll" },
                     ].map(({ label, href }) => (
                         <a key={label} href={href} className="mobile-link" style={{ ...linkStyle, padding: "10px 0", display: "block", borderBottom: "1px solid var(--border)" }}>
                             {label}
@@ -368,13 +405,20 @@ const Navbar = () => {
                   
                     <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
                         <div style={{ position: "relative" }}>
-                            <input type="text" placeholder="Search..."
+                            <input type="text" placeholder={t("search")}
                                 style={{ width: "100%", background: "var(--input-bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "9px 36px 9px 14px", fontSize: 14, color: "var(--text-primary)", outline: "none" }} />
                             <svg style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "var(--text-muted)" }}
                                 fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
+                        <button onClick={() => setLang(lang === "en" ? "kh" : "en")} style={{
+                            background: "var(--hover-bg)", border: "1.5px solid var(--border)", cursor: "pointer",
+                            padding: "8px 12px", borderRadius: 10, color: "var(--text-secondary)",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 800,
+                        }}>
+                            {lang === "en" ? "ភាសាខ្មែរ (KH)" : "English (EN)"}
+                        </button>
                         <button onClick={toggleTheme} style={{
                             background: "var(--hover-bg)", border: "none", cursor: "pointer",
                             padding: "8px 12px", borderRadius: 10, color: "var(--text-secondary)",
@@ -385,14 +429,20 @@ const Navbar = () => {
                         {token ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                 <a href="/user/settings" style={{ color: "#2563eb", textDecoration: "none", fontSize: 14, fontWeight: 600, padding: "10px 0" }}>👤 {email}</a>
+                                {dashboardLink && (
+                                    <a href={dashboardLink.href} style={{ color: "#2563eb", textDecoration: "none", fontSize: 14, fontWeight: 600, padding: "10px 0" }}>📊 {t(dashboardLink.label)}</a>
+                                )}
+                                {role === "STUDENT" && (
+                                    <a href="/student/payments" style={{ color: "#2563eb", textDecoration: "none", fontSize: 14, fontWeight: 600, padding: "10px 0" }}>💳 {t("Make a Payment")}</a>
+                                )}
                                 <button onClick={logout} style={{ background: "#ef4444", color: "white", padding: "10px", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
                                     Logout
                                 </button>
                             </div>
                         ) : (
                             <>
-                                <a href="/public/login" style={{ background: "transparent", color: "#2563eb", textAlign: "center", padding: "10px", borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 600, border: "1.5px solid #2563eb" }}>Sign In</a>
-                                <a href="/public/register" style={{ background: "#2563eb", color: "white", textAlign: "center", padding: "10px", borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Sign up</a>
+                                <a href="/public/login" style={{ background: "transparent", color: "#2563eb", textAlign: "center", padding: "10px", borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 600, border: "1.5px solid #2563eb" }}>{t("signIn")}</a>
+                                <a href="/public/register" style={{ background: "#2563eb", color: "white", textAlign: "center", padding: "10px", borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 600 }}>{t("signUp")}</a>
                             </>
                         )}
                     </div>

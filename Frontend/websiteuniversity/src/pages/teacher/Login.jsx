@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { studentLogin } from '../../services/endpoints';
+import { teacherLogin } from '../../services/endpoints';
 import { useNavigate, Link } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { Presentation, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import AuthShell from '../../components/common/AuthShell';
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function StudentLogin() {
+export default function TeacherLogin() {
   const { t } = useLanguage();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -23,12 +23,12 @@ export default function StudentLogin() {
     setError('');
     setLoading(true);
     try {
-      const data = await studentLogin({ email: form.email, password: form.password });
+      const data = await teacherLogin({ email: form.email, password: form.password });
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', data.email);
-        localStorage.setItem('role', data.role || 'STUDENT');
-        navigate('/student/dashboard', { state: { loginSuccess: true } });
+        localStorage.setItem('role', data.role || 'TEACHER');
+        navigate('/teacher/dashboard', { state: { loginSuccess: true } });
       } else {
         setError(data.message || t('Invalid credentials'));
       }
@@ -42,18 +42,18 @@ export default function StudentLogin() {
   return (
     <AuthShell
       navbarOffset
-      icon={<GraduationCap size={28} />}
-      title={t("Student Login")}
-      subtitle={t("Welcome back! Sign in to access your courses and grades.")}
+      icon={<Presentation size={28} />}
+      title={t("Teacher Login")}
+      subtitle={t("Welcome back! Sign in to manage your classes and students.")}
       footer={
         <div>
           <p className="auth-footer-text">
             {t("Don't have an account?")}{' '}
-            <Link to="/student/register" className="auth-link">{t("Create one")}</Link>
+            <Link to="/teacher/register" className="auth-link">{t("Create one")}</Link>
           </p>
           <div className="auth-footer-links">
             <Link to="/public/login" className="auth-footer-link">{t("Regular User Login")}</Link>
-            <Link to="/public/register" className="auth-footer-link">{t("Regular User Register")}</Link>
+            <Link to="/student/login" className="auth-footer-link">{t("Student Login")}</Link>
           </div>
         </div>
       }
@@ -73,7 +73,7 @@ export default function StudentLogin() {
               required
               className="auth-input"
               style={{ paddingLeft: 42 }}
-              placeholder={t("student@example.com")}
+              placeholder={t("teacher@example.com")}
             />
           </div>
         </div>

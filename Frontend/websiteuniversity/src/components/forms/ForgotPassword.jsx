@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 
 const ForgotPassword = () => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -22,10 +24,10 @@ const ForgotPassword = () => {
         setSent(true);
       } else {
         const data = await res.json();
-        setError(data.message || "Email not found");
+        setError(data.message || t("Email not found"));
       }
     } catch {
-      setError("Server not reachable");
+      setError(t("Server not reachable"));
     } finally {
       setLoading(false);
     }
@@ -40,14 +42,19 @@ const ForgotPassword = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{color:'var(--text-primary)'}}>Check Your Email</h2>
+          <h2 className="text-xl font-bold mb-2" style={{color:'var(--text-primary)'}}>{t("Check Your Email")}</h2>
           <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>
-            We sent a password reset link to <strong style={{color:'var(--text-primary)'}}>{email}</strong>
+            {t("We sent a password reset link to")} <strong style={{color:'var(--text-primary)'}}>{email}</strong>
           </p>
           <a href="/public/login"
             className="inline-block w-full py-3 text-white font-semibold rounded-xl transition"
             style={{backgroundColor:'var(--accent,#2563eb)'}}>
-            Back to Login
+            {t("Back to Login")}
+          </a>
+          <a href="/public/reset-password"
+            className="inline-block w-full py-3 font-semibold rounded-xl transition mt-3 border"
+            style={{color:'var(--accent,#2563eb)', borderColor:'var(--border)'}}>
+            {t("I have a reset code — enter it here")}
           </a>
         </div>
       </div>
@@ -63,8 +70,8 @@ const ForgotPassword = () => {
               <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold" style={{color:'var(--text-primary)'}}>Forgot Password?</h1>
-          <p className="text-sm mt-1" style={{color:'var(--text-secondary)'}}>Enter your email and we'll send you a reset link</p>
+          <h1 className="text-2xl font-bold" style={{color:'var(--text-primary)'}}>{t("Forgot Password?")}</h1>
+          <p className="text-sm mt-1" style={{color:'var(--text-secondary)'}}>{t("Enter your email and we'll send you a reset link")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +79,7 @@ const ForgotPassword = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
+            placeholder={t("Email address")}
             className="w-full px-4 py-3 border rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
             style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
             required
@@ -83,13 +90,13 @@ const ForgotPassword = () => {
           <button type="submit" disabled={loading}
             className="w-full py-3 text-white font-semibold rounded-xl transition disabled:opacity-50"
             style={{backgroundColor:'var(--accent,#2563eb)'}}>
-            {loading ? "Sending..." : "Send Reset Link"}
+            {loading ? t("Sending...") : t("Send Reset Link")}
           </button>
         </form>
 
         <p className="text-center text-sm mt-6" style={{color:'var(--text-secondary)'}}>
-          Remember your password?{' '}
-          <a href="/public/login" className="font-medium" style={{color:'var(--accent,#2563eb)'}}>Sign In</a>
+          {t("Remember your password?")}{' '}
+          <a href="/public/login" className="font-medium" style={{color:'var(--accent,#2563eb)'}}>{t("Sign In")}</a>
         </p>
       </div>
     </div>

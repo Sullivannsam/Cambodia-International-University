@@ -1,6 +1,8 @@
 import React from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 
 const AboutPage = () => {
+    const { t } = useLanguage();
     return (
         <div className="bg-[#f8fafc] font-['Inter'] min-h-screen text-slate-900 antialiased selection:bg-blue-500 selection:text-white">
 
@@ -16,14 +18,12 @@ const AboutPage = () => {
                         {/* LEFT COLUMN (6 Columns): Brand Identity & Info */}
                         <div className="lg:col-span-6 space-y-6 text-white pr-0 lg:pr-6">
                             <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
-                                <span className="text-[#ffff00]">Cambodia</span> International <br />
-                                University
+                                <span className="text-[#ffff00]">{t("Cambodia")}</span> {t("International")} <br />
+                                {t("University")}
                             </h1>
 
                             <p className="text-white/90 text-sm lg:text-base leading-relaxed max-w-md font-normal">
-                                Building your dream with our University, and make a wish come true,
-                                taste more Experincce then you you had, more labs and over 1000 students
-                                achived their goal. Welcome to Cambodia International University.
+                                {t("Building your dream with our University, and make a wish come true, taste more Experincce then you you had, more labs and over 1000 students achived their goal. Welcome to Cambodia International University.")}
                             </p>
                         </div>
 
@@ -38,10 +38,10 @@ const AboutPage = () => {
                             {/* Headline & Subhead */}
                             <div className="space-y-4">
                                 <h2 className="text-xl lg:text-2xl font-bold tracking-tight text-slate-950 max-w-sm leading-snug">
-                                    Our Labs had over 200 for students to study in their dream
+                                    {t("Our Labs had over 200 for students to study in their dream")}
                                 </h2>
                                 <p className="text-sm font-bold tracking-tight text-slate-900">
-                                    Enroll now to match your skills
+                                    {t("Enroll now to match your skills")}
                                 </p>
                             </div>
 
@@ -53,19 +53,19 @@ const AboutPage = () => {
                                     {/* Enroll Pill */}
                                      <button className="bg-black hover:bg-slate-900 text-white text-xs font-semibold py-2 px-4 rounded-full flex items-center justify-center transition-colors shadow-sm">
                                         <a href="/public/content/Enroll">
-                                              <span>Enroll</span>
+                                              <span>{t("Enroll")}</span>
                                               <span className="text-[15px]">➔</span>
                                         </a>
                                     </button>
 
                                     {/* View Course Pill */}
                                     <button className="bg-white/80 hover:bg-white text-slate-900 border border-slate-300 text-xs font-semibold py-2 px-4 rounded-full text-center transition-colors shadow-sm">
-                                      <a href="/public/homepage">View Course</a>    
+                                      <a href="/public/homepage">{t("View Course")}</a>    
                                     </button>
 
                                     {/* See More Pill */}
                                     <button className="bg-white/80 hover:bg-white text-slate-900 border border-slate-300 text-xs font-semibold py-2 px-4 rounded-full flex items-center justify-center gap-1 transition-colors shadow-sm">
-                                        <span>See More</span>
+                                        <span>{t("See More")}</span>
                                         <span className="text-[10px]">⌂</span>
                                     </button>
                                 </div>

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Spinner from './Spinner';
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function LogoutModal({ className, style, children }) {
+  const { t } = useLanguage();
   const [showConfirm, setShowConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const navigate = useNavigate();
@@ -50,7 +52,7 @@ export default function LogoutModal({ className, style, children }) {
               </svg>
             </div>
             <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#1F2430" }}>
-              Are you sure you want to logout?
+              {t("Are you sure you want to logout?")}
             </h3>
             <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
               <button onClick={() => setShowConfirm(false)} style={{
@@ -58,21 +60,21 @@ export default function LogoutModal({ className, style, children }) {
                 border: "1.5px solid #E5E7EB", background: "#F3F4F6",
                 color: "#4B5563", fontSize: 14, fontWeight: 600, cursor: "pointer",
               }}>
-                Cancel
+                {t("Cancel")}
               </button>
               <button onClick={confirmLogout} style={{
                 flex: 1, padding: "11px 0", borderRadius: 10,
                 border: "none", background: "#ef4444", color: "white",
                 fontSize: 14, fontWeight: 600, cursor: "pointer",
               }}>
-                Logout
+                {t("Logout")}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {loggingOut && <Spinner text="Logging out..." />}
+      {loggingOut && <Spinner text={t("Logging out...")} />}
 
       <style>{`
         @keyframes logModalFade {

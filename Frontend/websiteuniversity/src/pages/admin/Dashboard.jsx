@@ -6,14 +6,26 @@ import {
 import {
   LayoutGrid, TrendingUp, ClipboardCheck, UserCheck, Users,
   BookOpen, CalendarDays, FileBarChart, UserCircle2, LogOut,
-  Search, ChevronRight, Loader2
+  Search, ChevronRight, Loader2, UserCog, FileClock, Newspaper,
+  ChevronsLeft, ChevronsRight, UserPlus, Inbox, Megaphone, FileDown
 } from "lucide-react";
 import {
   getDashboardStats, getStudentAttendance, getTeacherAttendance,
   getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers,
-  getStudentAccounts, getTeacherAccounts, getAdminAccounts
+  getStudentAccounts, getTeacherAccounts, getAdminAccounts,
+  getEnrollments, getContact, getReports
 } from "../../services/endpoints";
 import LogoutModal from "../../components/common/LogoutModal";
+import UserManagement from "./UserManagement";
+import CourseManagement from "./CourseManagement";
+import NewsManagement from "./NewsManagement";
+import AuditLog from "./AuditLog";
+import EnrollmentManagement from "./EnrollmentManagement";
+import ContactInbox from "./ContactInbox";
+import ReportPage from "./ReportPage";
+import ScheduleBuilder from "./ScheduleBuilder";
+import NotificationsCenter from "./NotificationsCenter";
+import { useLanguage } from "../../context/LanguageContext";
 
 const NAV = [
   {
@@ -45,6 +57,18 @@ const NAV = [
       { key: "student-acc", label: "Student Account", icon: UserCircle2 },
       { key: "teacher-acc", label: "Teacher Account", icon: UserCircle2 },
       { key: "admin-acc", label: "Admin Account", icon: UserCircle2 },
+      { key: "user-mgmt", label: "User Management", icon: UserCog },
+    ],
+  },
+  {
+    label: "Management",
+    items: [
+      { key: "courses", label: "Courses", icon: BookOpen },
+      { key: "news", label: "News", icon: Newspaper },
+      { key: "enrollments", label: "Enrollments", icon: UserPlus, badge: 3 },
+      { key: "contact", label: "Contact Inbox", icon: Inbox, badge: 4 },
+      { key: "notifications", label: "Notifications", icon: Megaphone },
+      { key: "audit-log", label: "Audit Log", icon: FileClock },
     ],
   },
 ];
@@ -74,6 +98,7 @@ function StatCard({ title, gradient, data }) {
 }
 
 function PersonCard({ person, kind }) {
+  const { t } = useLanguage();
   const color = attColor(person.att);
   return (
     <div className="person-card">
@@ -81,21 +106,21 @@ function PersonCard({ person, kind }) {
         <div className="person-avatar"><UserCircle2 size={30} strokeWidth={1.4} /></div>
       </div>
       <div className="person-card-body">
-        <div className="person-name"><span className="label">Username:</span> {person.name}</div>
-        <div><span className="label">ID:</span> {person.id}</div>
+        <div className="person-name"><span className="label">{t("Username:")}</span> {person.name}</div>
+        <div><span className="label">{t("ID:")}</span> {person.id}</div>
         {kind === "student" && (
           <>
-            <div><span className="label">Major:</span> {person.major}</div>
-            <div><span className="label">Class:</span> {person.cls}</div>
+            <div><span className="label">{t("Major:")}</span> {person.major}</div>
+            <div><span className="label">{t("Class:")}</span> {person.cls}</div>
           </>
         )}
         <div className="att-row">
-          <span className="label">Attendance:</span>
+          <span className="label">{t("Attendance:")}</span>
           <span className="att-pill" style={{ background: color }}>{person.att}%</span>
         </div>
         <div>
-          <span className="label">Absent:</span> {person.absentPct}%
-          {person.dates?.length > 0 && <span> On Date:</span>}
+          <span className="label">{t("Absent:")}</span> {person.absentPct}%
+          {person.dates?.length > 0 && <span> {t("On Date:")}</span>}
         </div>
         {person.dates?.length > 0 && (
           <ul className="dates">
@@ -108,6 +133,7 @@ function PersonCard({ person, kind }) {
 }
 
 function GroupSection({ title, members }) {
+  const { t } = useLanguage();
   return (
     <div className="group-section">
       <div className="group-title">{title}</div>
@@ -116,19 +142,19 @@ function GroupSection({ title, members }) {
           <div className="group-row" key={i}>
             <div className="group-avatar"><UserCircle2 size={22} strokeWidth={1.4} /></div>
             <div className="group-info">
-              <div><span className="label">ID:</span> {m.id || `000${i + 1}`}</div>
-              <div><span className="label">Username:</span> {m.name}</div>
-              <div><span className="label">Major:</span> {m.major || "IT"}</div>
-              <div><span className="label">Year:</span> {m.year || "2"}</div>
+              <div><span className="label">{t("ID:")}</span> {m.id || `000${i + 1}`}</div>
+              <div><span className="label">{t("Username:")}</span> {m.name}</div>
+              <div><span className="label">{t("Major:")}</span> {m.major || "IT"}</div>
+              <div><span className="label">{t("Year:")}</span> {m.year || "2"}</div>
             </div>
             <div className="group-actions">
-              <button className="btn-update">Update</button>
-              <button className="btn-delete">Delete</button>
+              <button className="btn-update">{t("Update")}</button>
+              <button className="btn-delete">{t("Delete")}</button>
             </div>
           </div>
         )) : (
           <div className="group-row">
-            <div className="group-info">No members in this group</div>
+            <div className="group-info">{t("No members in this group")}</div>
           </div>
         )}
       </div>
@@ -137,6 +163,7 @@ function GroupSection({ title, members }) {
 }
 
 function AccountTable({ title, accounts, query }) {
+  const { t } = useLanguage();
   const rows = Array.isArray(accounts) ? accounts : [];
   const q = (query || "").toString().toLowerCase().trim();
   const filtered = q
@@ -155,19 +182,19 @@ function AccountTable({ title, accounts, query }) {
           color: "#D2483C", borderRadius: 10, padding: "12px 16px",
           fontSize: 13, fontWeight: 600,
         }}>
-          account "{query}" doesn't exist in table
+          {t("account")} "{query}" {t("doesn't exist in table")}
         </div>
       ) : filtered.length > 0 ? (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ textAlign: "left", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB" }}>
-              <th style={{ padding: "10px 12px" }}>ID</th>
-              <th style={{ padding: "10px 12px" }}>Username</th>
-              <th style={{ padding: "10px 12px" }}>Email</th>
-              <th style={{ padding: "10px 12px" }}>Phone</th>
-              <th style={{ padding: "10px 12px" }}>Role</th>
-              <th style={{ padding: "10px 12px" }}>Status</th>
-              <th style={{ padding: "10px 12px" }}>Date</th>
+              <th style={{ padding: "10px 12px" }}>{t("ID")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Username")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Email")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Phone")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Role")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Status")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Date")}</th>
             </tr>
           </thead>
           <tbody>
@@ -180,7 +207,7 @@ function AccountTable({ title, accounts, query }) {
                 <td style={{ padding: "10px 12px" }}>{a.role || "-"}</td>
                 <td style={{ padding: "10px 12px" }}>
                   <span style={{ color: a.active === false ? "#D2483C" : "#2E9E6C", fontWeight: 700 }}>
-                    {a.active === false ? "Inactive" : "Active"}
+                    {a.active === false ? t("Inactive") : t("Active")}
                   </span>
                 </td>
                 <td style={{ padding: "10px 12px" }}>{a.date || "-"}</td>
@@ -189,19 +216,20 @@ function AccountTable({ title, accounts, query }) {
           </tbody>
         </table>
       ) : (
-        <div className="date-label">No accounts found.</div>
+        <div className="date-label">{t("No accounts found.")}</div>
       )}
     </div>
   );
 }
 
 function Placeholder({ title }) {
+  const { t } = useLanguage();
   return (
     <div className="placeholder">
       <div className="placeholder-icon"><ChevronRight size={22} /></div>
       <div>
         <div className="placeholder-title">{title}</div>
-        <div className="placeholder-sub">This section isn't wired up in the preview yet — it would live here, styled to match the rest of the dashboard.</div>
+        <div className="placeholder-sub">{t("This section isn't wired up in the preview yet — it would live here, styled to match the rest of the dashboard.")}</div>
       </div>
     </div>
   );
@@ -216,7 +244,9 @@ function LoadingSpinner() {
 }
 
 export default function AdminDashboard() {
+  const { t } = useLanguage();
   const [active, setActive] = useState("overview");
+  const [collapsed, setCollapsed] = useState(false);
   const [studentQuery, setStudentQuery] = useState("");
   const [teacherQuery, setTeacherQuery] = useState("");
   const [studentAccQuery, setStudentAccQuery] = useState("");
@@ -235,6 +265,25 @@ export default function AdminDashboard() {
   const [studentAccounts, setStudentAccounts] = useState([]);
   const [teacherAccounts, setTeacherAccounts] = useState([]);
   const [adminAccounts, setAdminAccounts] = useState([]);
+  const [badges, setBadges] = useState({ enrollments: 0, contact: 0, report: 0 });
+  const [seen, setSeen] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("adminSeenBadges") || "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  const effectiveBadge = (key) => {
+    const count = badges[key] || 0;
+    return count > (seen[key] || 0) ? count : 0;
+  };
+
+  const markSeen = (key) => {
+    const s = { ...seen, [key]: badges[key] || 0 };
+    setSeen(s);
+    localStorage.setItem("adminSeenBadges", JSON.stringify(s));
+  };
 
   const user = useMemo(() => {
     try {
@@ -291,8 +340,22 @@ export default function AdminDashboard() {
         setStudentAccounts(Array.isArray(stuAcc) ? stuAcc : []);
         setTeacherAccounts(Array.isArray(teaAcc) ? teaAcc : []);
         setAdminAccounts(Array.isArray(admAcc) ? admAcc : []);
+
+        const [enrollRes, contactRes, reportsRes] = await Promise.all([
+          getEnrollments().catch(() => []),
+          getContact().catch(() => []),
+          getReports().catch(() => []),
+        ]);
+        const enrollArr = Array.isArray(enrollRes) ? enrollRes : Array.isArray(enrollRes.enrollments) ? enrollRes.enrollments : [];
+        const contactArr = Array.isArray(contactRes) ? contactRes : Array.isArray(contactRes.messages) ? contactRes.messages : [];
+        const reportsArr = Array.isArray(reportsRes) ? reportsRes : Array.isArray(reportsRes.reports) ? reportsRes.reports : [];
+        setBadges({
+          enrollments: enrollArr.filter((e) => e.status === "PENDING").length,
+          contact: contactArr.filter((m) => !m.read).length,
+          report: reportsArr.filter((r) => !r.read).length,
+        });
       } catch (err) {
-        setError("Failed to load dashboard data. Make sure the backend server is running.");
+        setError(t("Failed to load dashboard data. Make sure the backend server is running."));
       } finally {
         setLoading(false);
       }
@@ -303,9 +366,27 @@ export default function AdminDashboard() {
   const filteredStudents = students.filter((s) =>
     (s.name + s.id).toLowerCase().includes(studentQuery.toLowerCase())
   );
-  const filteredTeachers = teachers.filter((t) =>
-    (t.name + t.id).toLowerCase().includes(teacherQuery.toLowerCase())
+  const filteredTeachers = teachers.filter((teacher) =>
+    (teacher.name + teacher.id).toLowerCase().includes(teacherQuery.toLowerCase())
   );
+
+  const lastMonthA = earnings.length ? earnings[earnings.length - 1]?.a ?? 0 : 0;
+  const lastMonthB = earnings.length ? earnings[earnings.length - 1]?.b ?? 0 : 0;
+  const avgEarning = earnings.length
+    ? Math.round(earnings.reduce((sum, e) => sum + (e.a || 0) + (e.b || 0), 0) / earnings.length)
+    : 0;
+
+  const exportEarningsCSV = () => {
+    const header = `${t("Month")},a,b`;
+    const rows = earnings.map((e) => `"${e.m}","${e.a ?? 0}","${e.b ?? 0}"`).join("\n");
+    const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "earnings.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const activeLabel =
     NAV.flatMap((s) => s.items).find((i) => i.key === active)?.label || "Overview";
@@ -335,11 +416,30 @@ export default function AdminDashboard() {
           min-height: 100vh;
           display: flex;
           flex-direction: column;
+          transition: width 0.25s ease;
         }
+        .sidebar.collapsed { width: 72px; }
+        .sidebar.collapsed .sidebar-head { padding: 48px 0 16px; display: flex; flex-direction: column; align-items: center; }
+        .sidebar.collapsed .avatar-ring { margin-bottom: 0; }
+        .sidebar.collapsed .sidebar-head-title { display: none; }
+        .sidebar.collapsed .sidebar-scroll { padding: 18px 8px 30px; }
+        .sidebar.collapsed .nav-section-label { display: none; }
+        .sidebar.collapsed .nav-item { justify-content: center; padding: 9px 0; }
+        .sidebar.collapsed .nav-label { display: none; }
+        .sidebar-collapse-btn {
+          position: absolute; top: 12px; right: 10px;
+          width: 28px; height: 28px; border-radius: 8px;
+          background: rgba(255,255,255,0.1); border: none; color: #C9D0E8;
+          display: flex; align-items: center; justify-content: center; cursor: pointer;
+          transition: background 0.15s ease, color 0.15s ease;
+        }
+        .sidebar-collapse-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .sidebar.collapsed .sidebar-collapse-btn { right: auto; left: 50%; top: 12px; transform: translateX(-50%); }
         .sidebar-head {
           padding: 26px 22px 20px;
           background: linear-gradient(160deg,#233766,#182644 70%);
           border-bottom: 1px solid rgba(255,255,255,0.08);
+          position: relative;
         }
         .avatar-ring {
           width: 56px; height: 56px; border-radius: 50%;
@@ -377,6 +477,25 @@ export default function AdminDashboard() {
           border: none;
           width: 100%;
           text-align: left;
+          position: relative;
+        }
+        .nav-badge {
+          position: absolute;
+          top: 7px;
+          right: 8px;
+          min-width: 17px;
+          height: 17px;
+          padding: 0 5px;
+          border-radius: 999px;
+          background: #ef4444;
+          color: #fff;
+          font-size: 10.5px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          box-shadow: 0 2px 6px rgba(239, 68, 68, 0.45);
         }
         .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
         .nav-item.active {
@@ -482,6 +601,13 @@ export default function AdminDashboard() {
         .income-top {
           display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; margin-bottom: 26px;
         }
+        .income-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+        .income-sum-card {
+          background: #fff; border-radius: 14px; padding: 16px 20px;
+          box-shadow: 0 4px 16px rgba(24,38,68,0.06);
+        }
+        .income-sum-label { font-size: 12px; color: #9A8F80; }
+        .income-sum-value { font-size: 22px; font-weight: 800; color: #182644; margin-top: 4px; }
         .panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
         .panel-title { font-family:'Poppins',sans-serif; font-weight: 600; color: #182644; margin-bottom: 16px; font-size: 15px; }
         .pie-wrap { display: flex; align-items: center; gap: 20px; }
@@ -525,30 +651,62 @@ export default function AdminDashboard() {
         @media (max-width: 980px) {
           .stat-grid { grid-template-columns: 1fr; }
           .income-top { grid-template-columns: 1fr; }
+          .income-summary { grid-template-columns: 1fr 1fr; }
           .group-grid { grid-template-columns: 1fr; }
           .sidebar { width: 210px; }
         }
+        @media (max-width: 720px) {
+          .sidebar { display: none; }
+          .main { padding-bottom: 68px; }
+          .content { padding: 20px 16px 60px; }
+          .topbar { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+          .topbar-title { font-size: 18px; }
+          .mobile-bottom-nav {
+            display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9997;
+            background: #fff; border-top: 1px solid #ECE3D8;
+            box-shadow: 0 -4px 18px rgba(24,38,68,0.08);
+          }
+        }
+        @media (min-width: 721px) { .mobile-bottom-nav { display: none; } }
+        .mobile-bottom-nav { display: none; }
+        .mb-item {
+          flex: 1; border: none; background: transparent; padding: 10px 4px;
+          display: flex; flex-direction: column; align-items: center; gap: 3px;
+          font-size: 10px; font-weight: 600; color: #9A8F80; cursor: pointer;
+        }
+        .mb-item.active { color: #3E5EDB; }
       `}</style>
 
-      <aside className="sidebar">
+      <aside className={"sidebar" + (collapsed ? " collapsed" : "")}>
         <div className="sidebar-head">
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? t("Expand sidebar") : t("Collapse sidebar")}
+          >
+            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+          </button>
           <div className="avatar-ring"><UserCircle2 size={30} color="#fff" /></div>
-          <div className="sidebar-head-title">Admin: {user.username || (user.email || "").split("@")[0] || "Admin"}</div>
+          <div className="sidebar-head-title">{t("Admin:")} {user.username || (user.email || "").split("@")[0] || t("Admin")}</div>
         </div>
         <div className="sidebar-scroll">
           {NAV.map((section) => (
             <div className="nav-section" key={section.label}>
-              <div className="nav-section-label">{section.label}</div>
+              <div className="nav-section-label">{t(section.label)}</div>
               {section.items.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.key}
                     className={"nav-item" + (active === item.key ? " active" : "")}
-                    onClick={() => setActive(item.key)}
+                    onClick={() => {
+                      setActive(item.key);
+                      if (badges[item.key] > (seen[item.key] || 0)) markSeen(item.key);
+                    }}
                   >
                     <Icon size={16} strokeWidth={1.8} />
-                    {item.label}
+                    <span className="nav-label">{t(item.label)}</span>
+                    {effectiveBadge(item.key) > 0 && <span className="nav-badge">{effectiveBadge(item.key)}</span>}
                   </button>
                 );
               })}
@@ -560,8 +718,8 @@ export default function AdminDashboard() {
       <div className="main">
         <div className="topbar">
           <div>
-            <div className="topbar-title">Welcome Admin Dashboard</div>
-            <div className="topbar-sub">CIU System Admin</div>
+            <div className="topbar-title">{t("Welcome Admin Dashboard")}</div>
+            <div className="topbar-sub">{t("CIU System Admin")}</div>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button
@@ -569,9 +727,9 @@ export default function AdminDashboard() {
               style={{ background: "#182644" }}
               onClick={() => (window.location.href = "/")}
             >
-              <LayoutGrid size={15} /> Visit Public Page
+              <LayoutGrid size={15} /> {t("Visit Public Page")}
             </button>
-            <LogoutModal className="logout-btn" style={{ background: "#ef4444" }}><LogOut size={15} /> Logout</LogoutModal>
+            <LogoutModal className="logout-btn" style={{ background: "#ef4444" }}><LogOut size={15} /> {t("Logout")}</LogoutModal>
           </div>
         </div>
 
@@ -586,14 +744,14 @@ export default function AdminDashboard() {
                 <div className="date-label">{today}</div>
               </div>
               <div className="stat-grid">
-                <StatCard title="Total Overall" gradient="linear-gradient(180deg,#DCEEE1,#fff)" data={stats.slice(0, 3)} />
-                <StatCard title="Total Teachers" gradient="linear-gradient(180deg,#E7E3F7,#fff)" data={stats.slice(3, 6)} />
-                <StatCard title="Total Students" gradient="linear-gradient(180deg,#FDEFC9,#fff)" data={stats.slice(6, 9)} />
+                <StatCard title={t("Total Overall")} gradient="linear-gradient(180deg,#DCEEE1,#fff)" data={stats.slice(0, 3)} />
+                <StatCard title={t("Total Teachers")} gradient="linear-gradient(180deg,#E7E3F7,#fff)" data={stats.slice(3, 6)} />
+                <StatCard title={t("Total Students")} gradient="linear-gradient(180deg,#FDEFC9,#fff)" data={stats.slice(6, 9)} />
               </div>
               <div className="stat-grid">
-                <StatCard title="Total Every Year" gradient="linear-gradient(180deg,#E3E7F7,#fff)" data={stats.slice(9, 12)} />
-                <StatCard title="Total Amount in a Month" gradient="linear-gradient(180deg,#DCEEFA,#fff)" data={stats.slice(12, 15)} />
-                <StatCard title="Total in a Year" gradient="linear-gradient(180deg,#FBE3E0,#fff)" data={stats.slice(15, 18)} />
+                <StatCard title={t("Total Every Year")} gradient="linear-gradient(180deg,#E3E7F7,#fff)" data={stats.slice(9, 12)} />
+                <StatCard title={t("Total Amount in a Month")} gradient="linear-gradient(180deg,#DCEEFA,#fff)" data={stats.slice(12, 15)} />
+                <StatCard title={t("Total in a Year")} gradient="linear-gradient(180deg,#FBE3E0,#fff)" data={stats.slice(15, 18)} />
               </div>
             </>
           )}
@@ -602,10 +760,31 @@ export default function AdminDashboard() {
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
+                <button className="logout-btn" style={{ background: "#182644", padding: "9px 16px" }} onClick={exportEarningsCSV} disabled={!earnings.length}>
+                  <FileDown size={15} /> {t("Export Earnings CSV")}
+                </button>
+              </div>
+              <div className="income-summary">
+                <div className="income-sum-card">
+                  <div className="income-sum-label">{t("Total Income")}</div>
+                  <div className="income-sum-value">{incomePie[0] ? `$${incomePie[0].value.toLocaleString()}` : "—"}</div>
+                </div>
+                <div className="income-sum-card">
+                  <div className="income-sum-label">{t("Last Month (a)")}</div>
+                  <div className="income-sum-value">{lastMonthA ? `$${lastMonthA.toLocaleString()}` : "—"}</div>
+                </div>
+                <div className="income-sum-card">
+                  <div className="income-sum-label">{t("Last Month (b)")}</div>
+                  <div className="income-sum-value">{lastMonthB ? `$${lastMonthB.toLocaleString()}` : "—"}</div>
+                </div>
+                <div className="income-sum-card">
+                  <div className="income-sum-label">{t("Monthly Average")}</div>
+                  <div className="income-sum-value">{avgEarning ? `$${avgEarning.toLocaleString()}` : "—"}</div>
+                </div>
               </div>
               <div className="income-top">
                 <div className="panel">
-                  <div className="panel-title">Student and System Amount</div>
+                  <div className="panel-title">{t("Student and System Amount")}</div>
                   <div className="pie-wrap">
                     <ResponsiveContainer width="55%" height={180}>
                       <PieChart>
@@ -619,14 +798,14 @@ export default function AdminDashboard() {
                       {incomePie.map((f) => (
                         <div className="legend-chip" key={f.name}>
                           <span className="dot" style={{ background: f.color }} />
-                          {f.value}% {f.name}
+                          {f.value}% {t(f.name)}
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
                 <div className="panel">
-                  <div className="panel-title">Earning — Last Months</div>
+                  <div className="panel-title">{t("Earning — Last Months")}</div>
                   <ResponsiveContainer width="100%" height={200}>
                     <AreaChart data={earnings}>
                       <defs>
@@ -662,7 +841,7 @@ export default function AdminDashboard() {
                 <div className="search-box">
                   <Search size={15} />
                   <input
-                    placeholder="Search students attendance..."
+                    placeholder={t("Search students attendance...")}
                     value={studentQuery}
                     onChange={(e) => setStudentQuery(e.target.value)}
                   />
@@ -671,7 +850,7 @@ export default function AdminDashboard() {
               <div className="person-grid">
                 {filteredStudents.length > 0
                   ? filteredStudents.map((s) => <PersonCard key={s.id + s.name} person={s} kind="student" />)
-                  : <div className="date-label">No attendance records found.</div>
+                  : <div className="date-label">{t("No attendance records found.")}</div>
                 }
               </div>
             </>
@@ -684,7 +863,7 @@ export default function AdminDashboard() {
                 <div className="search-box">
                   <Search size={15} />
                   <input
-                    placeholder="Search teachers attendance..."
+                    placeholder={t("Search teachers attendance...")}
                     value={teacherQuery}
                     onChange={(e) => setTeacherQuery(e.target.value)}
                   />
@@ -692,8 +871,8 @@ export default function AdminDashboard() {
               </div>
               <div className="person-grid">
                 {filteredTeachers.length > 0
-                  ? filteredTeachers.map((t) => <PersonCard key={t.id + t.name} person={t} kind="teacher" />)
-                  : <div className="date-label">No attendance records found.</div>
+                  ? filteredTeachers.map((teacher) => <PersonCard key={teacher.id + teacher.name} person={teacher} kind="teacher" />)
+                  : <div className="date-label">{t("No attendance records found.")}</div>
                 }
               </div>
             </>
@@ -706,13 +885,13 @@ export default function AdminDashboard() {
                 <div className="search-box">
                   <Search size={15} />
                   <input
-                    placeholder="Search student by ID, name, email..."
+                    placeholder={t("Search student by ID, name, email...")}
                     value={studentAccQuery}
                     onChange={(e) => setStudentAccQuery(e.target.value)}
                   />
                 </div>
               </div>
-              <AccountTable title="Student Accounts" accounts={studentAccounts} query={studentAccQuery} />
+              <AccountTable title={t("Student Accounts")} accounts={studentAccounts} query={studentAccQuery} />
             </>
           )}
 
@@ -723,13 +902,13 @@ export default function AdminDashboard() {
                 <div className="search-box">
                   <Search size={15} />
                   <input
-                    placeholder="Search teacher by ID, name, email..."
+                    placeholder={t("Search teacher by ID, name, email...")}
                     value={teacherAccQuery}
                     onChange={(e) => setTeacherAccQuery(e.target.value)}
                   />
                 </div>
               </div>
-              <AccountTable title="Teacher Accounts" accounts={teacherAccounts} query={teacherAccQuery} />
+              <AccountTable title={t("Teacher Accounts")} accounts={teacherAccounts} query={teacherAccQuery} />
             </>
           )}
 
@@ -740,20 +919,78 @@ export default function AdminDashboard() {
                 <div className="search-box">
                   <Search size={15} />
                   <input
-                    placeholder="Search admin by ID, name, email..."
+                    placeholder={t("Search admin by ID, name, email...")}
                     value={adminAccQuery}
                     onChange={(e) => setAdminAccQuery(e.target.value)}
                   />
                 </div>
               </div>
-              <AccountTable title="Admin Accounts" accounts={adminAccounts} query={adminAccQuery} />
+              <AccountTable title={t("Admin Accounts")} accounts={adminAccounts} query={adminAccQuery} />
             </>
           )}
 
-          {!loading && !["overview", "income", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc"].includes(active) && (
-            <Placeholder title={activeLabel} />
+          {!loading && active === "user-mgmt" && (
+            <UserManagement />
+          )}
+
+          {!loading && active === "courses" && (
+            <CourseManagement />
+          )}
+
+          {!loading && active === "news" && (
+            <NewsManagement />
+          )}
+
+          {!loading && active === "enrollments" && (
+            <EnrollmentManagement
+              onPendingChange={(n) => setBadges((b) => ({ ...b, enrollments: n }))}
+            />
+          )}
+
+          {!loading && active === "contact" && (
+            <ContactInbox
+              onUnreadChange={(n) => setBadges((b) => ({ ...b, contact: n }))}
+            />
+          )}
+
+          {!loading && active === "audit-log" && (
+            <AuditLog />
+          )}
+
+          {!loading && active === "schedule" && (
+            <ScheduleBuilder />
+          )}
+
+          {!loading && active === "report" && (
+            <ReportPage />
+          )}
+
+          {!loading && active === "notifications" && (
+            <NotificationsCenter />
+          )}
+
+          {!loading && !["overview", "income", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
+            <Placeholder title={t(activeLabel)} />
           )}
         </div>
+
+        <nav className="mobile-bottom-nav" aria-label={t("Mobile navigation")}>
+          {[
+            { key: "overview", label: t("Overview"), icon: LayoutGrid },
+            { key: "income", label: t("Income"), icon: TrendingUp },
+            { key: "student-att", label: t("Attendance"), icon: ClipboardCheck },
+            { key: "enrollments", label: t("Enrollments"), icon: UserPlus },
+            { key: "contact", label: t("Inbox"), icon: Inbox },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <button key={item.key} className={"mb-item" + (active === item.key ? " active" : "")} onClick={() => { setActive(item.key); if (badges[item.key] > (seen[item.key] || 0)) markSeen(item.key); }}>
+                <Icon size={18} strokeWidth={1.8} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

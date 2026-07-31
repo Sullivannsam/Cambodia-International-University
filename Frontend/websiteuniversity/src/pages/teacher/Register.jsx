@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { studentRegister } from '../../services/endpoints';
+import { teacherRegister } from '../../services/endpoints';
 import { Link } from 'react-router-dom';
-import { GraduationCap, User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { Presentation, User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import AuthShell from '../../components/common/AuthShell';
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function StudentRegister() {
+export default function TeacherRegister() {
   const { t } = useLanguage();
   const [form, setForm] = useState({
     username: '', email: '', password: '', phone: ''
@@ -31,7 +31,7 @@ export default function StudentRegister() {
 
     setLoading(true);
     try {
-      const data = await studentRegister({
+      const data = await teacherRegister({
         username: form.username,
         email: form.email,
         password: form.password,
@@ -52,18 +52,18 @@ export default function StudentRegister() {
   return (
     <AuthShell
       navbarOffset
-      icon={<GraduationCap size={28} />}
-      title={t("Student Registration")}
-      subtitle={t("Join Cambodia International University and start your academic journey.")}
+      icon={<Presentation size={28} />}
+      title={t("Teacher Registration")}
+      subtitle={t("Create your teacher account at Cambodia International University.")}
       footer={
         <div>
           <p className="auth-footer-text">
             {t("Already have an account?")}{' '}
-            <Link to="/student/login" className="auth-link">{t("Sign in")}</Link>
+            <Link to="/teacher/login" className="auth-link">{t("Sign in")}</Link>
           </p>
           <div className="auth-footer-links">
             <Link to="/public/login" className="auth-footer-link">{t("Regular User Login")}</Link>
-            <Link to="/public/register" className="auth-footer-link">{t("Regular User Register")}</Link>
+            <Link to="/student/login" className="auth-footer-link">{t("Student Login")}</Link>
           </div>
         </div>
       }
@@ -71,9 +71,9 @@ export default function StudentRegister() {
       {success && (
         <div className="auth-success">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-            <CheckCircle2 size={18} /> {t("Student registered successfully!")}
+            <CheckCircle2 size={18} /> {t("Teacher registered successfully!")}
           </div>
-          <Link to="/student/login" className="auth-link">{t("Go to Student Login")}</Link>
+          <Link to="/teacher/login" className="auth-link">{t("Go to Teacher Login")}</Link>
         </div>
       )}
 
@@ -110,7 +110,7 @@ export default function StudentRegister() {
                 required
                 className="auth-input"
                 style={{ paddingLeft: 42 }}
-                placeholder={t("student@example.com")}
+                placeholder={t("teacher@example.com")}
               />
             </div>
           </div>

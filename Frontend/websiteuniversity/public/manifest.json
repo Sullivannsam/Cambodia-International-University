@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "CIU",
+  "name": "Cambodia International University",
+  "description": "Cambodia International University — Empowering minds, shaping futures.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -19,7 +20,9 @@
     }
   ],
   "start_url": ".",
+  "scope": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "theme_color": "#182644",
   "background_color": "#ffffff"
 }

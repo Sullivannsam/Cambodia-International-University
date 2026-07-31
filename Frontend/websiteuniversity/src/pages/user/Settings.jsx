@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from "../../context/LanguageContext";
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 export default function Settings() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: '',
@@ -42,7 +44,7 @@ export default function Settings() {
     e.preventDefault();
     if (form.newPassword && form.newPassword !== form.confirmPassword) {
       setMsgType('error');
-      setMessage('Passwords do not match.');
+      setMessage(t('Passwords do not match.'));
       return;
     }
     const token = localStorage.getItem('token');
@@ -62,7 +64,7 @@ export default function Settings() {
       });
       if (res.ok) {
         setMsgType('success');
-        setMessage('Changes saved successfully!');
+        setMessage(t('Changes saved successfully!'));
         const userData = localStorage.getItem('user');
         if (userData) {
           const parsed = JSON.parse(userData);
@@ -72,11 +74,11 @@ export default function Settings() {
       } else {
         const data = await res.json();
         setMsgType('error');
-        setMessage(data.message || 'Failed to save changes.');
+        setMessage(data.message || t('Failed to save changes.'));
       }
     } catch {
       setMsgType('error');
-      setMessage('Server not reachable.');
+      setMessage(t('Server not reachable.'));
     }
   }
 
@@ -85,7 +87,7 @@ export default function Settings() {
   return (
     <div className="min-h-screen py-12 px-4" style={{backgroundColor:'var(--bg-secondary)'}}>
       <div className="max-w-2xl mx-auto rounded-xl shadow-sm p-8" style={{backgroundColor:'#f3f4f6'}}>
-        <h1 className="text-2xl font-bold mb-8" style={{color:'var(--text-primary)'}}>Account Settings</h1>
+        <h1 className="text-2xl font-bold mb-8" style={{color:'var(--text-primary)'}}>{t('Account Settings')}</h1>
 
         {message && (
           <div className={`border text-sm rounded-md px-3 py-2 mb-6`}
@@ -100,7 +102,7 @@ export default function Settings() {
 
         <form onSubmit={handleSave} className="space-y-5" style={{background:'#f9fafb', padding:'24px', borderRadius:'12px'}}>
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Email</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('Email')}</label>
             <input
               type="email"
               name="email"
@@ -112,7 +114,7 @@ export default function Settings() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Username</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('Username')}</label>
             <input
               type="text"
               name="username"
@@ -120,12 +122,12 @@ export default function Settings() {
               onChange={handleChange}
               className={inputClass}
               style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
-              placeholder="Enter username"
+              placeholder={t('Enter username')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Phone</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('Phone')}</label>
             <input
               type="text"
               name="phone"
@@ -133,12 +135,12 @@ export default function Settings() {
               onChange={handleChange}
               className={inputClass}
               style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
-              placeholder="Enter phone number"
+              placeholder={t('Enter phone number')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Address</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('Address')}</label>
             <textarea
               name="address"
               value={form.address}
@@ -146,30 +148,30 @@ export default function Settings() {
               rows={2}
               className={inputClass}
               style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
-              placeholder="Enter address"
+              placeholder={t('Enter address')}
             />
           </div>
 
           <hr className="my-6" style={{borderColor:'var(--border)'}} />
 
-          <h2 className="text-lg font-semibold" style={{color:'var(--text-primary)'}}>University Email</h2>
+          <h2 className="text-lg font-semibold" style={{color:'var(--text-primary)'}}>{t('University Email')}</h2>
           <p className="text-sm" style={{color:'var(--text-secondary)'}}>
-            Claim your official <strong>@ciu.std.kh</strong> email address.
+            {t('Claim your official')} <strong>@ciu.std.kh</strong> {t('email address.')}
           </p>
           <a
             href="/public/claim-email"
             className="inline-block text-white py-2 px-4 rounded-md text-sm font-semibold transition"
             style={{backgroundColor:'var(--accent,#2563eb)'}}
           >
-            Get University Email
+            {t('Get University Email')}
           </a>
 
           <hr className="my-6" style={{borderColor:'var(--border)'}} />
 
-          <h2 className="text-lg font-semibold" style={{color:'var(--text-primary)'}}>Change Password</h2>
+          <h2 className="text-lg font-semibold" style={{color:'var(--text-primary)'}}>{t('Change Password')}</h2>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Current Password</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('Current Password')}</label>
             <input
               type="password"
               name="currentPassword"
@@ -177,12 +179,12 @@ export default function Settings() {
               onChange={handleChange}
               className={inputClass}
               style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
-              placeholder="Enter current password"
+              placeholder={t('Enter current password')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>New Password</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('New Password')}</label>
             <input
               type="password"
               name="newPassword"
@@ -190,12 +192,12 @@ export default function Settings() {
               onChange={handleChange}
               className={inputClass}
               style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
-              placeholder="Enter new password"
+              placeholder={t('Enter new password')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>Confirm New Password</label>
+            <label className="block text-sm font-medium mb-1" style={{color:'var(--text-primary)'}}>{t('Confirm New Password')}</label>
             <input
               type="password"
               name="confirmPassword"
@@ -203,7 +205,7 @@ export default function Settings() {
               onChange={handleChange}
               className={inputClass}
               style={{backgroundColor:'var(--input-bg)', borderColor:'var(--border)', color:'var(--text-primary)'}}
-              placeholder="Confirm new password"
+              placeholder={t('Confirm new password')}
             />
           </div>
 
@@ -212,7 +214,7 @@ export default function Settings() {
             className="w-full text-white py-2 px-4 rounded-md text-sm font-semibold transition"
             style={{backgroundColor:'var(--accent,#2563eb)'}}
           >
-            Save Changes
+            {t('Save Changes')}
           </button>
         </form>
       </div>

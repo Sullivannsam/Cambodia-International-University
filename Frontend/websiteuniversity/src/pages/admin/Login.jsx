@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { adminLogin } from '../../services/endpoints';
-import { useNavigate } from 'react-router-dom';
-import Spinner from '../../components/common/Spinner';
+import { useNavigate, Link } from 'react-router-dom';
+import { ShieldCheck, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import AuthShell from '../../components/common/AuthShell';
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Login() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ email: '', password: '', rememberMe: false });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +23,7 @@ export default function Login() {
     setError('');
 
     if (!form.email || !form.password) {
-      setError('Please enter both email and password.');
+      setError(t('Please enter both email and password.'));
       return;
     }
 
@@ -38,121 +41,97 @@ export default function Login() {
         localStorage.setItem("user", JSON.stringify({ email: data.email, username: data.username }));
         navigate("/admin/dashboard", { state: { loginSuccess: true } });
       } else {
-        setError(data.message || 'Invalid email or password.');
+        setError(data.message || t('Invalid email or password.'));
       }
     } catch (err) {
-      setError('Server error, please try again.');
+      setError(t('Server error, please try again.'));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Welcome to admin login page 
-        </h2>
-        
-      </div>
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-3 py-2">
-                {error}
-              </div>
-            )}
+    <AuthShell
+      icon={<ShieldCheck size={28} />}
+      title={t("Admin Login")}
+      subtitle={t("Welcome back, admin. Sign in to manage Cambodia International University.")}
+      footer={
+        <>
+          <p className="auth-footer-text">
+            {t("Don't have an admin account?")}{' '}
+            <Link to="/admin/register" className="auth-link">{t("Register as admin")}</Link>
+          </p>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} noValidate>
+        {error && <div className="auth-error">{error}</div>}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your email address"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember_me"
-                  name="rememberMe"
-                  type="checkbox"
-                  checked={form.rememberMe}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-              <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot your password?
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                Sign in
-              </button>
-            </div>
-            {loading && <Spinner text="Signing in..." />}
-          </form>
+        <div className="auth-field">
+          <label htmlFor="email" className="auth-label">{t("Email address")}</label>
+          <div className="auth-input-wrap">
+            <Mail size={17} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="auth-input"
+              style={{ paddingLeft: 42 }}
+              placeholder={t("Enter your email address")}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div className="auth-field">
+          <label htmlFor="password" className="auth-label">{t("Password")}</label>
+          <div className="auth-input-wrap">
+            <Lock size={17} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              className="auth-input"
+              style={{ paddingLeft: 42 }}
+              placeholder={t("Enter your password")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="auth-toggle-pw"
+              aria-label={showPassword ? t("Hide password") : t("Show password")}
+            >
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="auth-row">
+          <label className="auth-check">
+            <input
+              id="remember_me"
+              name="rememberMe"
+              type="checkbox"
+              checked={form.rememberMe}
+              onChange={handleChange}
+            />
+            {t("Remember me")}
+          </label>
+          <a href="/public/forgot-password" className="auth-link">{t("Forgot password?")}</a>
+        </div>
+
+        <button type="submit" disabled={loading} className="auth-btn">
+          {loading ? <Loader2 size={17} className="animate-spin" /> : <ArrowRight size={17} />}
+          {loading ? t("Signing in...") : t("Sign In")}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

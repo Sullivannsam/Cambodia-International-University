@@ -1,0 +1,1121 @@
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
+} from "recharts";
+import {
+  LayoutGrid, BookOpen, GraduationCap, UserCircle2, LogOut,
+  Loader2, ClipboardList, Plus, X, RotateCcw, CreditCard,
+  FileText, Megaphone, Save, Printer, Bell, CalendarDays,
+  ClipboardCheck, MessageSquare, FileDown, Send, Upload
+} from "lucide-react";
+import {
+  getStudentProfile, getStudentEnrollments, getStudentGrades, enrollInCourse,
+  getStudentAnnouncements, getStudentSchedule, getStudentAttendanceRecords,
+  getStudentAssignments, submitStudentAssignment,
+  getStudentNotifications, markStudentNotificationsRead,
+  getStudentMessages, sendStudentMessage, getStudentInvoices
+} from "../../services/endpoints";
+import LogoutModal from "../../components/common/LogoutModal";
+import EmptyState from "../../components/common/EmptyState";
+import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
+
+const NAV = [
+  {
+    label: "General",
+    items: [
+      { key: "overview", label: "Overview", icon: LayoutGrid },
+      { key: "announcements", label: "Announcements", icon: Megaphone },
+    ],
+  },
+  {
+    label: "Academic",
+    items: [
+      { key: "courses", label: "My Courses", icon: BookOpen },
+      { key: "schedule", label: "Schedule", icon: CalendarDays },
+      { key: "assignments", label: "Assignments", icon: ClipboardList },
+      { key: "grades", label: "Grades", icon: GraduationCap },
+      { key: "transcript", label: "Transcript", icon: FileText },
+      { key: "attendance", label: "Attendance", icon: ClipboardCheck },
+    ],
+  },
+  {
+    label: "Financial",
+    items: [
+      { key: "payments", label: "Payments", icon: CreditCard },
+      { key: "invoices", label: "Invoices", icon: FileText },
+    ],
+  },
+  {
+    label: "Communication",
+    items: [
+      { key: "messages", label: "Messages", icon: MessageSquare },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { key: "profile", label: "My Profile", icon: UserCircle2 },
+    ],
+  },
+];
+
+const FALLBACK_ANNOUNCEMENTS = [
+  { id: 1, title: "Midterm examination schedule released", date: "2026-10-10", body: "Midterm exams run October 24-30. Check the Academic Calendar for your rooms." },
+  { id: 2, title: "Semester 1 registration is open", date: "2026-08-15", body: "Register for your courses before September 5 to avoid late fees." },
+  { id: 3, title: "New library hours", date: "2026-08-02", body: "The library now stays open until 9:00 PM on weekdays." },
+];
+
+const FALLBACK_SCHEDULE = [
+  { day: "Monday", code: "CS101", title: "Introduction to Programming", time: "08:00 - 09:30", room: "A101" },
+  { day: "Wednesday", code: "CS101", title: "Introduction to Programming", time: "08:00 - 09:30", room: "A101" },
+  { day: "Tuesday", code: "MATH201", title: "Calculus II", time: "10:00 - 11:30", room: "B204" },
+  { day: "Friday", code: "ENG110", title: "Academic Writing", time: "14:00 - 15:30", room: "C302" },
+];
+
+const FALLBACK_ATTENDANCE = [
+  { code: "CS101", title: "Introduction to Programming", present: 30, total: 32, percent: 94 },
+  { code: "MATH201", title: "Calculus II", present: 25, total: 30, percent: 83 },
+  { code: "ENG110", title: "Academic Writing", present: 28, total: 32, percent: 88 },
+];
+
+const FALLBACK_ASSIGNMENTS = [
+  { id: 1, code: "CS101", title: "Programming Assignment 1 — Loops", due: "2026-09-20", submitted: false },
+  { id: 2, code: "CS101", title: "Programming Assignment 2 — Arrays", due: "2026-10-05", submitted: false },
+  { id: 3, code: "MATH201", title: "Problem Set 3", due: "2026-09-15", submitted: true },
+  { id: 4, code: "ENG110", title: "Essay Draft — Cause & Effect", due: "2026-10-01", submitted: true },
+];
+
+const FALLBACK_NOTIFICATIONS = [
+  { id: 1, title: "New grade published", body: "Your grade for MATH201 Problem Set 3 was published.", date: "2026-08-01", read: false },
+  { id: 2, title: "Enrollment approved", body: "You were enrolled in ENG110 — Academic Writing.", date: "2026-07-28", read: false },
+  { id: 3, title: "Payment reminder", body: "Your tuition for Semester 1 is due by September 5.", date: "2026-07-25", read: true },
+];
+
+const FALLBACK_MESSAGES = [
+  { id: 1, from: "Dr. Vannak Sok", course: "CS101", text: "Remember to submit Assignment 1 before Sunday.", time: "2026-08-01 09:12", mine: false },
+  { id: 2, from: "You", course: "CS101", text: "Got it, thank you professor!", time: "2026-08-01 09:40", mine: true },
+];
+
+const FALLBACK_INVOICES = [
+  { id: 1, title: "Tuition — Semester 1", amount: 1250, due: "2026-09-05", status: "Paid" },
+  { id: 2, title: "Tuition — Semester 2", amount: 1250, due: "2027-02-10", status: "Outstanding" },
+  { id: 3, title: "Lab & Facility Fee", amount: 180, due: "2026-09-05", status: "Outstanding" },
+];
+
+const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function LoadingSpinner() {
+  return (
+    <div className="sp-flex" style={{ padding: "80px 0", justifyContent: "center" }}>
+      <Loader2 size={32} className="sp-spin" style={{ color: "#3E5EDB" }} />
+    </div>
+  );
+}
+
+export default function StudentDashboard() {
+  const { t } = useLanguage();
+  const [active, setActive] = useState("overview");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const [profile, setProfile] = useState({});
+  const [enrollments, setEnrollments] = useState([]);
+  const [grades, setGrades] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [schedule, setSchedule] = useState([]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [sendingChat, setSendingChat] = useState(false);
+
+  const [payments, setPayments] = useState([]);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    phone: "", address: "", major: "", year: "",
+  });
+
+  const [submitFor, setSubmitFor] = useState(null);
+  const [submitNote, setSubmitNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const { toast } = useToast();
+
+  const [enrollOpen, setEnrollOpen] = useState(false);
+  const [enrollCode, setEnrollCode] = useState("");
+  const [enrolling, setEnrolling] = useState(false);
+
+  useEffect(() => {
+    try {
+      setPayments(JSON.parse(localStorage.getItem("payments") || "[]"));
+    } catch {
+      setPayments([]);
+    }
+  }, []);
+
+  const saveProfile = (e) => {
+    e.preventDefault();
+    const existing = profile.username || profile.name || user.username || "";
+    const savedProfile = { ...profile, ...profileForm, name: existing };
+    localStorage.setItem("studentProfile", JSON.stringify(savedProfile));
+    setProfile({ ...profile, ...profileForm });
+    setProfileSaved(true);
+    setTimeout(() => setProfileSaved(false), 2500);
+  };
+
+  useEffect(() => {
+    if (Object.keys(profile).length > 0) {
+      setProfileForm({ phone: profile.phone || "", address: profile.address || "", major: profile.major || "", year: profile.year || "" });
+    }
+  }, [profile]);
+
+  const letterGrade = (score) => {
+    const s = Number(score);
+    if (s >= 90) return { letter: "A", pts: 4.0 };
+    if (s >= 80) return { letter: "B", pts: 3.0 };
+    if (s >= 70) return { letter: "C", pts: 2.0 };
+    if (s >= 60) return { letter: "D", pts: 1.0 };
+    return { letter: "F", pts: 0.0 };
+  };
+
+  const gpa = grades.length
+    ? (grades.reduce((sum, g) => sum + letterGrade(g.score ?? g.mark ?? 0).pts, 0) / grades.length).toFixed(2)
+    : "0.00";
+
+  const totalCredits = enrollments.reduce((sum, c) => sum + Number(c.credits || c.credit || 0), 0);
+
+  const user = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const today = useMemo(() => {
+    const d = new Date();
+    return d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  }, []);
+
+  useEffect(() => {
+    async function fetchAll() {
+      setLoading(true);
+      setError("");
+      try {
+        const [p, e, g, ann, sch, att, asg, notif, msg, inv] = await Promise.all([
+          getStudentProfile().catch(() => ({})),
+          getStudentEnrollments().catch(() => []),
+          getStudentGrades().catch(() => []),
+          getStudentAnnouncements().catch(() => []),
+          getStudentSchedule().catch(() => []),
+          getStudentAttendanceRecords().catch(() => []),
+          getStudentAssignments().catch(() => []),
+          getStudentNotifications().catch(() => []),
+          getStudentMessages().catch(() => []),
+          getStudentInvoices().catch(() => []),
+        ]);
+        setProfile(Array.isArray(p) ? p[0] || {} : p || {});
+        setEnrollments(Array.isArray(e) ? e : []);
+        setGrades(Array.isArray(g) ? g : []);
+        setAnnouncements(Array.isArray(ann) && ann.length ? ann : FALLBACK_ANNOUNCEMENTS);
+        setSchedule(Array.isArray(sch) && sch.length ? sch : FALLBACK_SCHEDULE);
+        setAttendanceRecords(Array.isArray(att) && att.length ? att : FALLBACK_ATTENDANCE);
+        setAssignments(Array.isArray(asg) && asg.length ? asg : FALLBACK_ASSIGNMENTS);
+        setNotifications(Array.isArray(notif) && notif.length ? notif : FALLBACK_NOTIFICATIONS);
+        setMessages(Array.isArray(msg) && msg.length ? msg : FALLBACK_MESSAGES);
+        setInvoices(Array.isArray(inv) && inv.length ? inv : FALLBACK_INVOICES);
+      } catch {
+        setError(t("Failed to load student data. Make sure the backend server is running."));
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAll();
+  }, []);
+
+  const reload = () => {
+    getStudentEnrollments().then((e) => setEnrollments(Array.isArray(e) ? e : [])).catch(() => {});
+    getStudentGrades().then((g) => setGrades(Array.isArray(g) ? g : [])).catch(() => {});
+  };
+
+  const handleEnroll = async (e) => {
+    e.preventDefault();
+    if (!enrollCode.trim()) return;
+    setEnrolling(true);
+    setError("");
+    try {
+      await enrollInCourse({ courseCode: enrollCode.trim() });
+      setNotice(`${t("Enrolled in course")} "${enrollCode.trim()}" ${t("successfully.")}`);
+      setEnrollOpen(false);
+      setEnrollCode("");
+      reload();
+    } catch {
+      setError(t("Failed to enroll. Make sure the course code is valid."));
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  const displayName = profile.username || profile.name || user.username || (user.email || "").split("@")[0] || t("Student");
+  const studentId = profile.studentId || profile.id || "-";
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const openNotifications = () => {
+    setNotifOpen(o => !o);
+    if (!notifOpen && unreadCount > 0) {
+      const next = notifications.map(n => ({ ...n, read: true }));
+      setNotifications(next);
+      markStudentNotificationsRead().catch(() => {});
+    }
+  };
+
+  const submitAssignment = async () => {
+    if (!submitFor) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await submitStudentAssignment({ assignmentId: submitFor.id, note: submitNote.trim() });
+      const next = assignments.map(a => a.id === submitFor.id ? { ...a, submitted: true } : a);
+      setAssignments(next);
+      toast(t("Assignment submitted successfully."));
+      setSubmitFor(null);
+      setSubmitNote("");
+    } catch {
+      setError(t("Failed to submit assignment. Make sure the backend server is running."));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const sendChat = async () => {
+    if (!chatInput.trim()) return;
+    setSendingChat(true);
+    const next = [...messages, {
+      id: Date.now(), from: t("You"), course: "CS101",
+      text: chatInput.trim(), time: new Date().toISOString().slice(0, 16).replace("T", " "), mine: true,
+    }];
+    setMessages(next);
+    setChatInput("");
+    try {
+      await sendStudentMessage({ course: "CS101", text: next[next.length - 1].text });
+    } catch {
+      toast(t("Message saved locally. Backend send failed."), "error");
+    } finally {
+      setSendingChat(false);
+    }
+  };
+
+  const downloadTranscript = () => {
+    const w = window.open("", "_blank");
+    const rows = grades.map((g, i) => {
+      const score = Number(g.score ?? g.mark ?? 0);
+      const lg = letterGrade(score);
+      return `<tr><td>${g.title || g.courseName || g.name || "-"}</td><td>${g.code || g.courseCode || "-"}</td><td>${score}%</td><td>${lg.letter}</td><td>${lg.pts.toFixed(1)}</td></tr>`;
+    }).join("");
+    w.document.write(`<!doctype html><html><head><title>${t("Academic Transcript")}</title><style>body{font-family:Arial,sans-serif;padding:40px}table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:10px;border:1px solid #ddd;text-align:left}h1{color:#3E5EDB}</style></head><body><h1>${t("Cambodia International University")}</h1><p>${t("Academic Transcript")} — ${displayName} (${studentId})</p><table><thead><tr><th>${t("Course")}</th><th>${t("Code")}</th><th>${t("Score")}</th><th>${t("Grade")}</th><th>${t("Grade Points")}</th></tr></thead><tbody>${rows}</tbody></table><p><strong>${t("Cumulative GPA")}:</strong> ${gpa} &nbsp; <strong>${t("Credits Earned")}:</strong> ${totalCredits}</p></body></html>`);
+    w.document.close();
+    w.print();
+  };
+
+  const downloadRosterCSV = () => {
+    const header = `${t("ID")},${t("Name")},${t("Major")},${t("Attendance")}`;
+    const rows = enrollments.map(c => `"${c.code || c.courseCode || ""}","${c.title || c.courseName || ""}","${c.credits || c.credit || 0}"`).join("\n");
+    const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `my-courses-${studentId}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const avgGrade = grades.length
+    ? (grades.reduce((sum, g) => {
+        const score = Number(g.score ?? g.grade ?? g.mark ?? 0);
+        return sum + score;
+      }, 0) / grades.length).toFixed(1)
+    : "0";
+
+  if (localStorage.getItem("role") !== "STUDENT") {
+    window.location.href = "/";
+    return null;
+  }
+
+  return (
+    <div className="app">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        .app {
+          font-family: 'Inter', system-ui, sans-serif;
+          color: #1F2430;
+          background: #F6F4EF;
+          min-height: 100vh;
+          display: flex;
+        }
+        .sidebar {
+          width: 250px; flex-shrink: 0;
+          background: #182644; color: #E7EAF4;
+          min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .sidebar-head {
+          padding: 26px 22px 20px;
+          background: linear-gradient(160deg,#233766,#182644 70%);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .avatar-ring {
+          width: 56px; height: 56px; border-radius: 50%;
+          background: #3E5EDB; display: flex; align-items: center; justify-content: center;
+          margin-bottom: 12px; box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+        }
+        .sidebar-head-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14.5px; }
+        .sidebar-scroll { padding: 18px 14px 30px; overflow-y: auto; }
+        .nav-section { margin-bottom: 18px; }
+        .nav-section-label {
+          font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em;
+          color: #7C89B8; padding: 0 10px 8px; font-weight: 600;
+        }
+        .nav-item {
+          display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+          border-radius: 8px; font-size: 13.5px; color: #C9D0E8; cursor: pointer;
+          margin-bottom: 3px; transition: background 0.15s ease, color 0.15s ease;
+          background: transparent; border: none; width: 100%; text-align: left;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .nav-item.active { background: #3E5EDB; color: #fff; box-shadow: 0 4px 14px rgba(62,94,219,0.4); }
+        .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .topbar {
+          background: #FBF4EE; padding: 22px 34px;
+          display: flex; align-items: center; justify-content: space-between;
+          border-bottom: 1px solid #ECE3D8;
+        }
+        .topbar-title { font-family: 'Poppins', sans-serif; font-size: 21px; font-weight: 600; color: #182644; }
+        .topbar-sub { font-size: 12.5px; color: #9A8F80; margin-top: 2px; }
+        .logout-btn {
+          background: #3E5EDB; color: #fff; border: none; padding: 10px 20px; border-radius: 9px;
+          font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer;
+          box-shadow: 0 6px 16px rgba(62,94,219,0.35);
+        }
+        .content { padding: 26px 34px 60px; flex: 1; }
+        .content-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; gap: 20px; flex-wrap: wrap; }
+        .date-label { color: #6B7280; font-size: 13.5px; }
+        .error-banner {
+          background: #FBE3E0; border: 1px solid #E0665A; color: #D2483C;
+          border-radius: 10px; padding: 12px 18px; font-size: 13px; margin-bottom: 20px;
+        }
+        .notice-banner {
+          background: #E3F0E7; border: 1px solid #2E9E6C; color: #1E7A4E;
+          border-radius: 10px; padding: 12px 18px; font-size: 13px; margin-bottom: 20px;
+        }
+        .profile-card {
+          background: linear-gradient(135deg, #182644, #233766);
+          color: #fff; border-radius: 16px; padding: 26px 28px; margin-bottom: 22px;
+          display: flex; align-items: center; gap: 20px;
+          box-shadow: 0 8px 24px rgba(24,38,68,0.25);
+        }
+        .profile-avatar {
+          width: 64px; height: 64px; border-radius: 50%; background: #3E5EDB;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .profile-name { font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 600; }
+        .profile-meta { font-size: 12.5px; color: #B9C3E2; margin-top: 3px; }
+        .sp-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; margin-bottom: 22px; }
+        .sp-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
+        .sp-card-title { font-size: 12.5px; font-weight: 600; color: #3E5EDB; margin-bottom: 8px; }
+        .sp-card-value { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 700; color: #182644; }
+        .sp-card-sub { font-size: 12px; color: #9A8F80; margin-top: 4px; }
+        .panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
+        .panel-title { font-family:'Poppins',sans-serif; font-weight: 600; color: #182644; margin-bottom: 16px; font-size: 15px; }
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+        .course-card { background: #FAF8F4; border: 1px solid #ECE6DC; border-radius: 14px; padding: 18px 20px; }
+        .course-code { display: inline-block; background: #E7E3F7; color: #3E5EDB; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 999px; }
+        .course-title { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 600; color: #182644; margin: 10px 0 4px; }
+        .course-desc { font-size: 12.5px; color: #6B7280; line-height: 1.6; }
+        .course-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; color: #9A8F80; }
+        .add-btn {
+          background: #3E5EDB; color: #fff; border: none; padding: 10px 18px; border-radius: 9px;
+          font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+          box-shadow: 0 6px 16px rgba(62,94,219,0.35);
+        }
+        .sp-overlay {
+          position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.5);
+          backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
+          animation: spFade 0.25s ease;
+        }
+        .sp-modal { background: #fff; border-radius: 16px; padding: 26px 28px; width: min(90vw, 440px); animation: spPop 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sp-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .sp-modal-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #182644; }
+        .sp-close { background: #F6F4EF; border: none; border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #6B7280; cursor: pointer; }
+        .sp-field { margin-bottom: 14px; }
+        .sp-label { display: block; font-size: 12.5px; font-weight: 600; color: #182644; margin-bottom: 6px; }
+        .sp-input {
+          width: 100%; padding: 11px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px;
+          font-size: 13.5px; outline: none; background: #FBFBF9; color: #1F2430;
+        }
+        .sp-input:focus { border-color: #3E5EDB; }
+        .sp-modal-foot { display: flex; gap: 12px; margin-top: 22px; }
+        .sp-cancel {
+          flex: 1; padding: 11px 0; border-radius: 10px; border: 1.5px solid #E5E7EB;
+          background: #F6F4EF; color: #6B7280; font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+        .sp-primary {
+          flex: 1; padding: 11px 0; border-radius: 10px; border: none; background: #3E5EDB; color: #fff;
+          font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center;
+          justify-content: center; gap: 8px; box-shadow: 0 6px 16px rgba(62,94,219,0.35);
+        }
+        .sp-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .sp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .sp-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; }
+        .sp-table td { padding: 10px 12px; border-bottom: 1px solid #F0EEE9; }
+        .grade-pill { color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+        .sp-flex { display: flex; align-items: center; gap: 8px; }
+        .sp-spin { animation: spspin 1s linear infinite; }
+        @keyframes spspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spPop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        @media (max-width: 900px) {
+          .sp-grid { grid-template-columns: 1fr; }
+          .sidebar { width: 210px; }
+          .sp-profile-form { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
+      <aside className="sidebar">
+        <div className="sidebar-head">
+          <div className="avatar-ring"><UserCircle2 size={30} color="#fff" /></div>
+          <div className="sidebar-head-title">{t("Student")}: {displayName}</div>
+        </div>
+        <div className="sidebar-scroll">
+          {NAV.map((section) => (
+            <div className="nav-section" key={section.label}>
+              <div className="nav-section-label">{t(section.label)}</div>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.key}
+                    className={"nav-item" + (active === item.key ? " active" : "")}
+                    onClick={() => setActive(item.key)}
+                  >
+                    <Icon size={16} strokeWidth={1.8} />
+                    {t(item.label)}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <div className="main">
+        <div className="topbar">
+          <div>
+            <div className="topbar-title">{t("Student Portal")}</div>
+            <div className="topbar-sub">{t("CIU Student Dashboard")}</div>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", position: "relative" }}>
+            <button
+              onClick={openNotifications}
+              className="logout-btn"
+              style={{ background: "#182644", position: "relative", padding: "10px 14px" }}
+              aria-label={t("Notifications")}
+            >
+              <Bell size={15} />
+              {unreadCount > 0 && (
+                <span style={{
+                  position: "absolute", top: -5, right: -5,
+                  background: "#ef4444", color: "#fff", fontSize: 10, fontWeight: 800,
+                  minWidth: 18, height: 18, borderRadius: 999, display: "flex",
+                  alignItems: "center", justifyContent: "center", padding: "0 4px",
+                }}>{unreadCount}</span>
+              )}
+            </button>
+            {notifOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 10px)", right: 0, zIndex: 100,
+                background: "#fff", borderRadius: 14, boxShadow: "0 12px 32px rgba(24,38,68,0.18)",
+                width: 340, maxHeight: 380, overflow: "auto", padding: 8, border: "1px solid #ECE6DC",
+              }}>
+                <div style={{ padding: "10px 12px 6px", fontWeight: 700, fontSize: 14, color: "#182644" }}>
+                  {t("Notifications")}
+                </div>
+                {notifications.length ? notifications.map(n => (
+                  <div key={n.id} style={{ padding: "10px 12px", borderBottom: "1px solid #F0EEE9" }}>
+                    <div style={{ fontSize: 13, fontWeight: n.read ? 600 : 700, color: "#182644" }}>{t(n.title)}</div>
+                    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2, lineHeight: 1.5 }}>{t(n.body)}</div>
+                    <div style={{ fontSize: 11, color: "#9A8F80", marginTop: 4 }}>{n.date}</div>
+                  </div>
+                )) : (
+                  <div style={{ padding: "16px 12px", fontSize: 13, color: "#9A8F80", textAlign: "center" }}>
+                    {t("No notifications")}
+                  </div>
+                )}
+              </div>
+            )}
+            <button className="logout-btn" style={{ background: "#182644" }} onClick={() => (window.location.href = "/")}>
+              <LayoutGrid size={15} /> {t("Visit Public Page")}
+            </button>
+            <LogoutModal className="logout-btn" style={{ background: "#ef4444" }}><LogOut size={15} /> {t("Logout")}</LogoutModal>
+          </div>
+        </div>
+
+        <div className="content">
+          {error && <div className="error-banner">{error}</div>}
+          {notice && <div className="notice-banner">{notice}</div>}
+
+          {loading && <LoadingSpinner />}
+
+          {!loading && active === "overview" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+              </div>
+              <div className="profile-card">
+                <div className="profile-avatar"><UserCircle2 size={32} color="#fff" /></div>
+                <div>
+                  <div className="profile-name">{displayName}</div>
+                  <div className="profile-meta">{t("Student ID")}: {studentId} &nbsp;·&nbsp; {t("Email")}: {profile.email || user.email || "-"}</div>
+                </div>
+              </div>
+              <div className="sp-grid">
+                <div className="sp-card">
+                  <div className="sp-card-title">{t("Enrolled Courses")}</div>
+                  <div className="sp-card-value">{enrollments.length}</div>
+                  <div className="sp-card-sub">{t("Currently active enrollments")}</div>
+                </div>
+                <div className="sp-card">
+                  <div className="sp-card-title">{t("Average Score")}</div>
+                  <div className="sp-card-value">{avgGrade}</div>
+                  <div className="sp-card-sub">{t("Across")} {grades.length} {t("graded subject(s)")}</div>
+                </div>
+                <div className="sp-card">
+                  <div className="sp-card-title">{t("Program")}</div>
+                  <div className="sp-card-value" style={{ fontSize: 17 }}>{profile.major || profile.course || "—"}</div>
+                  <div className="sp-card-sub">{profile.year ? `${t("Year")} ${profile.year}` : "—"}</div>
+                </div>
+              </div>
+              <div className="panel">
+                <div className="panel-title">{t("Quick Actions")}</div>
+                <div className="course-grid">
+                  <div className="course-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div className="sp-flex" style={{ color: "#3E5EDB" }}><ClipboardList size={18} /> {t("Enroll in a course")}</div>
+                    <div className="course-desc">{t("Enroll using the course code provided by your faculty.")}</div>
+                    <button className="add-btn" onClick={() => setEnrollOpen(true)}><Plus size={15} /> {t("Enroll")}</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="panel" style={{ marginTop: 20 }}>
+                <div className="panel-title sp-flex"><Megaphone size={16} /> {t("Announcements")}</div>
+                {announcements.slice(0, 3).map(a => (
+                  <div key={a.id} style={{ borderLeft: "3px solid #3E5EDB", background: "#F7F6F2", borderRadius: "0 10px 10px 0", padding: "12px 16px", marginBottom: 10 }}>
+                    <div className="date-label" style={{ fontSize: 11.5 }}>{a.date}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#182644", margin: "3px 0" }}>{t(a.title)}</div>
+                    <div style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.6 }}>{t(a.body)}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {!loading && active === "courses" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+                <button className="add-btn" onClick={() => setEnrollOpen(true)}><Plus size={15} /> {t("Enroll in Course")}</button>
+              </div>
+              {enrollments.length > 0 ? (
+                <div className="course-grid">
+                  {enrollments.map((c, i) => (
+                    <div className="course-card" key={c.id || i}>
+                      <span className="course-code">{c.code || c.courseCode || `CRS-${i + 1}`}</span>
+                      <div className="course-title">{c.title || c.courseName || c.name || t("Course")}</div>
+                      <div className="course-desc">{c.description || `${t("Enrolled course")} ${i + 1}.`}</div>
+                      <div className="course-foot">
+                        <span>{t("Instructor")}: {c.instructor || c.teacher || "—"}</span>
+                        <span>{c.credits || c.credit || 0} {t("credits")}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="panel">
+                  <div className="panel-title">{t("My Courses")}</div>
+                  <div className="date-label">{t("You are not enrolled in any courses yet. Click \"Enroll in Course\" to get started.")}</div>
+                </div>
+              )}
+            </>
+          )}
+
+          {!loading && active === "announcements" && (
+            <div className="panel">
+              <div className="panel-title sp-flex"><Megaphone size={16} /> {t("Announcements")}</div>
+              {announcements.length ? announcements.map(a => (
+                <div key={a.id} style={{ borderLeft: "3px solid #3E5EDB", background: "#F7F6F2", borderRadius: "0 10px 10px 0", padding: "14px 18px", marginBottom: 12 }}>
+                  <div className="date-label" style={{ fontSize: 11.5 }}>{a.date}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#182644", margin: "4px 0" }}>{t(a.title)}</div>
+                  <div style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.6 }}>{t(a.body)}</div>
+                </div>
+              )) : <EmptyState title={t("No announcements yet")} />}
+            </div>
+          )}
+
+          {!loading && active === "schedule" && (
+            <div className="panel">
+              <div className="content-row" style={{ marginBottom: 12 }}>
+                <div className="panel-title" style={{ margin: 0 }}><CalendarDays size={16} /> {t("Weekly Schedule")}</div>
+                <button className="add-btn" onClick={downloadRosterCSV} style={{ padding: "8px 14px", fontSize: 12 }}><FileDown size={14} /> {t("Export CSV")}</button>
+              </div>
+              {schedule.length ? (
+                <table className="sp-table">
+                  <thead>
+                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Course")}</th><th>{t("Time")}</th><th>{t("Room")}</th></tr>
+                  </thead>
+                  <tbody>
+                    {[...schedule].sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)).map((s, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: 600, color: "#182644" }}>{t(s.day)}</td>
+                        <td><span className="course-code">{s.code}</span></td>
+                        <td>{t(s.title)}</td>
+                        <td>{s.time}</td>
+                        <td>{s.room}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <EmptyState title={t("No schedule available yet")} />}
+            </div>
+          )}
+
+          {!loading && active === "assignments" && (
+            <div className="panel">
+              <div className="panel-title sp-flex"><ClipboardList size={16} /> {t("Assignments")}</div>
+              {assignments.length ? (
+                <table className="sp-table">
+                  <thead>
+                    <tr><th>{t("Course")}</th><th>{t("Assignment")}</th><th>{t("Due")}</th><th>{t("Status")}</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    {assignments.map(a => (
+                      <tr key={a.id}>
+                        <td><span className="course-code">{a.code}</span></td>
+                        <td style={{ fontWeight: 600, color: "#182644" }}>{t(a.title)}</td>
+                        <td>{a.due}</td>
+                        <td>
+                          {a.submitted
+                            ? <span className="grade-pill" style={{ background: "#2E9E6C" }}>{t("Submitted")}</span>
+                            : new Date(a.due) < new Date()
+                              ? <span className="grade-pill" style={{ background: "#D2483C" }}>{t("Overdue")}</span>
+                              : <span className="grade-pill" style={{ background: "#D69A1E" }}>{t("Pending")}</span>}
+                        </td>
+                        <td>
+                          {!a.submitted && (
+                            <button className="add-btn" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => { setSubmitFor(a); setSubmitNote(""); }}>
+                              <Upload size={13} /> {t("Submit")}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <EmptyState title={t("No assignments yet")} />}
+            </div>
+          )}
+
+          {!loading && active === "attendance" && (
+            <div className="panel">
+              <div className="panel-title sp-flex"><ClipboardCheck size={16} /> {t("My Attendance")}</div>
+              {attendanceRecords.length ? (
+                <table className="sp-table">
+                  <thead>
+                    <tr><th>{t("Course")}</th><th>{t("Present")}</th><th>{t("Total")}</th><th>{t("Rate")}</th></tr>
+                  </thead>
+                  <tbody>
+                    {attendanceRecords.map((a, i) => {
+                      const pct = a.percent ?? (a.total ? Math.round((a.present / a.total) * 100) : 0);
+                      return (
+                        <tr key={i}>
+                          <td style={{ fontWeight: 600, color: "#182644" }}>{t(a.title)} <span className="course-code" style={{ marginLeft: 6 }}>{a.code}</span></td>
+                          <td>{a.present}</td>
+                          <td>{a.total}</td>
+                          <td><span className="grade-pill" style={{ background: pct >= 90 ? "#2E9E6C" : pct >= 70 ? "#D69A1E" : "#D2483C" }}>{pct}%</span></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : <EmptyState title={t("No attendance data yet")} />}
+            </div>
+          )}
+
+          {!loading && active === "grades" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+              </div>
+              <div className="panel">
+                <div className="panel-title">{t("Grades")} ({grades.length})</div>
+                {grades.length > 0 ? (
+                  <>
+                    <div style={{ marginBottom: 18, height: 160 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={grades.map(g => ({ name: g.code || g.courseCode || "-", score: Number(g.score ?? g.mark ?? 0) }))}>
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+                            {grades.map((g, i) => {
+                              const score = Number(g.score ?? g.mark ?? 0);
+                              return <Cell key={i} fill={score >= 90 ? "#2E9E6C" : score >= 70 ? "#D69A1E" : "#D2483C"} />;
+                            })}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <table className="sp-table">
+                    <thead>
+                      <tr>
+                        <th>{t("Course")}</th>
+                        <th>{t("Code")}</th>
+                        <th>{t("Instructor")}</th>
+                        <th>{t("Score")}</th>
+                        <th>{t("Grade")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grades.map((g, i) => {
+                        const score = Number(g.score ?? g.mark ?? 0);
+                        const pct = g.percent !== undefined ? Number(g.percent) : score;
+                        const color = pct >= 90 ? "#2E9E6C" : pct >= 70 ? "#D69A1E" : "#D2483C";
+                        return (
+                          <tr key={g.id || i}>
+                            <td style={{ fontWeight: 600, color: "#182644" }}>{g.title || g.courseName || g.name || t("Course")}</td>
+                            <td>{g.code || g.courseCode || "-"}</td>
+                            <td>{g.instructor || g.teacher || "-"}</td>
+                            <td>{g.score !== undefined ? g.score : (g.grade || "-")}</td>
+                            <td>
+                              <span className="grade-pill" style={{ background: color }}>{g.grade || g.letter || score + "%"}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </>
+                ) : (
+                  <div className="date-label">{t("No grades available yet.")}</div>
+                )}
+              </div>
+            </>
+          )}
+
+          {!loading && active === "transcript" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+                <button className="add-btn" onClick={downloadTranscript}><FileDown size={15} /> {t("Download / Print")}</button>
+              </div>
+              <div className="panel">
+                <div className="panel-title">{t("Academic Transcript")}</div>
+                {grades.length > 0 ? (
+                  <>
+                    <table className="sp-table">
+                      <thead>
+                        <tr>
+                          <th>{t("Course")}</th>
+                          <th>{t("Code")}</th>
+                          <th>{t("Score")}</th>
+                          <th>{t("Grade")}</th>
+                          <th>{t("Grade Points")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grades.map((g, i) => {
+                          const score = Number(g.score ?? g.mark ?? 0);
+                          const lg = letterGrade(score);
+                          return (
+                            <tr key={g.id || i}>
+                              <td style={{ fontWeight: 600, color: "#182644" }}>{g.title || g.courseName || g.name || t("Course")}</td>
+                              <td>{g.code || g.courseCode || "-"}</td>
+                              <td>{score}%</td>
+                              <td><span className="grade-pill" style={{ background: score >= 90 ? "#2E9E6C" : score >= 70 ? "#D69A1E" : "#D2483C" }}>{lg.letter}</span></td>
+                              <td>{lg.pts.toFixed(1)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                    <div style={{ display: "flex", gap: 16, marginTop: 20, flexWrap: "wrap" }}>
+                      <div className="sp-card" style={{ padding: "14px 20px" }}>
+                        <div className="sp-card-title">{t("Cumulative GPA")}</div>
+                        <div className="sp-card-value">{gpa}</div>
+                      </div>
+                      <div className="sp-card" style={{ padding: "14px 20px" }}>
+                        <div className="sp-card-title">{t("Credits Earned")}</div>
+                        <div className="sp-card-value">{totalCredits}</div>
+                      </div>
+                      <div className="sp-card" style={{ padding: "14px 20px" }}>
+                        <div className="sp-card-title">{t("Courses Completed")}</div>
+                        <div className="sp-card-value">{grades.length}</div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="date-label">{t("No transcript data available yet.")}</div>
+                )}
+              </div>
+            </>
+          )}
+
+          {!loading && active === "payments" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+                <button className="add-btn" onClick={() => (window.location.href = "/student/payments")}><CreditCard size={15} /> {t("Make a Payment")}</button>
+              </div>
+              {payments.length > 0 ? (
+                <div className="panel">
+                  <div className="panel-title">{t("Payment History")} ({payments.length})</div>
+                  <table className="sp-table">
+                    <thead>
+                      <tr>
+                        <th>{t("Receipt")}</th>
+                        <th>{t("Date")}</th>
+                        <th>{t("Type")}</th>
+                        <th>{t("Amount")}</th>
+                        <th>{t("Receipt")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payments.map((p, i) => (
+                        <tr key={i}>
+                          <td style={{ fontWeight: 700, color: "#3E5EDB" }}>#{String(1000 + i + 1).padStart(4, "0")}</td>
+                          <td>{p.date}</td>
+                          <td style={{ textTransform: "capitalize" }}>{p.type}</td>
+                          <td style={{ fontWeight: 700, color: "#182644" }}>${Number(p.amount).toFixed(2)}</td>
+                          <td>
+                            <button className="add-btn" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => {
+                              const w = window.open("", "_blank");
+                              w.document.write(`<!doctype html><html><head><title>${t("Receipt")}</title><style>body{font-family:Arial,sans-serif;padding:40px}table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:10px;border:1px solid #ddd;text-align:left}h1{color:#3E5EDB}</style></head><body><h1>${t("Cambodia International University")}</h1><p>${t("Official Payment Receipt")}</p><table><tr><th>${t("Receipt No.")}</th><td>#${String(1000 + i + 1).padStart(4, "0")}</td></tr><tr><th>${t("Date")}</th><td>${p.date}</td></tr><tr><th>${t("Type")}</th><td>${p.type}</td></tr><tr><th>${t("Student ID")}</th><td>${p.studentId}</td></tr><tr><th>${t("Amount")}</th><td>$${Number(p.amount).toFixed(2)}</td></tr><tr><th>${t("Status")}</th><td>${t("Paid")}</td></tr></table></body></html>`);
+                              w.document.close();
+                              w.print();
+                            }}>
+                              <Printer size={13} /> {t("Print")}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="panel">
+                  <div className="panel-title">{t("Payment History")}</div>
+                  <div className="date-label">{t("No payments recorded yet. Click \"Make a Payment\" to get started.")}</div>
+                </div>
+              )}
+            </>
+          )}
+
+          {!loading && active === "invoices" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+              </div>
+              <div className="sp-grid">
+                <div className="sp-card">
+                  <div className="sp-card-title">{t("Total Billed")}</div>
+                  <div className="sp-card-value">${invoices.reduce((s, i) => s + Number(i.amount || 0), 0).toFixed(2)}</div>
+                  <div className="sp-card-sub">{invoices.length} {t("invoice(s)")}</div>
+                </div>
+                <div className="sp-card">
+                  <div className="sp-card-title">{t("Outstanding")}</div>
+                  <div className="sp-card-value" style={{ color: "#D2483C" }}>${invoices.filter(i => i.status !== "Paid").reduce((s, i) => s + Number(i.amount || 0), 0).toFixed(2)}</div>
+                  <div className="sp-card-sub">{t("Unpaid balance")}</div>
+                </div>
+                <div className="sp-card">
+                  <div className="sp-card-title">{t("Paid")}</div>
+                  <div className="sp-card-value" style={{ color: "#2E9E6C" }}>${invoices.filter(i => i.status === "Paid").reduce((s, i) => s + Number(i.amount || 0), 0).toFixed(2)}</div>
+                  <div className="sp-card-sub">{t("Completed payments")}</div>
+                </div>
+              </div>
+              {invoices.length ? (
+                <div className="panel">
+                  <div className="panel-title">{t("Invoices")}</div>
+                  <table className="sp-table">
+                    <thead>
+                      <tr><th>{t("Invoice")}</th><th>{t("Description")}</th><th>{t("Due")}</th><th>{t("Amount")}</th><th>{t("Status")}</th></tr>
+                    </thead>
+                    <tbody>
+                      {invoices.map((inv, i) => (
+                        <tr key={inv.id || i}>
+                          <td style={{ fontWeight: 700, color: "#3E5EDB" }}>#INV-{String(1000 + (inv.id || i) + 1).padStart(4, "0")}</td>
+                          <td style={{ fontWeight: 600, color: "#182644" }}>{t(inv.title)}</td>
+                          <td>{inv.due}</td>
+                          <td style={{ fontWeight: 700, color: "#182644" }}>${Number(inv.amount).toFixed(2)}</td>
+                          <td>
+                            <span className="grade-pill" style={{ background: inv.status === "Paid" ? "#2E9E6C" : "#D69A1E" }}>
+                              {inv.status === "Paid" ? t("Paid") : t("Outstanding")}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : <EmptyState title={t("No invoices yet")} />}
+            </>
+          )}
+
+          {!loading && active === "messages" && (
+            <div className="panel">
+              <div className="panel-title sp-flex"><MessageSquare size={16} /> {t("Class Messages")} <span className="course-code" style={{ marginLeft: 4 }}>CS101</span></div>
+              <div style={{ maxHeight: 420, overflow: "auto", border: "1px solid #ECE6DC", borderRadius: 12, padding: 16, marginBottom: 16, background: "#FAF8F4" }}>
+                {messages.map(m => (
+                  <div key={m.id} style={{ display: "flex", justifyContent: m.mine ? "flex-end" : "flex-start", marginBottom: 12 }}>
+                    <div style={{
+                      maxWidth: "75%", padding: "10px 14px", borderRadius: 12,
+                      background: m.mine ? "#3E5EDB" : "#fff", color: m.mine ? "#fff" : "#1F2430",
+                      border: m.mine ? "none" : "1px solid #E5E7EB", fontSize: 13.5, lineHeight: 1.5,
+                    }}>
+                      {!m.mine && <div style={{ fontSize: 11, fontWeight: 700, color: "#3E5EDB", marginBottom: 2 }}>{m.from}</div>}
+                      <div>{t(m.text)}</div>
+                      <div style={{ fontSize: 10.5, marginTop: 4, opacity: 0.7 }}>{m.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") sendChat(); }}
+                  placeholder={t("Type a message...")}
+                  style={{ flex: 1, padding: "11px 14px", border: "1.5px solid #E5E7EB", borderRadius: 10, fontSize: 13.5, outline: "none", background: "#FBFBF9", color: "#1F2430" }}
+                />
+                <button className="add-btn" onClick={sendChat} disabled={sendingChat || !chatInput.trim()}>
+                  {sendingChat ? <Loader2 size={15} className="sp-spin" /> : <Send size={15} />} {t("Send")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!loading && active === "profile" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{today}</div>
+              </div>
+              <div className="panel">
+                <div className="panel-title">{t("My Profile")}</div>
+                {profileSaved && <div className="notice-banner">{t("Profile updated successfully.")}</div>}
+                <form onSubmit={saveProfile} className="sp-profile-form" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div className="sp-field" style={{ marginBottom: 0 }}>
+                    <label className="sp-label">{t("Full name")}</label>
+                    <input className="sp-input" value={displayName} disabled />
+                  </div>
+                  <div className="sp-field" style={{ marginBottom: 0 }}>
+                    <label className="sp-label">{t("Student ID")}</label>
+                    <input className="sp-input" value={studentId} disabled />
+                  </div>
+                  <div className="sp-field" style={{ marginBottom: 0 }}>
+                    <label className="sp-label">{t("Email")}</label>
+                    <input className="sp-input" value={profile.email || user.email || "-"} disabled />
+                  </div>
+                  <div className="sp-field" style={{ marginBottom: 0 }}>
+                    <label className="sp-label">{t("Major")}</label>
+                    <input className="sp-input" name="major" value={profileForm.major} onChange={(e) => setProfileForm({ ...profileForm, major: e.target.value })} placeholder={t("e.g. Computer Science")} />
+                  </div>
+                  <div className="sp-field" style={{ marginBottom: 0 }}>
+                    <label className="sp-label">{t("Year")}</label>
+                    <input className="sp-input" name="year" value={profileForm.year} onChange={(e) => setProfileForm({ ...profileForm, year: e.target.value })} placeholder={t("e.g. Year 2")} />
+                  </div>
+                  <div className="sp-field" style={{ marginBottom: 0 }}>
+                    <label className="sp-label">{t("Phone")}</label>
+                    <input className="sp-input" name="phone" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder="+855 ..." />
+                  </div>
+                  <div className="sp-field" style={{ marginBottom: 0, gridColumn: "1 / -1" }}>
+                    <label className="sp-label">{t("Address")}</label>
+                    <input className="sp-input" name="address" value={profileForm.address} onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })} placeholder={t("Your current address")} />
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <button type="submit" className="add-btn"><Save size={15} /> {t("Save Changes")}</button>
+                  </div>
+                </form>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {enrollOpen && (
+        <div className="sp-overlay">
+          <div className="sp-modal">
+            <div className="sp-modal-head">
+              <div className="sp-modal-title">{t("Enroll in a Course")}</div>
+              <button className="sp-close" onClick={() => setEnrollOpen(false)} aria-label={t("Close")}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleEnroll}>
+              <div className="sp-field">
+                <label className="sp-label">{t("Course code")}</label>
+                <input
+                  className="sp-input"
+                  value={enrollCode}
+                  onChange={(e) => setEnrollCode(e.target.value)}
+                  placeholder={t("e.g. CS101")}
+                  required
+                />
+              </div>
+              <div className="sp-modal-foot">
+                <button type="button" className="sp-cancel" onClick={() => setEnrollOpen(false)}>{t("Cancel")}</button>
+                <button type="submit" className="sp-primary" disabled={enrolling}>
+                  {enrolling ? <Loader2 size={15} className="sp-spin" /> : <RotateCcw size={15} />}
+                  {enrolling ? t("Enrolling...") : t("Enroll")}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {submitFor && (
+        <div className="sp-overlay">
+          <div className="sp-modal">
+            <div className="sp-modal-head">
+              <div className="sp-modal-title">{t("Submit Assignment")}</div>
+              <button className="sp-close" onClick={() => setSubmitFor(null)} aria-label={t("Close")}><X size={16} /></button>
+            </div>
+            <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 14, lineHeight: 1.6 }}>
+              <strong style={{ color: "#182644" }}>{submitFor.title}</strong>
+              <div>{t("Course")}: {submitFor.code} · {t("Due")}: {submitFor.due}</div>
+            </div>
+            <div className="sp-field">
+              <label className="sp-label">{t("Submission note (optional)")}</label>
+              <textarea
+                className="sp-input"
+                rows={4}
+                value={submitNote}
+                onChange={e => setSubmitNote(e.target.value)}
+                placeholder={t("Add a note to your submission...")}
+                style={{ resize: "vertical", fontFamily: "inherit" }}
+              />
+            </div>
+            <div className="sp-modal-foot">
+              <button type="button" className="sp-cancel" onClick={() => setSubmitFor(null)}>{t("Cancel")}</button>
+              <button type="button" className="sp-primary" disabled={submitting} onClick={submitAssignment}>
+                {submitting ? <Loader2 size={15} className="sp-spin" /> : <Upload size={15} />}
+                {submitting ? t("Submitting...") : t("Submit Assignment")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

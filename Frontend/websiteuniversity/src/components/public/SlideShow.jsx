@@ -1,30 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const SlideShow = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const dragStartX = useRef(null);
     const dragging = useRef(false);
+    const { t } = useLanguage();
     
     const slides = [
         {
             url: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-            title: "Excellence in Education",
-            subtitle: "Shaping future leaders since 2005"
+            title: t("Excellence in Education"),
+            subtitle: t("Shaping future leaders since 2005")
         },
         {
             url: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpaperaccess.com%2Ffull%2F2137313.jpg&f=1&nofb=1&ipt=a4ed63f0861b8bd7a83c9f35b427c573361471c1d4866fa3ea0c1539467bef0a",
-            title: "World-Class Campus",
-            subtitle: "State-of-the-art facilities for modern learning"
+            title: t("World-Class Campus"),
+            subtitle: t("State-of-the-art facilities for modern learning")
         },
         {
             url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-            title: "Global Community",
-            subtitle: "Students from over 50 countries"
+            title: t("Global Community"),
+            subtitle: t("Students from over 50 countries")
         },
         {
             url: "https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1186&q=80",
-            title: "Innovation Hub",
-            subtitle: "Where ideas become reality"
+            title: t("Innovation Hub"),
+            subtitle: t("Where ideas become reality")
         }
     ];
 
