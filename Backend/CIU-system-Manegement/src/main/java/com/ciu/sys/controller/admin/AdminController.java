@@ -32,15 +32,12 @@ public class AdminController {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
-  @PreAuthorize("hasRole ('ADMIN')")
   @GetMapping("/admin/{id}")
-
   public Admin getAdminById(@PathVariable Long id) {
     return adminService.getAdminById(id);
   }
 
-  @PreAuthorize("hasRole ('ADMIN')")
-  @GetMapping
+  @GetMapping("/account/admin")
   public List<Admin> getListAdmins() {
     return adminService.getListAdmins();
   }

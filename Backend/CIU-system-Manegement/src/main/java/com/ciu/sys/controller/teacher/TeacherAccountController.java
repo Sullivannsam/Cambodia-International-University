@@ -78,6 +78,7 @@ public class TeacherAccountController {
     List<Teacher> teacher = teacherService.findAllTeacher();
     List<TeacherResponseDto> found = teacher.stream()
         .map(s -> new TeacherResponseDto(
+            s.getId(),
             s.getUsername(),
             s.getEmail(),
             s.getPhone(),

@@ -31,6 +31,10 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/auth/users/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/auth/students").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/auth/teacher/list").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/auth/account/admin").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/auth/account/admin").permitAll()
             // POST Request
             .requestMatchers(HttpMethod.POST, "/api/public/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
@@ -39,8 +43,8 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/auth/register/admin").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/teacher/login/account").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/teacher/register/account").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/auth/student/login/account").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/auth/student/register/account").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/students/login/account").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/students/register/account").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/student/payment-fee").permitAll()
 
             // PUT Request

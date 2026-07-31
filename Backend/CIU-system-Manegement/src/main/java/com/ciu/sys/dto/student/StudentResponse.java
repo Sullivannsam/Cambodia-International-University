@@ -3,6 +3,7 @@ package com.ciu.sys.dto.student;
 import java.sql.Date;
 
 public record StudentResponse(
+    Long id,
     String username,
     String email,
     String phone,

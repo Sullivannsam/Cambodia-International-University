@@ -76,8 +76,8 @@ public class StudentAccountController {
   public ResponseEntity<List<StudentResponse>> listAllStudent() {
     List<StudentAccount> students = studentService.findAllStudent();
     List<StudentResponse> dto = students.stream()
-        .map(s -> new StudentResponse(s.getUsername(), s.getEmail(), s.getPhone(), s.getRole(), s.isActive(),
-            s.getDate()))
+        .map(s -> new StudentResponse(s.getId(), s.getUsername(), s.getEmail(), s.getPhone(), s.getRole(),
+            s.isActive(), s.getDate()))
         .toList();
 
     return ResponseEntity.ok(dto);
@@ -88,6 +88,7 @@ public class StudentAccountController {
   public StudentResponse listStudentById(@PathVariable Long id) {
     StudentAccount student = studentService.findStudentById(id);
     return new StudentResponse(
+        student.getId(),
         student.getUsername(),
         student.getEmail(),
         student.getPhone(),
