@@ -5,14 +5,6 @@ import { useLanguage } from "../../context/LanguageContext";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const FALLBACK = [
-  { id: 1, day: "Mon", time: "08:00-09:30", course: "CS101", room: "A101", instructor: "Mr. Rady Chan" },
-  { id: 2, day: "Mon", time: "10:00-11:30", course: "CS201", room: "B203", instructor: "Ms. Sreyneang Kim" },
-  { id: 3, day: "Tue", time: "08:00-09:30", course: "CS305", room: "A105", instructor: "Mr. Piseth Nop" },
-  { id: 4, day: "Wed", time: "08:00-09:30", course: "CS101", room: "A101", instructor: "Mr. Rady Chan" },
-  { id: 5, day: "Fri", time: "14:00-17:00", course: "CS305", room: "Lab 2", instructor: "Mr. Piseth Nop" },
-];
-
 const emptyEntry = { day: "Mon", time: "08:00-09:30", course: "", room: "", instructor: "" };
 
 export default function ScheduleBuilder() {
@@ -29,10 +21,10 @@ export default function ScheduleBuilder() {
     try {
       const data = await getAdminSchedule();
       const arr = Array.isArray(data) ? data : Array.isArray(data.schedule) ? data.schedule : [];
-      setEntries(arr.length ? arr : FALLBACK);
+      setEntries(arr);
     } catch {
-      setEntries(FALLBACK);
-      setError(t("Backend offline — showing a sample schedule."));
+      setEntries([]);
+      setError(t("Failed to load schedule. Make sure the backend server is running."));
     } finally {
       setLoading(false);
     }

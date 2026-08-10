@@ -5,7 +5,21 @@ const authHeaders = () => ({
     ...(localStorage.getItem("token") && {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
     }),
+    ...(localStorage.getItem("email") && {
+        "X-User-Email": localStorage.getItem("email"),
+    }),
 });
+
+const parse = async (response) => {
+    if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        const err = new Error(body?.message || `Request failed (${response.status})`);
+        err.status = response.status;
+        throw err;
+    }
+    if (response.status === 204) return {};
+    return response.json();
+};
 
 // ---------- Auth ----------
 export const adminLogin = async (data) => {
@@ -14,7 +28,7 @@ export const adminLogin = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const adminRegister = async (data) => {
@@ -23,7 +37,7 @@ export const adminRegister = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const loginUser = async (data) => {
@@ -32,7 +46,7 @@ export const loginUser = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const registerUser = async (data) => {
@@ -41,7 +55,7 @@ export const registerUser = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Dashboard Stats ----------
@@ -49,7 +63,7 @@ export const getDashboardStats = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/stats`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Student Attendance ----------
@@ -57,7 +71,7 @@ export const getStudentAttendance = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/attendance/student`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Teacher Attendance ----------
@@ -65,7 +79,7 @@ export const getTeacherAttendance = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/attendance/teacher`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Income / Earnings ----------
@@ -73,14 +87,14 @@ export const getIncomeData = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/income`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getEarnings = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/earnings`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Fee Groups ----------
@@ -88,7 +102,7 @@ export const getFeeGroups = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/fee-groups`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Fee Group Members ----------
@@ -96,7 +110,7 @@ export const getFeeGroupMembers = async (group) => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/fee-groups/${encodeURIComponent(group)}`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Student Auth ----------
@@ -106,7 +120,7 @@ export const studentLogin = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const studentRegister = async (data) => {
@@ -115,7 +129,7 @@ export const studentRegister = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Teacher Auth ----------
@@ -125,7 +139,7 @@ export const teacherLogin = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const teacherRegister = async (data) => {
@@ -134,7 +148,7 @@ export const teacherRegister = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Email Verification ----------
@@ -144,7 +158,7 @@ export const verifyEmail = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const resendCode = async (data) => {
@@ -153,7 +167,7 @@ export const resendCode = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Account Lists ----------
@@ -161,21 +175,21 @@ export const getStudentAccounts = async () => {
     const response = await fetch(`${BASE_URL}/api/auth/students`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getTeacherAccounts = async () => {
     const response = await fetch(`${BASE_URL}/api/auth/teacher/list`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getAdminAccounts = async () => {
     const response = await fetch(`${BASE_URL}/api/auth/account/admin`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- User Management (web users) ----------
@@ -183,7 +197,7 @@ export const getUsers = async () => {
     const response = await fetch(`${BASE_URL}/api/auth/users/users`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const updateUser = async (id, data) => {
@@ -192,7 +206,7 @@ export const updateUser = async (id, data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const deleteUser = async (id) => {
@@ -200,7 +214,7 @@ export const deleteUser = async (id) => {
         method: "DELETE",
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const suspendUser = async (id, data) => {
@@ -209,7 +223,7 @@ export const suspendUser = async (id, data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const unsuspendUser = async (id) => {
@@ -217,7 +231,7 @@ export const unsuspendUser = async (id) => {
         method: "PUT",
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Contact ----------
@@ -225,7 +239,7 @@ export const getContact = async () => {
     const response = await fetch(`${BASE_URL}/api/public`, {
         headers: { "Content-Type": "application/json" },
     });
-    return response.json();
+    return parse(response);
 };
 
 export const sendContact = async (data) => {
@@ -234,7 +248,7 @@ export const sendContact = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const replyContact = async (data) => {
@@ -243,7 +257,7 @@ export const replyContact = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Password Reset ----------
@@ -253,7 +267,7 @@ export const forgotPassword = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const resetPassword = async (data) => {
@@ -262,41 +276,41 @@ export const resetPassword = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Courses (admin CRUD) ----------
 export const getCourses = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/courses`, {
+    const response = await fetch(`${BASE_URL}/api/admin/course`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const createCourse = async (data) => {
-    const response = await fetch(`${BASE_URL}/api/admin/courses`, {
+    const response = await fetch(`${BASE_URL}/api/admin/course`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const updateCourse = async (id, data) => {
-    const response = await fetch(`${BASE_URL}/api/admin/courses/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/admin/course/${id}`, {
         method: "PUT",
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const deleteCourse = async (id) => {
-    const response = await fetch(`${BASE_URL}/api/admin/courses/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/admin/course/${id}`, {
         method: "DELETE",
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Audit Log ----------
@@ -304,7 +318,7 @@ export const getAuditLogs = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/audit-logs`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const clearAuditLogs = async () => {
@@ -312,7 +326,7 @@ export const clearAuditLogs = async () => {
         method: "DELETE",
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- News ----------
@@ -320,7 +334,7 @@ export const getNews = async () => {
     const response = await fetch(`${BASE_URL}/api/news`, {
         headers: { "Content-Type": "application/json" },
     });
-    return response.json();
+    return parse(response);
 };
 
 export const createNews = async (data) => {
@@ -329,7 +343,7 @@ export const createNews = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const updateNews = async (id, data) => {
@@ -338,7 +352,7 @@ export const updateNews = async (id, data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const deleteNews = async (id) => {
@@ -346,7 +360,7 @@ export const deleteNews = async (id) => {
         method: "DELETE",
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Student Portal ----------
@@ -354,21 +368,21 @@ export const getStudentProfile = async () => {
     const response = await fetch(`${BASE_URL}/api/students/profile`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getStudentEnrollments = async () => {
     const response = await fetch(`${BASE_URL}/api/students/enrollments`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getStudentGrades = async () => {
     const response = await fetch(`${BASE_URL}/api/students/grades`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const enrollInCourse = async (data) => {
@@ -377,7 +391,7 @@ export const enrollInCourse = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Teacher Portal ----------
@@ -385,21 +399,21 @@ export const getTeacherClasses = async () => {
     const response = await fetch(`${BASE_URL}/api/teachers/classes`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getTeacherStudents = async () => {
     const response = await fetch(`${BASE_URL}/api/teachers/students`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getTeacherAnnouncements = async () => {
     const response = await fetch(`${BASE_URL}/api/teachers/announcements`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const saveTeacherAttendance = async (data) => {
@@ -408,7 +422,7 @@ export const saveTeacherAttendance = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const submitTeacherGrades = async (data) => {
@@ -417,7 +431,7 @@ export const submitTeacherGrades = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const postTeacherAnnouncement = async (data) => {
@@ -426,7 +440,7 @@ export const postTeacherAnnouncement = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Enrollments (admin) ----------
@@ -434,7 +448,7 @@ export const getEnrollments = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/enrollments`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const updateEnrollmentStatus = async (id, status) => {
@@ -443,7 +457,7 @@ export const updateEnrollmentStatus = async (id, status) => {
         headers: authHeaders(),
         body: JSON.stringify({ status }),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Reports (admin) ----------
@@ -451,7 +465,7 @@ export const getReports = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/reports`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Student announcements / schedule / attendance ----------
@@ -459,21 +473,21 @@ export const getStudentAnnouncements = async () => {
     const response = await fetch(`${BASE_URL}/api/students/announcements`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getStudentSchedule = async () => {
     const response = await fetch(`${BASE_URL}/api/students/schedule`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getStudentAttendanceRecords = async () => {
     const response = await fetch(`${BASE_URL}/api/students/attendance`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Assignments (student + teacher) ----------
@@ -481,7 +495,7 @@ export const getStudentAssignments = async () => {
     const response = await fetch(`${BASE_URL}/api/students/assignments`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const submitStudentAssignment = async (data) => {
@@ -490,14 +504,14 @@ export const submitStudentAssignment = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getTeacherAssignments = async () => {
     const response = await fetch(`${BASE_URL}/api/teachers/assignments`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const createTeacherAssignment = async (data) => {
@@ -506,7 +520,7 @@ export const createTeacherAssignment = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const deleteTeacherAssignment = async (id) => {
@@ -514,7 +528,7 @@ export const deleteTeacherAssignment = async (id) => {
         method: "DELETE",
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Notifications ----------
@@ -522,7 +536,7 @@ export const getStudentNotifications = async () => {
     const response = await fetch(`${BASE_URL}/api/students/notifications`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const markStudentNotificationsRead = async (data) => {
@@ -531,7 +545,7 @@ export const markStudentNotificationsRead = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data || {}),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const broadcastNotification = async (data) => {
@@ -540,7 +554,7 @@ export const broadcastNotification = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Messaging / class chat ----------
@@ -548,7 +562,7 @@ export const getStudentMessages = async () => {
     const response = await fetch(`${BASE_URL}/api/students/messages`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const sendStudentMessage = async (data) => {
@@ -557,14 +571,14 @@ export const sendStudentMessage = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getTeacherMessages = async () => {
     const response = await fetch(`${BASE_URL}/api/teachers/messages`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const sendTeacherMessage = async (data) => {
@@ -573,7 +587,7 @@ export const sendTeacherMessage = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Invoices ----------
@@ -581,14 +595,14 @@ export const getStudentInvoices = async () => {
     const response = await fetch(`${BASE_URL}/api/students/invoices`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getAdminInvoices = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/invoices`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Schedule (admin) ----------
@@ -596,7 +610,7 @@ export const getAdminSchedule = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/schedule`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const saveAdminSchedule = async (data) => {
@@ -605,7 +619,7 @@ export const saveAdminSchedule = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- User import / export (admin) ----------
@@ -615,14 +629,14 @@ export const importUsers = async (data) => {
         headers: authHeaders(),
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const exportUsers = async () => {
     const response = await fetch(`${BASE_URL}/api/admin/users/export`, {
         headers: authHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // ---------- Public: newsletter / applications ----------
@@ -632,7 +646,7 @@ export const subscribeNewsletter = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const submitApplication = async (data) => {
@@ -641,12 +655,12 @@ export const submitApplication = async (data) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-    return response.json();
+    return parse(response);
 };
 
 export const getApplicationStatus = async (code) => {
     const response = await fetch(`${BASE_URL}/api/public/applications/${encodeURIComponent(code)}`, {
         headers: { "Content-Type": "application/json" },
     });
-    return response.json();
+    return parse(response);
 };

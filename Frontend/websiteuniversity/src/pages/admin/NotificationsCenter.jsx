@@ -5,12 +5,6 @@ import {
 import { getStudentNotifications, broadcastNotification } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
-const FALLBACK = [
-  { id: 1, title: "Midterm exam schedule released", body: "Midterm exams run October 24-30. Check the Academic Calendar for rooms.", type: "EXAM", date: "2026-10-10", read: false, audience: "ALL" },
-  { id: 2, title: "Tuition payment deadline", body: "Tuition for the fall semester is due by September 15.", type: "PAYMENT", date: "2026-08-28", read: false, audience: "ALL" },
-  { id: 3, title: "New library hours", body: "The library now opens at 07:00 on weekdays.", type: "GENERAL", date: "2026-08-15", read: true, audience: "STUDENT" },
-];
-
 const TYPE_COLORS = {
   EXAM: "#3E5EDB",
   PAYMENT: "#D69A1E",
@@ -35,10 +29,10 @@ export default function NotificationsCenter() {
     try {
       const data = await getStudentNotifications();
       const arr = Array.isArray(data) ? data : Array.isArray(data.notifications) ? data.notifications : [];
-      setNotifications(arr.length ? arr : FALLBACK);
+      setNotifications(arr);
     } catch {
-      setNotifications(FALLBACK);
-      setError(t("Backend offline — showing sample notifications."));
+      setNotifications([]);
+      setError(t("Failed to load notifications. Make sure the backend server is running."));
     } finally {
       setLoading(false);
     }

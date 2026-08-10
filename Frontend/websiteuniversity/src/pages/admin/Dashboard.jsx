@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
 import {
@@ -79,20 +79,11 @@ function attColor(pct) {
   return "#D2483C";
 }
 
-function StatCard({ title, gradient, data }) {
+function StatTile({ title, value, color }) {
   return (
-    <div className="stat-card">
-      <div className="stat-card-title">{title}</div>
-      <div className="stat-card-chart" style={{ background: gradient }}>
-        <ResponsiveContainer width="100%" height={140}>
-          <BarChart data={data} margin={{ top: 10, right: 8, bottom: 0, left: 8 }}>
-            <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="rgba(27,42,74,0.55)" />
-          </BarChart>
-        </ResponsiveContainer>
-        <div className="stat-card-years">
-          <span>2021</span><span>2022</span><span>2023</span>
-        </div>
-      </div>
+    <div className="stat-tile">
+      <div className="stat-tile-title">{title}</div>
+      <div className="stat-tile-value" style={{ color }}>{value}</div>
     </div>
   );
 }
@@ -401,6 +392,7 @@ export default function AdminDashboard() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
+        .app *:focus { outline: none; }
         .app {
           font-family: 'Inter', system-ui, sans-serif;
           color: #1F2430;
@@ -553,26 +545,74 @@ export default function AdminDashboard() {
         }
         .stat-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0,1fr));
+          grid-template-columns: repeat(4, minmax(0,1fr));
           gap: 20px;
           margin-bottom: 22px;
         }
-        .stat-card {
+        .stat-tile {
           background: #fff;
           border-radius: 14px;
-          padding: 16px 16px 6px;
+          padding: 18px 20px;
+          box-shadow: 0 4px 16px rgba(24,38,68,0.06);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .stat-tile-title {
+          font-size: 13px; font-weight: 600; color: #1F2430;
+        }
+        .stat-tile-value {
+          font-size: 30px; font-weight: 700; line-height: 1;
+        }
+        .overview-head {
+          display: flex; justify-content: space-between; align-items: flex-end;
+          margin-bottom: 22px;
+        }
+        .overview-greet {
+          font-size: 22px; font-weight: 700; color: #1F2430; margin-bottom: 4px;
+        }
+        .overview-grid {
+          display: grid;
+          grid-template-columns: 1.6fr 1fr;
+          gap: 20px;
+          margin-bottom: 22px;
+        }
+        .panel {
+          background: #fff; border-radius: 14px; padding: 18px 20px;
           box-shadow: 0 4px 16px rgba(24,38,68,0.06);
         }
-        .stat-card-title {
-          font-size: 13px; font-weight: 600; color: #3E5EDB; margin-bottom: 10px;
+        .panel-title { font-size: 14px; font-weight: 700; color: #1F2430; margin-bottom: 14px; }
+        .attention-list { display: flex; flex-direction: column; gap: 10px; }
+        .attention-item {
+          display: flex; align-items: center; gap: 12px;
+          width: 100%; text-align: left; cursor: pointer;
+          background: #FAF9F6; border: 1px solid #EFECE6; border-radius: 12px;
+          padding: 12px 14px;
+          transition: background 0.15s ease, border-color 0.15s ease;
         }
-        .stat-card-chart {
-          border-radius: 10px; padding: 6px 6px 4px; position: relative;
+        .attention-item:hover { background: #F3F1EB; border-color: #E2DED5; }
+        .attention-ico {
+          width: 38px; height: 38px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .stat-card-years {
-          display: flex; justify-content: space-between; font-size: 10.5px;
-          color: rgba(27,42,74,0.55); padding: 0 6px 6px; font-weight: 600;
+        .attention-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .attention-title { font-size: 13.5px; font-weight: 600; color: #1F2430; }
+        .attention-sub { font-size: 12px; color: #7A8290; margin-top: 2px; }
+        .attention-count {
+          font-size: 13px; font-weight: 700; color: #3E5EDB;
+          background: #E9EEFF; border-radius: 999px; padding: 4px 10px;
         }
+        .account-summary { display: flex; flex-direction: column; gap: 10px; }
+        .account-row {
+          display: flex; align-items: center; gap: 12px;
+          background: #FAF9F6; border-radius: 12px; padding: 12px 14px;
+        }
+        .account-ico {
+          width: 34px; height: 34px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .account-name { flex: 1; font-size: 13.5px; font-weight: 600; color: #1F2430; }
+        .account-num { font-size: 18px; font-weight: 700; color: #1F2430; }
         .person-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -740,18 +780,68 @@ export default function AdminDashboard() {
 
           {!loading && active === "overview" && (
             <>
-              <div className="content-row">
-                <div className="date-label">{today}</div>
+              <div className="overview-head">
+                <div>
+                  <div className="overview-greet">{t("Welcome back")}, {user.username || user.email || t("Admin")}</div>
+                  <div className="date-label">{today}</div>
+                </div>
               </div>
               <div className="stat-grid">
-                <StatCard title={t("Total Overall")} gradient="linear-gradient(180deg,#DCEEE1,#fff)" data={stats.slice(0, 3)} />
-                <StatCard title={t("Total Teachers")} gradient="linear-gradient(180deg,#E7E3F7,#fff)" data={stats.slice(3, 6)} />
-                <StatCard title={t("Total Students")} gradient="linear-gradient(180deg,#FDEFC9,#fff)" data={stats.slice(6, 9)} />
+                <StatTile title={t("Total Staff")} value={stats[0]?.value ?? 0} color="#3E5EDB" />
+                <StatTile title={t("Total Users")} value={stats[1]?.value ?? 0} color="#7C5CBF" />
+                <StatTile title={t("Total Students")} value={stats[2]?.value ?? 0} color="#E0A520" />
+                <StatTile title={t("Total Contact")} value={stats[3]?.value ?? 0} color="#2E8BC0" />
               </div>
-              <div className="stat-grid">
-                <StatCard title={t("Total Every Year")} gradient="linear-gradient(180deg,#E3E7F7,#fff)" data={stats.slice(9, 12)} />
-                <StatCard title={t("Total Amount in a Month")} gradient="linear-gradient(180deg,#DCEEFA,#fff)" data={stats.slice(12, 15)} />
-                <StatCard title={t("Total in a Year")} gradient="linear-gradient(180deg,#FBE3E0,#fff)" data={stats.slice(15, 18)} />
+              <div className="overview-grid">
+                <div className="panel">
+                  <div className="panel-title">{t("Needs Attention")}</div>
+                  <div className="attention-list">
+                    <button className="attention-item" onClick={() => setActive("enrollments")}>
+                      <span className="attention-ico" style={{ background: "#FDEFC9", color: "#B47D00" }}><UserPlus size={17} /></span>
+                      <span className="attention-text">
+                        <span className="attention-title">{t("Pending Enrollments")}</span>
+                        <span className="attention-sub">{badges.enrollments} {t("awaiting review")}</span>
+                      </span>
+                      <span className="attention-count">{badges.enrollments || "—"}</span>
+                    </button>
+                    <button className="attention-item" onClick={() => setActive("contact")}>
+                      <span className="attention-ico" style={{ background: "#DCEEFA", color: "#1B6AA8" }}><Inbox size={17} /></span>
+                      <span className="attention-text">
+                        <span className="attention-title">{t("Unread Contact")}</span>
+                        <span className="attention-sub">{badges.contact} {t("new messages")}</span>
+                      </span>
+                      <span className="attention-count">{badges.contact || "—"}</span>
+                    </button>
+                    <button className="attention-item" onClick={() => setActive("report")}>
+                      <span className="attention-ico" style={{ background: "#FBE3E0", color: "#B3443A" }}><FileBarChart size={17} /></span>
+                      <span className="attention-text">
+                        <span className="attention-title">{t("Open Reports")}</span>
+                        <span className="attention-sub">{badges.report} {t("pending review")}</span>
+                      </span>
+                      <span className="attention-count">{badges.report || "—"}</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="panel">
+                  <div className="panel-title">{t("Accounts")}</div>
+                  <div className="account-summary">
+                    <div className="account-row">
+                      <span className="account-ico" style={{ background: "#E7E3F7", color: "#6C4FCB" }}><UserCircle2 size={16} /></span>
+                      <span className="account-name">{t("Admins")}</span>
+                      <b className="account-num">{adminAccounts.length}</b>
+                    </div>
+                    <div className="account-row">
+                      <span className="account-ico" style={{ background: "#DCEEE1", color: "#2E9E6C" }}><UserCheck size={16} /></span>
+                      <span className="account-name">{t("Teachers")}</span>
+                      <b className="account-num">{teacherAccounts.length}</b>
+                    </div>
+                    <div className="account-row">
+                      <span className="account-ico" style={{ background: "#FDEFC9", color: "#B47D00" }}><Users size={16} /></span>
+                      <span className="account-name">{t("Students")}</span>
+                      <b className="account-num">{studentAccounts.length}</b>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}

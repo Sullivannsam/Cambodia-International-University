@@ -60,49 +60,6 @@ const NAV = [
   },
 ];
 
-const FALLBACK_ANNOUNCEMENTS = [
-  { id: 1, title: "Midterm examination schedule released", date: "2026-10-10", body: "Midterm exams run October 24-30. Check the Academic Calendar for your rooms." },
-  { id: 2, title: "Semester 1 registration is open", date: "2026-08-15", body: "Register for your courses before September 5 to avoid late fees." },
-  { id: 3, title: "New library hours", date: "2026-08-02", body: "The library now stays open until 9:00 PM on weekdays." },
-];
-
-const FALLBACK_SCHEDULE = [
-  { day: "Monday", code: "CS101", title: "Introduction to Programming", time: "08:00 - 09:30", room: "A101" },
-  { day: "Wednesday", code: "CS101", title: "Introduction to Programming", time: "08:00 - 09:30", room: "A101" },
-  { day: "Tuesday", code: "MATH201", title: "Calculus II", time: "10:00 - 11:30", room: "B204" },
-  { day: "Friday", code: "ENG110", title: "Academic Writing", time: "14:00 - 15:30", room: "C302" },
-];
-
-const FALLBACK_ATTENDANCE = [
-  { code: "CS101", title: "Introduction to Programming", present: 30, total: 32, percent: 94 },
-  { code: "MATH201", title: "Calculus II", present: 25, total: 30, percent: 83 },
-  { code: "ENG110", title: "Academic Writing", present: 28, total: 32, percent: 88 },
-];
-
-const FALLBACK_ASSIGNMENTS = [
-  { id: 1, code: "CS101", title: "Programming Assignment 1 — Loops", due: "2026-09-20", submitted: false },
-  { id: 2, code: "CS101", title: "Programming Assignment 2 — Arrays", due: "2026-10-05", submitted: false },
-  { id: 3, code: "MATH201", title: "Problem Set 3", due: "2026-09-15", submitted: true },
-  { id: 4, code: "ENG110", title: "Essay Draft — Cause & Effect", due: "2026-10-01", submitted: true },
-];
-
-const FALLBACK_NOTIFICATIONS = [
-  { id: 1, title: "New grade published", body: "Your grade for MATH201 Problem Set 3 was published.", date: "2026-08-01", read: false },
-  { id: 2, title: "Enrollment approved", body: "You were enrolled in ENG110 — Academic Writing.", date: "2026-07-28", read: false },
-  { id: 3, title: "Payment reminder", body: "Your tuition for Semester 1 is due by September 5.", date: "2026-07-25", read: true },
-];
-
-const FALLBACK_MESSAGES = [
-  { id: 1, from: "Dr. Vannak Sok", course: "CS101", text: "Remember to submit Assignment 1 before Sunday.", time: "2026-08-01 09:12", mine: false },
-  { id: 2, from: "You", course: "CS101", text: "Got it, thank you professor!", time: "2026-08-01 09:40", mine: true },
-];
-
-const FALLBACK_INVOICES = [
-  { id: 1, title: "Tuition — Semester 1", amount: 1250, due: "2026-09-05", status: "Paid" },
-  { id: 2, title: "Tuition — Semester 2", amount: 1250, due: "2027-02-10", status: "Outstanding" },
-  { id: 3, title: "Lab & Facility Fee", amount: 180, due: "2026-09-05", status: "Outstanding" },
-];
-
 const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function LoadingSpinner() {
@@ -222,13 +179,13 @@ export default function StudentDashboard() {
         setProfile(Array.isArray(p) ? p[0] || {} : p || {});
         setEnrollments(Array.isArray(e) ? e : []);
         setGrades(Array.isArray(g) ? g : []);
-        setAnnouncements(Array.isArray(ann) && ann.length ? ann : FALLBACK_ANNOUNCEMENTS);
-        setSchedule(Array.isArray(sch) && sch.length ? sch : FALLBACK_SCHEDULE);
-        setAttendanceRecords(Array.isArray(att) && att.length ? att : FALLBACK_ATTENDANCE);
-        setAssignments(Array.isArray(asg) && asg.length ? asg : FALLBACK_ASSIGNMENTS);
-        setNotifications(Array.isArray(notif) && notif.length ? notif : FALLBACK_NOTIFICATIONS);
-        setMessages(Array.isArray(msg) && msg.length ? msg : FALLBACK_MESSAGES);
-        setInvoices(Array.isArray(inv) && inv.length ? inv : FALLBACK_INVOICES);
+        setAnnouncements(Array.isArray(ann) ? ann : []);
+        setSchedule(Array.isArray(sch) ? sch : []);
+        setAttendanceRecords(Array.isArray(att) ? att : []);
+        setAssignments(Array.isArray(asg) ? asg : []);
+        setNotifications(Array.isArray(notif) ? notif : []);
+        setMessages(Array.isArray(msg) ? msg : []);
+        setInvoices(Array.isArray(inv) ? inv : []);
       } catch {
         setError(t("Failed to load student data. Make sure the backend server is running."));
       } finally {

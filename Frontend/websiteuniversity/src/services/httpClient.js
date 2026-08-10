@@ -5,7 +5,21 @@ const getHeaders = () => ({
     ...(localStorage.getItem("token") && {
         "Authorization": `Bearer ${localStorage.getItem("token")}`,
     }),
+    ...(localStorage.getItem("email") && {
+        "X-User-Email": localStorage.getItem("email"),
+    }),
 });
+
+const parse = async (response) => {
+    if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        const err = new Error(body?.message || `Request failed (${response.status})`);
+        err.status = response.status;
+        throw err;
+    }
+    if (response.status === 204) return {};
+    return response.json();
+};
 
 // GET request
 export const get = async (path) => {
@@ -13,7 +27,7 @@ export const get = async (path) => {
         method: "GET",
         headers: getHeaders(),
     });
-    return response.json();
+    return parse(response);
 };
 
 // POST request
@@ -23,7 +37,7 @@ export const post = async (path, body) => {
         headers: getHeaders(),
         body: JSON.stringify(body),
     });
-    return response.json();
+    return parse(response);
 };
 
 // PUT request
@@ -33,7 +47,7 @@ export const put = async (path, body) => {
         headers: getHeaders(),
         body: JSON.stringify(body),
     });
-    return response.json();
+    return parse(response);
 };
 
 // DELETE request
@@ -42,5 +56,5 @@ export const del = async (path) => {
         method: "DELETE",
         headers: getHeaders(),
     });
-    return response.json();
+    return parse(response);
 };

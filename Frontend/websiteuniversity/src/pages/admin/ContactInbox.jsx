@@ -5,13 +5,6 @@ import {
 import { getContact, replyContact } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
-const FALLBACK = [
-  { id: 1, name: "Sok Veasna", email: "veasna.sok@example.com", phone: "+855 12 345 678", subject: "Admission inquiry", message: "Hello, I would like to know the requirements for the Computer Science program and when applications close.", date: "2026-08-20", read: false },
-  { id: 2, name: "Chea Maly", email: "maly.chea@example.com", phone: "+855 98 765 432", subject: "Tuition fees", message: "Could you share the tuition fee schedule for the next academic year?", date: "2026-08-18", read: false },
-  { id: 3, name: "Kim Rithy", email: "rithy.kim@example.com", phone: "+855 77 123 456", subject: "Student email", message: "I am having trouble claiming my student email. Can you assist?", date: "2026-08-15", read: true },
-  { id: 4, name: "Ly Sokha", email: "sokha.ly@example.com", phone: "+855 15 246 810", subject: "Scholarship application", message: "What documents are required for the merit scholarship application?", date: "2026-08-12", read: true },
-];
-
 export default function ContactInbox({ onUnreadChange }) {
   const { t } = useLanguage();
   const [messages, setMessages] = useState([]);
@@ -33,13 +26,12 @@ export default function ContactInbox({ onUnreadChange }) {
     try {
       const data = await getContact();
       const arr = Array.isArray(data) ? data : Array.isArray(data.messages) ? data.messages : [];
-      const normalized = (arr.length ? arr : FALLBACK).map(m => ({ ...m, read: !!m.read }));
+      const normalized = arr.map(m => ({ ...m, read: !!m.read }));
       setMessages(normalized);
       onUnreadChange?.(countUnread(normalized));
     } catch {
-      const normalized = FALLBACK.map(m => ({ ...m, read: !!m.read }));
-      setMessages(normalized);
-      onUnreadChange?.(countUnread(normalized));
+      setMessages([]);
+      onUnreadChange?.(0);
     } finally {
       setLoading(false);
     }

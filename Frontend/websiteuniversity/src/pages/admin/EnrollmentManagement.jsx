@@ -5,14 +5,6 @@ import {
 import { getEnrollments, updateEnrollmentStatus } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
-const FALLBACK = [
-  { id: 1, studentId: "CS-2024-007", name: "Dara Chan", course: "Introduction to Programming", courseCode: "CS101", date: "2026-08-18", status: "PENDING" },
-  { id: 2, studentId: "CS-2024-008", name: "Maly Sok", course: "Data Structures", courseCode: "CS201", date: "2026-08-17", status: "PENDING" },
-  { id: 3, studentId: "CS-2024-009", name: "Veasna Chea", course: "Database Systems", courseCode: "CS305", date: "2026-08-15", status: "PENDING" },
-  { id: 4, studentId: "CS-2024-001", name: "Sokha Ly", course: "Introduction to Programming", courseCode: "CS101", date: "2026-08-10", status: "APPROVED" },
-  { id: 5, studentId: "CS-2024-002", name: "Veasna Nop", course: "Data Structures", courseCode: "CS201", date: "2026-08-08", status: "REJECTED" },
-];
-
 export default function EnrollmentManagement({ onPendingChange }) {
   const { t } = useLanguage();
   const [list, setList] = useState([]);
@@ -27,12 +19,12 @@ export default function EnrollmentManagement({ onPendingChange }) {
     try {
       const data = await getEnrollments();
       const arr = Array.isArray(data) ? data : Array.isArray(data.enrollments) ? data.enrollments : [];
-      const rows = arr.length ? arr : FALLBACK;
-      setList(rows);
-      onPendingChange?.(rows.filter(e => e.status === "PENDING").length);
+      setList(arr);
+      onPendingChange?.(arr.filter(e => e.status === "PENDING").length);
     } catch {
-      setList(FALLBACK);
-      onPendingChange?.(FALLBACK.filter(e => e.status === "PENDING").length);
+      setList([]);
+      onPendingChange?.(0);
+      setError(t("Failed to load enrollments. Make sure the backend server is running."));
     } finally {
       setLoading(false);
     }

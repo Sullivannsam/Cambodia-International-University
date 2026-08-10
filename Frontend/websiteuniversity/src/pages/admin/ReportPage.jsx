@@ -5,13 +5,6 @@ import {
 import { getReports } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
-const FALLBACK = [
-  { id: 1, studentId: "CS-2024-007", name: "Dara Chan", type: "Academic", title: "Grade review request", content: "I believe my midterm score for CS101 was recorded incorrectly.", date: "2026-08-20", read: false },
-  { id: 2, studentId: "CS-2024-004", name: "Rithy Hun", type: "Facility", title: "Broken projector in Room A201", content: "The projector in Room A201 has been flickering for a week.", date: "2026-08-18", read: false },
-  { id: 3, studentId: "CS-2024-002", name: "Veasna Nop", type: "Financial", title: "Tuition invoice discrepancy", content: "My invoice shows an extra charge for the library fee.", date: "2026-08-15", read: true },
-  { id: 4, studentId: "CS-2024-001", name: "Sokha Ly", type: "Other", title: "Lost student ID card", content: "I lost my student ID and need a replacement before the exam.", date: "2026-08-12", read: true },
-];
-
 export default function ReportPage() {
   const { t } = useLanguage();
   const [reports, setReports] = useState([]);
@@ -27,10 +20,10 @@ export default function ReportPage() {
     try {
       const data = await getReports();
       const arr = Array.isArray(data) ? data : Array.isArray(data.reports) ? data.reports : [];
-      setReports(arr.length ? arr : FALLBACK);
+      setReports(arr);
     } catch {
-      setReports(FALLBACK);
-      setError(t("Backend offline — showing sample reports."));
+      setReports([]);
+      setError(t("Failed to load reports. Make sure the backend server is running."));
     } finally {
       setLoading(false);
     }

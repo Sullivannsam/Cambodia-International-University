@@ -15,39 +15,6 @@ import EmptyState from '../../components/common/EmptyState';
 import { useToast } from '../../context/ToastContext';
 import { useLanguage } from '../../context/LanguageContext';
 
-const FALLBACK_CLASSES = [
-  { id: 1, code: "CS101", title: "Introduction to Programming", schedule: "Mon & Wed 08:00-09:30", students: 34, credits: 3 },
-  { id: 2, code: "CS201", title: "Data Structures", schedule: "Tue & Thu 10:00-11:30", students: 28, credits: 3 },
-  { id: 3, code: "CS305", title: "Database Systems", schedule: "Fri 14:00-17:00", students: 22, credits: 4 },
-];
-
-const FALLBACK_STUDENTS = [
-  { id: "CS-2024-001", name: "Sokha Ly", major: "Computer Science", att: 94 },
-  { id: "CS-2024-002", name: "Veasna Nop", major: "Computer Science", att: 88 },
-  { id: "CS-2024-003", name: "Maly Chea", major: "Software Engineering", att: 76 },
-  { id: "CS-2024-004", name: "Rithy Hun", major: "Computer Science", att: 91 },
-  { id: "CS-2024-005", name: "Sreyneang Kim", major: "Software Engineering", att: 65 },
-  { id: "CS-2024-006", name: "Piseth Nop", major: "Data Science", att: 82 },
-];
-
-const FALLBACK_ANNOUNCEMENTS = [
-  { id: 1, title: "Midterm exam schedule is out", date: "2026-10-10", body: "Midterm exams run October 24-30. Please check the Academic Calendar for your assigned rooms." },
-  { id: 2, title: "Faculty meeting — Friday", date: "2026-08-20", body: "All faculty must attend the monthly meeting in Room A201 at 15:00." },
-  { id: 3, title: "New grading policy", date: "2026-08-12", body: "Please review the updated grading policy document on the faculty portal." },
-];
-
-const FALLBACK_ASSIGNMENTS = [
-  { id: 1, code: "CS101", title: "Programming Assignment 1 — Loops", due: "2026-09-20", submissions: 12 },
-  { id: 2, code: "CS101", title: "Programming Assignment 2 — Arrays", due: "2026-10-05", submissions: 5 },
-  { id: 3, code: "CS305", title: "Database Design Project", due: "2026-11-01", submissions: 2 },
-];
-
-const FALLBACK_MESSAGES = [
-  { id: 1, from: "Sokha Ly", course: "CS101", text: "Professor, could you clarify what 'recursion' means?", time: "2026-08-01 09:02", mine: false },
-  { id: 2, from: "You", course: "CS101", text: "Recursion is a function that calls itself. I'll cover it in Thursday's lecture.", time: "2026-08-01 09:10", mine: true },
-  { id: 3, from: "Maly Chea", course: "CS305", text: "Is the project due this Friday or next?", time: "2026-08-01 10:24", mine: false },
-];
-
 export default function TeacherDashboard() {
   const { t } = useLanguage();
   const email = localStorage.getItem('email') || '';
@@ -98,17 +65,13 @@ export default function TeacherDashboard() {
         const aArr = Array.isArray(a) ? a : Array.isArray(a?.announcements) ? a.announcements : [];
         const asgArr = Array.isArray(asg) ? asg : Array.isArray(asg?.assignments) ? asg.assignments : [];
         const msgArr = Array.isArray(msg) ? msg : Array.isArray(msg?.messages) ? msg.messages : [];
-        setClasses(cArr.length ? cArr : FALLBACK_CLASSES);
-        setStudents(sArr.length ? sArr : FALLBACK_STUDENTS);
-        setAnnouncements(aArr.length ? aArr : FALLBACK_ANNOUNCEMENTS);
-        setAssignments(asgArr.length ? asgArr : FALLBACK_ASSIGNMENTS);
-        setMessages(msgArr.length ? msgArr : FALLBACK_MESSAGES);
+        setClasses(cArr);
+        setStudents(sArr);
+        setAnnouncements(aArr);
+        setAssignments(asgArr);
+        setMessages(msgArr);
       } catch {
-        setClasses(FALLBACK_CLASSES);
-        setStudents(FALLBACK_STUDENTS);
-        setAnnouncements(FALLBACK_ANNOUNCEMENTS);
-        setAssignments(FALLBACK_ASSIGNMENTS);
-        setMessages(FALLBACK_MESSAGES);
+        setError(t("Failed to load teacher data. Make sure the backend server is running."));
       } finally {
         setLoading(false);
       }

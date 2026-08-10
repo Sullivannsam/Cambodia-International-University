@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { SkeletonGrid } from "../common/Skeleton";
 
-// ── FALLBACK DATA ─────────────────────────────────────────────────────────────
+// ── COURSE VISUALS ────────────────────────────────────────────────────────────
 const GRADIENTS = [
   "linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
   "linear-gradient(135deg,#0d1b2a 0%,#1b4332 50%,#00b4d8 100%)",
@@ -43,100 +43,6 @@ function toCourseCard(c, index) {
     featured: !!c.featured,
   };
 }
-
-const FALLBACK_COURSES = [
-  {
-    id: 1,
-    title: "Computer Science",
-    category: "Technology",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
-    accent: "#00d4ff",
-    icon: "💻",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80",
-  },
-  {
-    id: 2,
-    title: "Cyber Security",
-    category: "Security",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#0d1b2a 0%,#1b4332 50%,#00b4d8 100%)",
-    accent: "#00f5d4",
-    icon: "🛡️",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80",
-  },
-  {
-    id: 3,
-    title: "Reverse Engineering",
-    category: "Security",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#10002b 0%,#3c096c 50%,#5a189a 100%)",
-    accent: "#e040fb",
-    icon: "🔬",
-    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80",
-  },
-  {
-    id: 4,
-    title: "White Hat Hacker",
-    category: "Security",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#1c1c3a 0%,#2d2d6b 50%,#4444aa 100%)",
-    accent: "#7c83fd",
-    icon: "🤍",
-    image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=400&q=80",
-  },
-  {
-    id: 5,
-    title: "Architecture Major",
-    category: "Design",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#1a1200 0%,#3d2b00 50%,#6b4c00 100%)",
-    accent: "#ffd60a",
-    icon: "🏛️",
-    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&q=80",
-  },
-  {
-    id: 6,
-    title: "Electrical Engineer",
-    category: "Engineering",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#003300 0%,#1a5c1a 50%,#2d8a2d 100%)",
-    accent: "#39ff14",
-    icon: "⚡",
-    image: "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=400&q=80",
-  },
-  {
-    id: 7,
-    title: "Software Development",
-    category: "Technology",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#001233 0%,#023e8a 50%,#0077b6 100%)",
-    accent: "#48cae4",
-    icon: "🚀",
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80",
-  },
-  {
-    id: 8,
-    title: "Mobile Development",
-    category: "Technology",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#1a0533 0%,#4a0080 50%,#7b2fff 100%)",
-    accent: "#ff6ef7",
-    icon: "📱",
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80",
-  },
-  {
-    id: 9,
-    title: "Civil Engineering",
-    category: "Engineering",
-    desc: "Computer Science explores computing fundamentals, programming, and problem-solving — preparing students for software development, data-driven decision-making, and innovative tech careers. Enroll to deepen your skills.",
-    bg: "linear-gradient(135deg,#0a0a0a 0%,#1c2b3a 50%,#2e4057 100%)",
-    accent: "#00b4d8",
-    icon: "🏗️",
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80",
-  },
-];
-
 
 function Highlight({ text, query, accent }) {
   const q = (query || "").trim();
@@ -256,17 +162,17 @@ function HeroBanner() {
 export default function App() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-  const [courses, setCourses] = useState(FALLBACK_COURSES);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
   useEffect(() => {
     getCourses()
       .then((data) => {
-        const list = Array.isArray(data) ? data : Array.isArray(data.courses) ? data.courses : null;
-        if (list && list.length) setCourses(list.map(toCourseCard));
+        const list = Array.isArray(data) ? data : Array.isArray(data.courses) ? data.courses : [];
+        setCourses(list.map(toCourseCard));
       })
-      .catch(() => {})
+      .catch(() => setCourses([]))
       .finally(() => setLoading(false));
   }, []);
 
