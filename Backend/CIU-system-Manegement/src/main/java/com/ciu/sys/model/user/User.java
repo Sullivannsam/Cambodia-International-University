@@ -1,5 +1,7 @@
 package com.ciu.sys.model.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +22,7 @@ public class User {
   @Column(name = "username", nullable = false)
   private String username;
 
+  @JsonIgnore
   @Column(nullable = false)
   private String password;
 

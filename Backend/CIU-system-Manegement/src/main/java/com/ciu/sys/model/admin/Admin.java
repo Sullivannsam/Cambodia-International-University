@@ -1,5 +1,7 @@
 package com.ciu.sys.model.admin;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +22,7 @@ public class Admin {
   @Column(name = "Username")
   private String username;
 
+  @JsonIgnore
   @Column(name = "Password")
   private String password;
 

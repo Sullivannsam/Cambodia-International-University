@@ -20,11 +20,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ciu.sys.dto.admin.AdminDto;
 import com.ciu.sys.common.LoginRequest;
 import com.ciu.sys.model.admin.Admin;
+import com.ciu.sys.service.Jwt.JwtService;
 import com.ciu.sys.service.admin.AdminService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AdminController {
+
+  @Autowired
+  private JwtService jwtService;
 
   @Autowired
   private AdminService adminService;
@@ -47,31 +51,13 @@ public class AdminController {
     Admin found = adminService.authenticate(request.email(), request.password());
     if (found != null) {
       return ResponseEntity.ok(Map.of(
-          "token", "admin-token",
+          "token", jwtService.generateToken(found.getEmail(), "ADMIN"),
           "message", "Admin Login Successful!",
           "email", found.getEmail(),
           "username", found.getUsername(),
           "role", "ADMIN"));
     }
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
-  }
-
-  @PostMapping("/register/admin")
-  public ResponseEntity<?> adminRegister(@RequestBody AdminDto request) {
-
-    try {
-      Admin admin = new Admin();
-      admin.setUsername(request.username());
-      admin.setEmail(request.email());
-      admin.setPassword(passwordEncoder.encode(request.password()));
-      admin.setRole(request.role());
-
-      adminService.adminRegisterAccount(admin);
-      return ResponseEntity.ok(Map.of("message", "Admin registered successfully"));
-
-    } catch (Exception e) {
-      return ResponseEntity.badRequest().body(Map.of("message", "Email already exist!"));
-    }
   }
 
   @PreAuthorize("hasRole ('ADMIN')")

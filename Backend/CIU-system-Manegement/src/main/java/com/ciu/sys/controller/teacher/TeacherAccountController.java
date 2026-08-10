@@ -19,12 +19,16 @@ import com.ciu.sys.common.LoginRequest;
 import com.ciu.sys.dto.teacher.TeacherRequestDto;
 import com.ciu.sys.dto.teacher.TeacherResponseDto;
 import com.ciu.sys.model.teacher.Teacher;
+import com.ciu.sys.service.Jwt.JwtService;
 import com.ciu.sys.service.teacher.TeacherService;
 import com.ciu.sys.common.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/api/auth/teacher")
 public class TeacherAccountController {
+
+  @Autowired
+  private JwtService jwtService;
 
   @Autowired
   private TeacherService teacherService;
@@ -38,7 +42,7 @@ public class TeacherAccountController {
         .orElseThrow(() -> new ResourceNotFoundException("Account Not Found"));
     if (passwordEncoder.matches(request.password(), found.getPassword())) {
       return ResponseEntity.ok(Map.of(
-          "token", "teacher-token",
+          "token", jwtService.generateToken(found.getEmail(), "TEACHER"),
           "message", "Login Successfully",
           "email", found.getEmail(),
           "username", found.getUsername(),

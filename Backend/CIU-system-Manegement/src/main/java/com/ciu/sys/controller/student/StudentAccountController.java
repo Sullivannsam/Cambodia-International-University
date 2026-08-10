@@ -20,11 +20,17 @@ import com.ciu.sys.common.LoginRequest;
 import com.ciu.sys.dto.student.StudentRequestDto;
 import com.ciu.sys.dto.student.StudentResponse;
 import com.ciu.sys.model.student.StudentAccount;
+import com.ciu.sys.service.Jwt.JwtService;
 import com.ciu.sys.service.student.StudentService;
+
+import io.jsonwebtoken.Jwt;
 
 @RestController
 @RequestMapping("/api/auth/students")
 public class StudentAccountController {
+
+  @Autowired
+  private JwtService jwtService;
 
   @Autowired
   private StudentService studentService;
@@ -49,7 +55,7 @@ public class StudentAccountController {
     Optional<StudentAccount> found = studentService.findByEmail(request.email());
     if (found.isPresent() && passwordEncoder.matches(request.password(), found.get().getPassword())) {
       return ResponseEntity.ok(Map.of(
-          "token", "student-token",
+          "token", jwtService.generateToken(found.get().getEmail(), "STUDENT"),
           "message", "Login successfully",
           "email", found.get().getEmail(),
           "role", "STUDENT"));

@@ -28,10 +28,6 @@ public class AdminService {
         .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
   }
 
-  public Admin adminRegisterAccount(Admin admin) {
-    return adminRepository.save(admin);
-  }
-
   public Admin updateAdminById(Admin updateAdmin) {
     return adminRepository.save(updateAdmin);
   }

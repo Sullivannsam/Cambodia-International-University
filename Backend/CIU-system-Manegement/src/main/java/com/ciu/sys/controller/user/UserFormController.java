@@ -16,12 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.common.LoginRequest;
 import com.ciu.sys.common.RegisterRequest;
+import com.ciu.sys.service.Jwt.JwtService;
 import com.ciu.sys.service.admin.AdminService;
 import com.ciu.sys.service.user.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class UserFormController {
+
+  @Autowired
+  private JwtService jwtService;
 
   @Autowired
   UserService userService;
@@ -47,9 +51,10 @@ public class UserFormController {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(request.email(), request.password()));
       return ResponseEntity.ok(Map.of(
-          "token", "user-token",
+          "token", jwtService.generateToken(request.email(), "USER"),
           "message", "Login Successful!",
-          "email", request.email()));
+          "email", request.email(),
+          "role", "USER"));
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
     }
@@ -70,7 +75,7 @@ public class UserFormController {
 
     userService.register(user);
     return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-        "token", "user-token",
+        "token", jwtService.generateToken(request.email(), "USER"),
         "message", "Register Successfully",
         "email", request.email()));
   }

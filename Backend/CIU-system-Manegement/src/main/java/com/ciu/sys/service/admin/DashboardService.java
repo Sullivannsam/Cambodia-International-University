@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Locale;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.support.incrementer.HsqlSequenceMaxValueIncrementer;
 import org.springframework.stereotype.Service;
 
 import com.ciu.sys.model.finance.Payment;
@@ -60,12 +63,14 @@ public class DashboardService {
     long teacherCount = teacherRepo.countTeachers();
     long userCount = userRepo.countUsers();
 
-    Map<String, Object> stats = new HashMap<>();
-    stats.put("TotalStaff", adminCount + teacherCount);
-    stats.put("TotalUsers", userCount);
-    stats.put("TotalStudents", studentCount);
-    stats.put("TotalContact", contactCount);
+    List<Map<String, Object>> values = new ArrayList<>();
+    values.add(Map.of("value", adminCount + teacherCount)); // TotalStaff
+    values.add(Map.of("value", userCount)); // TotalUsers
+    values.add(Map.of("value", studentCount)); // TotalStudents
+    values.add(Map.of("value", contactCount)); // TotalContact
 
+    Map<String, Object> stats = new HashMap<>();
+    stats.put("stats", values);
     return stats;
   }
 
@@ -107,7 +112,28 @@ public class DashboardService {
   }
 
   public List<Map<String, Object>> getEarningData() {
-    return new ArrayList<>();
+    Map<String, double[]> byMonth = new TreeMap<>(); // "yyyy-MM" -> [a, b]
+    for (Payment p : paymentRepo.findAll()) {
+      if (p.getAmount() == null || p.getDate() == null)
+        continue;
+      String key = p.getDate().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+      String type = p.getType() == null ? "" : p.getType().toLowerCase();
+      boolean core = type.contains("tuition") || type.contains("registration");
+      double[] arr = byMonth.computeIfAbsent(key, k -> new double[2]);
+      arr[0] += p.getAmount(); // a = all income that month
+      if (core)
+        arr[1] += p.getAmount(); // b = core fees that month
+    }
+
+    List<Map<String, Object>> result = new ArrayList<>();
+    DateTimeFormatter label = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
+    for (Map.Entry<String, double[]> e : byMonth.entrySet()) {
+      result.add(Map.of(
+          "m", YearMonth.parse(e.getKey()).format(label), // "Aug"
+          "a", Math.round(e.getValue()[0]),
+          "b", Math.round(e.getValue()[1])));
+    }
+    return result;
   }
 
   public List<String> getFeeGroupData() {

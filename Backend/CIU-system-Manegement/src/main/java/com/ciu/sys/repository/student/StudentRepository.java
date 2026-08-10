@@ -12,6 +12,6 @@ import com.ciu.sys.model.student.StudentAccount;
 public interface StudentRepository extends JpaRepository<StudentAccount, Long> {
   Optional<StudentAccount> findByEmail(String email);
 
-  @Query("SELECT COUNT(s) FROM Student s")
+  @Query("SELECT COUNT(s) FROM StudentAccount s")
   long countStudents();
 }
