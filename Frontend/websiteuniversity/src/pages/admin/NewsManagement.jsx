@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Search, Loader2, Pencil, Trash2, X, Plus, Newspaper
+  Search, Loader2, Pencil, Trash2, X, Plus, Newspaper, Upload
 } from "lucide-react";
 import { getNews, createNews, updateNews, deleteNews } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
@@ -64,6 +64,41 @@ export default function NewsManagement() {
   const closeModal = () => {
     setModal(null);
     setError("");
+  };
+
+  const compressImage = (file, maxSize = 800, quality = 0.82) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError(t("Please choose an image file."));
+      return;
+    }
+    try {
+      const dataUrl = await compressImage(file);
+      setForm({ ...form, imageUrl: dataUrl });
+    } catch {
+      setError(t("Could not read that image. Please try another one."));
+    }
   };
 
   const handleSave = async (e) => {
@@ -169,7 +204,7 @@ export default function NewsManagement() {
           backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
           animation: nmFade 0.25s ease;
         }
-        .nm .nm-modal { background: #fff; border-radius: 16px; padding: 26px 28px; width: min(92vw, 560px); animation: nmPop 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nm .nm-modal { background: #fff; border-radius: 16px; padding: 22px 24px; width: min(92vw, 480px); max-height: 88vh; overflow-y: auto; animation: nmPop 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nm .nm-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
         .nm .nm-modal-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px; color: #182644; }
         .nm .nm-close { background: #F6F4EF; border: none; border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #6B7280; cursor: pointer; }
@@ -182,6 +217,18 @@ export default function NewsManagement() {
         .nm .nm-input:focus { border-color: #3E5EDB; }
         .nm .nm-input-row { display: flex; gap: 14px; }
         .nm .nm-input-row .nm-field { flex: 1; }
+        .nm .nm-img-box {
+          display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px;
+          border: 2px dashed #CBD0DB; border-radius: 10px; padding: 12px; cursor: pointer;
+          background: #FBFBF9; color: #8A8378; font-size: 12px; text-align: center;
+          transition: border-color 0.2s; min-height: 88px; overflow: hidden;
+        }
+        .nm .nm-img-box:hover { border-color: #3E5EDB; color: #3E5EDB; }
+        .nm .nm-img-preview { max-width: 100%; max-height: 100px; border-radius: 8px; object-fit: cover; }
+        .nm .nm-img-remove {
+          margin-top: 8px; border: none; background: #FBE3E0; color: #D2483C; font-size: 12px;
+          font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+        }
         .nm .nm-textarea { resize: vertical; min-height: 110px; font-family: inherit; }
         .nm .nm-toggle-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
         .nm .nm-toggle { width: 40px; height: 22px; border-radius: 999px; border: none; cursor: pointer; position: relative; transition: background 0.2s; }
@@ -319,13 +366,23 @@ export default function NewsManagement() {
                   />
                 </div>
                 <div className="nm-field">
-                  <label className="nm-label">{t("Image URL")}</label>
-                  <input
-                    className="nm-input"
-                    value={form.imageUrl}
-                    onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                    placeholder="https://..."
-                  />
+                  <label className="nm-label">{t("Image")}</label>
+                  <label className="nm-img-box">
+                    {form.imageUrl ? (
+                      <img src={form.imageUrl} alt="preview" className="nm-img-preview" />
+                    ) : (
+                      <>
+                        <Upload size={22} />
+                        <span>{t("Click to choose a photo from your device")}</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" hidden onChange={handleImageChange} />
+                  </label>
+                  {form.imageUrl && (
+                    <button type="button" className="nm-img-remove" onClick={() => setForm({ ...form, imageUrl: "" })}>
+                      {t("Remove image")}
+                    </button>
+                  )}
                 </div>
               </div>
 

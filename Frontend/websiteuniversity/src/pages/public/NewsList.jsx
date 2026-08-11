@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getNews } from '../../services/endpoints';
+import { ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
-import { SkeletonGrid } from '../common/Skeleton';
+import { SkeletonGrid } from '../../components/common/Skeleton';
 
-const NewsSection = () => {
+export default function NewsList() {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const { t } = useLanguage();
+
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/");
+  };
 
   useEffect(() => {
     getNews()
@@ -16,15 +22,12 @@ const NewsSection = () => {
         const list = Array.isArray(data) ? data : Array.isArray(data.news) ? data.news : [];
         const published = list
           .filter((n) => n.published !== false)
-          .sort((a, b) => (b.id || 0) - (a.id || 0))
-          .slice(0, 6);
+          .sort((a, b) => (b.id || 0) - (a.id || 0));
         setNews(published);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  if (!loading && !news.length) return null;
 
   const formatDate = (v) => {
     if (!v) return "";
@@ -33,10 +36,14 @@ const NewsSection = () => {
   };
 
   return (
-    <section style={{ background: "var(--bg-secondary)", padding: "56px 24px" }}>
+    <section style={{ background: "var(--bg-secondary)", padding: "56px 24px", minHeight: "60vh" }}>
       <style>{`
-        .news-section {
+        .news-list {
           max-width: 1200px; margin: 0 auto;
+        }
+        .nl-back {
+          display: inline-flex; align-items: center; gap: 8px; background: none; border: none;
+          color: #3E5EDB; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 22px; padding: 0; font-family: inherit;
         }
         .news-grid {
           display: grid;
@@ -67,25 +74,21 @@ const NewsSection = () => {
         .news-read { font-size: 12.5px; font-weight: 700; color: #3E5EDB; margin-top: auto; }
       `}</style>
 
-      <div className="news-section">
+      <div className="news-list">
+        <button className="nl-back" onClick={goBack}><ArrowLeft size={16} /> {t("Back")}</button>
+
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <h2 style={{ fontSize: "clamp(18px, 4vw, 26px)", fontWeight: 800, color: "var(--text-primary)", margin: 0, fontFamily: "'Sora','Inter',sans-serif" }}>
             {t("latestNews")}
           </h2>
           <span style={{ fontSize: 13, color: "var(--text-muted, #64748b)" }}>
             {loading ? "" : `${news.length} ${news.length === 1 ? t("article") : t("articles")}`}
-            <span
-              onClick={() => navigate("/public/news")}
-              style={{ marginLeft: 14, color: "#3E5EDB", fontWeight: 700, cursor: "pointer" }}
-            >
-              {t("View all")} →
-            </span>
           </span>
         </div>
 
         {loading ? (
-          <SkeletonGrid count={3} />
-        ) : (
+          <SkeletonGrid count={6} />
+        ) : news.length ? (
           <div className="news-grid">
             {news.map((n) => (
               <article key={n.id} className="news-card" onClick={() => navigate(`/public/news/${n.id}`)}>
@@ -106,10 +109,10 @@ const NewsSection = () => {
               </article>
             ))}
           </div>
+        ) : (
+          <p style={{ color: "var(--text-muted, #64748b)", fontSize: 14 }}>{t("No news available.")}</p>
         )}
       </div>
     </section>
   );
-};
-
-export default NewsSection;
+}

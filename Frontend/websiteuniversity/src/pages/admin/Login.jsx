@@ -44,7 +44,9 @@ export default function Login() {
         setError(data.message || t('Invalid email or password.'));
       }
     } catch (err) {
-      setError(t('Server error, please try again.'));
+      setError(err?.message && !String(err.message).startsWith("Failed to fetch")
+        ? err.message
+        : t('Server error, please try again.'));
     } finally {
       setLoading(false);
     }

@@ -6,7 +6,7 @@ import {
   LayoutGrid, BookOpen, GraduationCap, UserCircle2, LogOut,
   Loader2, ClipboardList, Plus, X, RotateCcw, CreditCard,
   FileText, Megaphone, Save, Printer, Bell, CalendarDays,
-  ClipboardCheck, MessageSquare, FileDown, Send, Upload
+  ClipboardCheck, MessageSquare, FileDown, Send, Upload, AlertTriangle
 } from "lucide-react";
 import {
   getStudentProfile, getStudentEnrollments, getStudentGrades, enrollInCourse,
@@ -19,6 +19,7 @@ import LogoutModal from "../../components/common/LogoutModal";
 import EmptyState from "../../components/common/EmptyState";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { submitReport } from "../../services/reportsStore";
 
 const NAV = [
   {
@@ -106,6 +107,13 @@ export default function StudentDashboard() {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [enrollCode, setEnrollCode] = useState("");
   const [enrolling, setEnrolling] = useState(false);
+
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTeacher, setReportTeacher] = useState("");
+  const [reportCustomTeacher, setReportCustomTeacher] = useState("");
+  const [reportCategory, setReportCategory] = useState("Other");
+  const [reportDesc, setReportDesc] = useState("");
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     try {
@@ -220,8 +228,45 @@ export default function StudentDashboard() {
 
   const displayName = profile.username || profile.name || user.username || (user.email || "").split("@")[0] || t("Student");
   const studentId = profile.studentId || profile.id || "-";
-
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const teacherOptions = Array.from(
+    new Set(schedule.map((s) => (s.instructor || "").trim()).filter(Boolean))
+  );
+
+  const openReport = () => {
+    const first = teacherOptions[0] || "";
+    setReportTeacher(first);
+    setReportCustomTeacher("");
+    setReportCategory("Other");
+    setReportDesc("");
+    setReportOpen(true);
+  };
+
+  const submitTeacherReport = async () => {
+    const subject = reportCustomTeacher.trim() || (reportTeacher !== "__custom__" ? reportTeacher.trim() : "");
+    if (!subject) {
+      toast(t("Please choose or type the teacher you want to report."), "error");
+      return;
+    }
+    if (!reportDesc.trim()) {
+      toast(t("Please describe what happened."), "error");
+      return;
+    }
+    setReporting(true);
+    submitReport({
+      reporterRole: "STUDENT",
+      reporterEmail: user.email || profile.email || localStorage.getItem("email") || "",
+      reporterName: displayName,
+      subjectRole: "TEACHER",
+      subjectName: subject,
+      category: reportCategory,
+      description: reportDesc.trim(),
+    });
+    setReporting(false);
+    setReportOpen(false);
+    toast(t("Report submitted to the department. Thank you for letting us know."));
+  };
 
   const openNotifications = () => {
     setNotifOpen(o => !o);
@@ -565,6 +610,11 @@ export default function StudentDashboard() {
                     <div className="course-desc">{t("Enroll using the course code provided by your faculty.")}</div>
                     <button className="add-btn" onClick={() => setEnrollOpen(true)}><Plus size={15} /> {t("Enroll")}</button>
                   </div>
+                  <div className="course-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div className="sp-flex" style={{ color: "#D2483C" }}><AlertTriangle size={18} /> {t("Report a Teacher")}</div>
+                    <div className="course-desc">{t("Submit a report about a teacher to the department office.")}</div>
+                    <button className="add-btn" onClick={openReport} style={{ background: "#D2483C", boxShadow: "none" }}><AlertTriangle size={15} /> {t("Report")}</button>
+                  </div>
                 </div>
               </div>
 
@@ -627,7 +677,10 @@ export default function StudentDashboard() {
             <div className="panel">
               <div className="content-row" style={{ marginBottom: 12 }}>
                 <div className="panel-title" style={{ margin: 0 }}><CalendarDays size={16} /> {t("Weekly Schedule")}</div>
-                <button className="add-btn" onClick={downloadRosterCSV} style={{ padding: "8px 14px", fontSize: 12 }}><FileDown size={14} /> {t("Export CSV")}</button>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button className="add-btn" onClick={openReport} style={{ padding: "8px 14px", fontSize: 12, background: "#D2483C", boxShadow: "none" }}><AlertTriangle size={14} /> {t("Report Teacher")}</button>
+                  <button className="add-btn" onClick={downloadRosterCSV} style={{ padding: "8px 14px", fontSize: 12 }}><FileDown size={14} /> {t("Export CSV")}</button>
+                </div>
               </div>
               {schedule.length ? (
                 <table className="sp-table">
@@ -1010,6 +1063,72 @@ export default function StudentDashboard() {
           )}
         </div>
       </div>
+
+      {reportOpen && (
+        <div className="sp-overlay">
+          <div className="sp-modal">
+            <div className="sp-modal-head">
+              <div className="sp-modal-title">
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#D2483C" }}><AlertTriangle size={18} /> {t("Report a Teacher")}</span>
+              </div>
+              <button className="sp-close" onClick={() => setReportOpen(false)} aria-label={t("Close")}><X size={16} /></button>
+            </div>
+            <div style={{ fontSize: 13, color: "#6B7280", marginBottom: 14, lineHeight: 1.6 }}>
+              {t("Reports go straight to the department office for review. Please describe the situation honestly.")}
+            </div>
+            <div className="sp-field">
+              <label className="sp-label">{t("Teacher")}</label>
+              <select
+                className="sp-input"
+                value={reportTeacher}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setReportTeacher(v);
+                  if (v !== "__custom__") setReportCustomTeacher(v);
+                }}
+              >
+                <option value="">{t("Select a teacher (optional)")}</option>
+                {teacherOptions.map((name) => <option key={name} value={name}>{name}</option>)}
+                <option value="__custom__">{t("Other teacher (type name)")}</option>
+              </select>
+              <input
+                className="sp-input"
+                style={{ marginTop: 10 }}
+                value={reportCustomTeacher}
+                onChange={(e) => setReportCustomTeacher(e.target.value)}
+                placeholder={t("Teacher name (required)")}
+                required
+              />
+            </div>
+            <div className="sp-field">
+              <label className="sp-label">{t("Category")}</label>
+              <select className="sp-input" value={reportCategory} onChange={(e) => setReportCategory(e.target.value)}>
+                {["Absent", "Misconduct", "Harassment", "Poor Teaching", "Other"].map((c) => (
+                  <option key={c} value={c}>{t(c)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sp-field">
+              <label className="sp-label">{t("Description")}</label>
+              <textarea
+                className="sp-input"
+                rows={4}
+                value={reportDesc}
+                onChange={(e) => setReportDesc(e.target.value)}
+                placeholder={t("What happened, when, and how it affected you.")}
+                required
+              />
+            </div>
+            <div className="sp-modal-foot">
+              <button type="button" className="sp-cancel" onClick={() => setReportOpen(false)}>{t("Cancel")}</button>
+              <button type="button" className="sp-primary" style={{ background: "#D2483C", boxShadow: "0 6px 16px rgba(210,72,60,0.35)" }} disabled={reporting} onClick={submitTeacherReport}>
+                {reporting ? <Loader2 size={15} className="sp-spin" /> : <AlertTriangle size={15} />}
+                {reporting ? t("Submitting...") : t("Submit Report")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {enrollOpen && (
         <div className="sp-overlay">

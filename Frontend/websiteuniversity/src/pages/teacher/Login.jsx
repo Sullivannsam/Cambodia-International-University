@@ -32,8 +32,10 @@ export default function TeacherLogin() {
       } else {
         setError(data.message || t('Invalid credentials'));
       }
-    } catch {
-      setError(t('Server error, please try again.'));
+    } catch (err) {
+      setError(err?.message && !String(err.message).startsWith("Failed to fetch")
+        ? err.message
+        : t('Server error, please try again.'));
     } finally {
       setLoading(false);
     }

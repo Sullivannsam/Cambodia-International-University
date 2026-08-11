@@ -38,6 +38,11 @@ export default function NewsDetail() {
     return isNaN(d.getTime()) ? v : d.toLocaleDateString("en-US", { dateStyle: "long" });
   };
 
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/public/news");
+  };
+
   const share = () => {
     if (navigator.share) {
       navigator.share({ title: news?.title, url: window.location.href }).catch(() => {});
@@ -71,7 +76,7 @@ export default function NewsDetail() {
       `}</style>
 
       <div className="nd-wrap">
-        <button className="nd-back" onClick={() => navigate("/")}><ArrowLeft size={16} /> {t("Back to Home")}</button>
+        <button className="nd-back" onClick={goBack}><ArrowLeft size={16} /> {t("Back")}</button>
 
         {loading && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

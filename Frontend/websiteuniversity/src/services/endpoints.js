@@ -331,14 +331,17 @@ export const clearAuditLogs = async () => {
 
 // ---------- News ----------
 export const getNews = async () => {
-    const response = await fetch(`${BASE_URL}/api/news`, {
-        headers: { "Content-Type": "application/json" },
+    const url = localStorage.getItem("token")
+        ? `${BASE_URL}/api/auth/admin/news`
+        : `${BASE_URL}/api/news`;
+    const response = await fetch(url, {
+        headers: authHeaders(),
     });
     return parse(response);
 };
 
 export const createNews = async (data) => {
-    const response = await fetch(`${BASE_URL}/api/admin/news`, {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/posts/news`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify(data),
@@ -347,7 +350,7 @@ export const createNews = async (data) => {
 };
 
 export const updateNews = async (id, data) => {
-    const response = await fetch(`${BASE_URL}/api/admin/news/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/update/news/${id}`, {
         method: "PUT",
         headers: authHeaders(),
         body: JSON.stringify(data),
@@ -356,7 +359,7 @@ export const updateNews = async (id, data) => {
 };
 
 export const deleteNews = async (id) => {
-    const response = await fetch(`${BASE_URL}/api/admin/news/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/delete/news/${id}`, {
         method: "DELETE",
         headers: authHeaders(),
     });
@@ -661,6 +664,33 @@ export const submitApplication = async (data) => {
 export const getApplicationStatus = async (code) => {
     const response = await fetch(`${BASE_URL}/api/public/applications/${encodeURIComponent(code)}`, {
         headers: { "Content-Type": "application/json" },
+    });
+    return parse(response);
+};
+
+// ---------- Class code join (teacher) ----------
+export const joinTeacherClass = async (code) => {
+    const response = await fetch(`${BASE_URL}/api/teachers/join`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ code }),
+    });
+    return parse(response);
+};
+
+export const getTeacherNotifications = async () => {
+    const response = await fetch(`${BASE_URL}/api/teachers/notifications`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+// ---------- Class code join (student, online-pay path) ----------
+export const joinStudentClass = async (code) => {
+    const response = await fetch(`${BASE_URL}/api/students/join`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ code }),
     });
     return parse(response);
 };

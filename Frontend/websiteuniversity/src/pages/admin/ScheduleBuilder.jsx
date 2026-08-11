@@ -5,7 +5,18 @@ import { useLanguage } from "../../context/LanguageContext";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const emptyEntry = { day: "Mon", time: "08:00-09:30", course: "", room: "", instructor: "" };
+const MAJORS = ["CS", "IT", "BBA", "ENG"];
+const LEVELS = [
+  { label: "Year 1", mult: 100 },
+  { label: "Year 2", mult: 200 },
+  { label: "Year 3", mult: 300 },
+  { label: "Year 4", mult: 400 },
+  { label: "Master", mult: 500 },
+  { label: "PhD", mult: 600 },
+];
+const ROOM_SUGGESTIONS = ["Ak-101", "Ak-102", "Ak-201", "Lab-1001", "Lab-1002"];
+
+const emptyEntry = { major: "CS", level: "Year 1", code: "CS100", day: "Mon", time: "08:00-09:30", course: "CS100", room: "", instructor: "" };
 
 export default function ScheduleBuilder() {
   const { t } = useLanguage();
@@ -21,7 +32,15 @@ export default function ScheduleBuilder() {
     try {
       const data = await getAdminSchedule();
       const arr = Array.isArray(data) ? data : Array.isArray(data.schedule) ? data.schedule : [];
-      setEntries(arr);
+      const normalized = arr.map((e) => {
+        const m = MAJORS.find((mj) => e.course?.toUpperCase().startsWith(mj)) || { label: "CS" };
+        const num = parseInt(String(e.course || "").replace(/[^0-9]/g, ""), 10) || 100;
+        const lvl = LEVELS.find((l) => l.mult === Math.floor(num / 100) * 100) || LEVELS[0];
+        const major = m.label || "CS";
+        const level = lvl.label;
+        return { ...e, major, level, code: `${major}${lvl.mult}`, course: e.course || `${major}${lvl.mult}` };
+      });
+      setEntries(normalized);
     } catch {
       setEntries([]);
       setError(t("Failed to load schedule. Make sure the backend server is running."));
@@ -34,6 +53,12 @@ export default function ScheduleBuilder() {
 
   const update = (id, field, value) => {
     setEntries((prev) => prev.map((e) => e.id === id ? { ...e, [field]: value } : e));
+  };
+
+  const setCode = (id, major, level) => {
+    const lvl = LEVELS.find((l) => l.label === level) || LEVELS[0];
+    const code = `${major}${lvl.mult}`;
+    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, major, level, code, course: code } : e));
   };
 
   const addRow = () => {
@@ -156,9 +181,11 @@ export default function ScheduleBuilder() {
             <table className="sb-table">
               <thead>
                 <tr>
+                  <th>{t("Major")}</th>
+                  <th>{t("Level")}</th>
+                  <th>{t("Code")}</th>
                   <th>{t("Day")}</th>
                   <th>{t("Time")}</th>
-                  <th>{t("Course")}</th>
                   <th>{t("Room")}</th>
                   <th>{t("Instructor")}</th>
                   <th></th>
@@ -168,6 +195,19 @@ export default function ScheduleBuilder() {
                 {entries.map((e) => (
                   <tr key={e.id}>
                     <td className="sb-day">
+                      <select className="sb-input" value={e.major} onChange={(ev) => setCode(e.id, ev.target.value, e.level)}>
+                        {MAJORS.map((m) => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </td>
+                    <td className="sb-day">
+                      <select className="sb-input" value={e.level} onChange={(ev) => setCode(e.id, e.major, ev.target.value)}>
+                        {LEVELS.map((l) => <option key={l.label} value={l.label}>{t(l.label)}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <input className="sb-input" value={e.code} readOnly style={{ fontWeight: 700, color: "#3E5EDB", background: "#EEF1FB" }} />
+                    </td>
+                    <td className="sb-day">
                       <select className="sb-input" value={e.day} onChange={(ev) => update(e.id, "day", ev.target.value)}>
                         {DAYS.map((d) => <option key={d} value={d}>{t(d)}</option>)}
                       </select>
@@ -176,10 +216,8 @@ export default function ScheduleBuilder() {
                       <input className="sb-input" value={e.time} onChange={(ev) => update(e.id, "time", ev.target.value)} placeholder="08:00-09:30" />
                     </td>
                     <td>
-                      <input className="sb-input" value={e.course} onChange={(ev) => update(e.id, "course", ev.target.value)} placeholder="CS101" />
-                    </td>
-                    <td>
-                      <input className="sb-input" value={e.room} onChange={(ev) => update(e.id, "room", ev.target.value)} placeholder="A101" />
+                      <input className="sb-input" list="sb-rooms" value={e.room} onChange={(ev) => update(e.id, "room", ev.target.value)} placeholder="Ak-101" />
+                      <datalist id="sb-rooms">{ROOM_SUGGESTIONS.map((r) => <option key={r} value={r} />)}</datalist>
                     </td>
                     <td>
                       <input className="sb-input" value={e.instructor} onChange={(ev) => update(e.id, "instructor", ev.target.value)} placeholder={t("Instructor name")} />

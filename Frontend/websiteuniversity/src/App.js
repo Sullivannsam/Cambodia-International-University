@@ -33,6 +33,7 @@ import Forbidden from './pages/public/Forbidden.jsx'
 import ProtectedRoute from './components/common/ProtectedRoute.jsx'
 import CourseDetail from './pages/public/CourseDetail.jsx'
 import NewsDetail from './pages/public/NewsDetail.jsx'
+import NewsList from './pages/public/NewsList.jsx'
 import Faq from './pages/public/Faq.jsx'
 import AcademicCalendar from './pages/public/AcademicCalendar.jsx'
 import Scholarships from './pages/public/Scholarships.jsx'
@@ -73,6 +74,14 @@ function App() {
               <Navbar />
               <CourseDetail />
               <SecondFooter />
+            </div>
+          }/>
+
+          <Route path="/public/news" element={
+            <div>
+              <Navbar />
+              <NewsList />
+              <Footer />
             </div>
           }/>
 
