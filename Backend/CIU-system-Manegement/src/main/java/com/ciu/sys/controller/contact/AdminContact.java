@@ -6,25 +6,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 import com.ciu.sys.model.contact.Contact;
 import com.ciu.sys.service.contact.ContactService;
 
 @RestController
-@RequestMapping("/api/public")
-public class ContentController {
+@RequestMapping("/api/admin/contact")
+public class AdminContact {
 
   @Autowired
-  private ContactService contactService;
+  private ContactService service;
 
-  @GetMapping
-  public Contact getContact() {
-    return contactService.getUserContact();
+  @PostMapping("/reply")
+  public Contact contacReplay(@RequestBody Contact contact) {
+    return service.reply(contact);
   }
 
-  @PostMapping("/contact/report-message")
-  public Contact saveContact(@RequestBody Contact contact) {
-    return contactService.saveContact(contact);
+  @GetMapping("/messages")
+  public List<Contact> getAllContact() {
+    return service.getAllContact();
   }
 
 }

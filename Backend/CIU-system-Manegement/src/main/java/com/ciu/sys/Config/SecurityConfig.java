@@ -49,6 +49,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/verification/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/report/submit").hasAnyRole("TEACHER", "STUDENT")
 
             // Role-protected
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -60,6 +61,8 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/auth/students").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/auth/teacher/list").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/auth/account/admin").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/api/auth/report").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/api/auth/report/*").hasRole("ADMIN")
 
             // DELETE
             .anyRequest().authenticated());
