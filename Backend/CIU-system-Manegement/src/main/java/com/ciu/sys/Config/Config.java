@@ -1,5 +1,7 @@
 package com.ciu.sys.Config;
 
+import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,8 +18,13 @@ public class Config {
 
       @Override
       public void addCorsMappings(CorsRegistry registry) {
+        String allowed = System.getenv().getOrDefault("CORS_ORIGIN", "http://localhost:3000");
+        String[] origins = Arrays.stream(allowed.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .toArray(String[]::new);
         registry.addMapping("/**")
-            .allowedOrigins("http://localhost:3000")
+            .allowedOrigins(origins)
             .allowedMethods("GET", "POST", "PUT", "DELETE")
             .allowedHeaders("*")
             .allowCredentials(true);
