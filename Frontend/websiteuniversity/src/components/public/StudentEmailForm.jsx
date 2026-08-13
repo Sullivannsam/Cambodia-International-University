@@ -16,8 +16,8 @@ const departments = [
 
 const StudentEmailForm = () => {
   const { t } = useLanguage();
-  const token = localStorage.getItem("token");
-  const userEmail = localStorage.getItem("email") || "";
+  const token = sessionStorage.getItem("token");
+  const userEmail = sessionStorage.getItem("email") || "";
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({

@@ -2,8 +2,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 export default function ProtectedRoute({ children, role }) {
   const location = useLocation();
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("role");
+  const token = sessionStorage.getItem("token");
+  const userRole = sessionStorage.getItem("role");
 
   if (!token) {
     return <Navigate to="/public/login" replace state={{ from: location.pathname }} />;

@@ -37,7 +37,7 @@ const labelClass = {
 export default function PaymentForm() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const userEmail = localStorage.getItem('email') || '';
+  const userEmail = sessionStorage.getItem('email') || '';
 
   const [form, setForm] = useState({ studentId: '', amount: '', date: '', type: '' });
   const [loading, setLoading] = useState(false);

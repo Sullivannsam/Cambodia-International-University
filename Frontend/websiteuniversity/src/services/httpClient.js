@@ -2,11 +2,11 @@ const BASE_URL = process.env.REACT_APP_API_URL;
 
 const getHeaders = () => ({
     "Content-Type": "application/json",
-    ...(localStorage.getItem("token") && {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+    ...(sessionStorage.getItem("token") && {
+        "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
     }),
-    ...(localStorage.getItem("email") && {
-        "X-User-Email": localStorage.getItem("email"),
+    ...(sessionStorage.getItem("email") && {
+        "X-User-Email": sessionStorage.getItem("email"),
     }),
 });
 

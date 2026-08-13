@@ -32,9 +32,9 @@ export default function RegisterForm() {
     try {
       const data = await registerUser({ email: form.email, username: form.username, password: form.password, phone: form.phoneNumber });
       if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("email", data.email);
-        localStorage.setItem("role", data.role || "USER");
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("email", data.email);
+        sessionStorage.setItem("role", data.role || "USER");
         window.location.href = "/";
       } else {
         setRegisteredEmail(form.email);

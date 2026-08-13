@@ -13,10 +13,10 @@ export default function LogoutModal({ className, style, children }) {
     setShowConfirm(false);
     setLoggingOut(true);
     setTimeout(() => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("email");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("role");
+      sessionStorage.removeItem("email");
+      sessionStorage.removeItem("user");
       navigate("/", { state: { logoutSuccess: true } });
     }, 2000);
   };

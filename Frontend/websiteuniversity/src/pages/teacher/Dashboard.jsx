@@ -5,22 +5,23 @@ import {
   FileDown, MessageSquare, Send, Trash2, Pencil, Plus, AlertTriangle, KeyRound, Bell
 } from 'lucide-react';
 import LogoutModal from '../../components/common/LogoutModal';
-import { submitReport } from '../../services/reportsStore';
 import {
   getTeacherClasses, getTeacherStudents, getTeacherAnnouncements,
   saveTeacherAttendance, submitTeacherGrades, postTeacherAnnouncement,
   getTeacherAssignments, createTeacherAssignment, deleteTeacherAssignment,
   getTeacherMessages, sendTeacherMessage,
   joinTeacherClass, getTeacherNotifications,
+  submitReport,
 } from '../../services/endpoints';
 import EmptyState from '../../components/common/EmptyState';
 import { useToast } from '../../context/ToastContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useActiveTab } from '../../hooks/useActiveTab';
 
 export default function TeacherDashboard() {
   const { t } = useLanguage();
-  const email = localStorage.getItem('email') || '';
-  const [active, setActive] = useState("overview");
+  const email = sessionStorage.getItem('email') || '';
+  const [active, setActive] = useActiveTab("overview");
   const [query, setQuery] = useState("");
   const [attendance, setAttendance] = useState({});
   const [saved, setSaved] = useState("");
@@ -50,12 +51,12 @@ export default function TeacherDashboard() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [notifications, setNotifications] = useState([]);
-
+  const [reportStudent, setReportStudent] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
-  const [reportStudent, setReportStudent] = useState("");
-  const [reportCategory, setReportCategory] = useState("Other");
-  const [reportDesc, setReportDesc] = useState("");
-  const [reporting, setReporting] = useState(false);
+  const [reportStudentName, setReportStudentName] = useState("");
+  const [reportCategory, setReportCategory] = useState("Academic");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const { toast } = useToast();
 
@@ -259,37 +260,41 @@ export default function TeacherDashboard() {
     }
   };
 
-  const openReport = () => {
-    setReportStudent(students[0]?.name || "");
-    setReportCategory("Other");
-    setReportDesc("");
-    setReportOpen(true);
-  };
-
-  const submitStudentReport = () => {
-    if (!reportStudent.trim()) {
-      toast(t("Please choose the student you want to report."), "error");
+  const submitStudentReport = async () => {
+    const subjectName = reportStudentName.trim() || reportStudent?.name || reportStudent?.id || "";
+    if (!subjectName) {
+      setError(t("Please enter the student's name."));
       return;
     }
-    if (!reportDesc.trim()) {
-      toast(t("Please describe what happened."), "error");
+    if (!reportDescription.trim()) {
+      setError(t("Please describe the issue."));
       return;
     }
-    const target = students.find(s => s.name === reportStudent) || {};
-    setReporting(true);
-    submitReport({
-      reporterRole: "TEACHER",
-      reporterEmail: email,
-      reporterName: localStorage.getItem('username') || email.split('@')[0] || t("Teacher"),
-      subjectRole: "STUDENT",
-      subjectEmail: target.email || "",
-      subjectName: reportStudent.trim(),
-      category: reportCategory,
-      description: reportDesc.trim(),
-    });
-    setReporting(false);
-    setReportOpen(false);
-    toast(t("Report submitted to the department."));
+    setReportSubmitting(true);
+    setError("");
+    try {
+      await submitReport({
+        role: "TEACHER",
+        email: email,
+        name: email,
+        subjectRole: "STUDENT",
+        subjectEmail: reportStudent?.email || "",
+        subjectName,
+        category: reportCategory,
+        description: reportDescription.trim(),
+        date: new Date().toLocaleDateString("en-CA"),
+      });
+      toast(t("Report submitted to the administration."));
+      setReportStudent(null);
+      setReportStudentName("");
+      setReportDescription("");
+      setReportCategory("Academic");
+      setReportOpen(false);
+    } catch {
+      setError(t("Failed to submit the report. Make sure the backend server is running."));
+    } finally {
+      setReportSubmitting(false);
+    }
   };
 
   const navItems = [
@@ -422,6 +427,19 @@ export default function TeacherDashboard() {
                 </div>
               ))}
             </div>
+            <div className="td-panel" style={{ borderLeft: "3px solid #D2483C" }}>
+              <div className="td-row" style={{ margin: 0 }}>
+                <div className="td-panel-title" style={{ margin: 0, color: "#D2483C" }}><AlertTriangle size={16} /> {t("Report a Student")}</div>
+                <button
+                  className="td-btn"
+                  style={{ background: "#D2483C" }}
+                  onClick={() => { setReportStudent(null); setReportStudentName(""); setReportDescription(""); setReportCategory("Academic"); setReportOpen(true); }}
+                >
+                  {t("Report")}
+                </button>
+              </div>
+              <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 6 }}>{t("Report behavioral or academic issues to the administration.")}</div>
+            </div>
           </>
         )}
 
@@ -475,7 +493,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
             <table className="td-table">
-              <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Major")}</th><th>{t("Attendance")}</th></tr></thead>
+              <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Major")}</th><th>{t("Attendance")}</th><th>{t("Actions")}</th></tr></thead>
               <tbody>
                 {filteredStudents.length ? filteredStudents.map(s => (
                   <tr key={s.id} style={Number(s.att) < 75 ? { background: "rgba(210,72,60,0.06)" } : undefined}>
@@ -488,8 +506,17 @@ export default function TeacherDashboard() {
                     </td>
                     <td>{t(s.major)}</td>
                     <td><span className="td-pill" style={{ background: attColor(s.att) }}>{s.att}%</span></td>
+                    <td>
+                      <button
+                        className="td-att-toggle"
+                        style={{ background: "#FBE3E0", color: "#D2483C" }}
+                        onClick={() => { setReportStudent(s); setReportStudentName(""); setReportDescription(""); setReportCategory("Academic"); setReportOpen(true); }}
+                      >
+                        <AlertTriangle size={13} /> {t("Report")}
+                      </button>
+                    </td>
                   </tr>
-                )) : <tr><td colSpan="4" className="td-empty">{t("No students found")}</td></tr>}
+                )) : <tr><td colSpan="5" className="td-empty">{t("No students found")}</td></tr>}
               </tbody>
             </table>
           </>
@@ -506,7 +533,6 @@ export default function TeacherDashboard() {
                 <input type="date" value={attDate} onChange={e => setAttDate(e.target.value)} className="td-search" style={{ flex: "none", minWidth: 0 }} />
                 <button className="td-att-toggle" style={{ background: "#E3F0E7", color: "#1E7A4E" }} onClick={() => bulkMark("present")}>{t("All present")}</button>
                 <button className="td-att-toggle" style={{ background: "#FBE3E0", color: "#D2483C" }} onClick={() => bulkMark("absent")}>{t("All absent")}</button>
-                <button className="td-btn" onClick={openReport} style={{ background: "#D2483C", color: "#fff" }}><AlertTriangle size={15} /> {t("Report Student")}</button>
                 <button className="td-btn" onClick={saveAttendance} disabled={savingAtt}>{savingAtt ? t("Saving...") : (<><CheckCircle2 size={15} /> {t("Save Attendance")}</>)}</button>
               </div>
             </div>
@@ -658,36 +684,6 @@ export default function TeacherDashboard() {
         </div>
       )}
 
-      {reportOpen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 9998,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-        }}>
-          <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 26, width: "min(90vw, 480px)", boxShadow: "0 12px 40px rgba(0,0,0,0.2)" }}>
-            <h3 style={{ margin: "0 0 14px", fontSize: 17, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
-              <AlertTriangle size={18} style={{ color: "#D2483C" }} /> {t("Report a Student")}
-            </h3>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14, lineHeight: 1.6 }}>
-              {t("Reports go straight to the department office for review. Please describe what happened.")}
-            </div>
-            <select value={reportStudent} onChange={e => setReportStudent(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}>
-              {students.map(s => <option key={s.id} value={s.name}>{s.name}{s.major ? ` — ${s.major}` : ""}</option>)}
-            </select>
-            <select value={reportCategory} onChange={e => setReportCategory(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}>
-              {["Misconduct", "Absent", "Harassment", "Academic", "Other"].map(c => <option key={c} value={c}>{t(c)}</option>)}
-            </select>
-            <textarea value={reportDesc} onChange={e => setReportDesc(e.target.value)} rows={4} placeholder={t("What happened, when, and which rule was broken.")} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 18, fontFamily: "inherit", resize: "vertical" }} />
-            <div style={{ display: "flex", gap: 12 }}>
-              <button onClick={() => setReportOpen(false)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid var(--border)", background: "var(--input-bg)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("Cancel")}</button>
-              <button onClick={submitStudentReport} disabled={reporting} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "#D2483C", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                {reporting ? t("Submitting...") : <><AlertTriangle size={15} /> {t("Submit Report")}</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {assignOpen && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9998,
@@ -704,6 +700,40 @@ export default function TeacherDashboard() {
             <div style={{ display: "flex", gap: 12 }}>
               <button onClick={() => { setAssignOpen(false); setAssignTitle(""); setAssignDue(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid var(--border)", background: "var(--input-bg)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("Cancel")}</button>
               <button onClick={postAssignment} disabled={assignSaving} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#3E5EDB,#7A5CDB)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{assignSaving ? t("Creating...") : t("Create")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reportOpen && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9998,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+        }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 26, width: "min(90vw, 480px)", boxShadow: "0 12px 40px rgba(0,0,0,0.2)" }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 17, fontWeight: 700, color: "var(--text-primary)" }}>{t("Report a Student")}</h3>
+            {reportStudent ? (
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14, lineHeight: 1.6 }}>
+                {t("Reporting")}: <strong style={{ color: "var(--text-primary)" }}>{reportStudent.name}</strong> <span className="td-pill" style={{ background: "#3E5EDB" }}>{reportStudent.id}</span>
+              </div>
+            ) : (
+              <input
+                value={reportStudentName}
+                onChange={e => setReportStudentName(e.target.value)}
+                placeholder={t("Student name or ID")}
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}
+              />
+            )}
+            <select value={reportCategory} onChange={e => setReportCategory(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}>
+              <option value="Academic">Academic</option>
+              <option value="Behavioral">Behavioral</option>
+              <option value="Other">Other</option>
+            </select>
+            <textarea value={reportDescription} onChange={e => setReportDescription(e.target.value)} placeholder={t("Describe the issue...")} rows={4} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", resize: "vertical", marginBottom: 18, fontFamily: "inherit" }} />
+            <div style={{ display: "flex", gap: 12 }}>
+              <button onClick={() => { setReportOpen(false); setReportStudent(null); setReportStudentName(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid var(--border)", background: "var(--input-bg)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("Cancel")}</button>
+              <button onClick={submitStudentReport} disabled={reportSubmitting} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "#D2483C", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{reportSubmitting ? t("Submitting...") : t("Submit Report")}</button>
             </div>
           </div>
         </div>

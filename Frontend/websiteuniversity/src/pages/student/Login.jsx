@@ -25,9 +25,9 @@ export default function StudentLogin() {
     try {
       const data = await studentLogin({ email: form.email, password: form.password });
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('email', data.email);
-        localStorage.setItem('role', data.role || 'STUDENT');
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('email', data.email);
+        sessionStorage.setItem('role', data.role || 'STUDENT');
         navigate('/student/dashboard', { state: { loginSuccess: true } });
       } else {
         setError(data.message || t('Invalid credentials'));

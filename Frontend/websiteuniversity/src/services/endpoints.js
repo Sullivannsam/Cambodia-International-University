@@ -2,11 +2,11 @@ const BASE_URL = process.env.REACT_APP_API_URL;
 
 const authHeaders = () => ({
     "Content-Type": "application/json",
-    ...(localStorage.getItem("token") && {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+    ...(sessionStorage.getItem("token") && {
+        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
     }),
-    ...(localStorage.getItem("email") && {
-        "X-User-Email": localStorage.getItem("email"),
+    ...(sessionStorage.getItem("email") && {
+        "X-User-Email": sessionStorage.getItem("email"),
     }),
 });
 
@@ -236,10 +236,21 @@ export const unsuspendUser = async (id) => {
 
 // ---------- Contact ----------
 export const getContact = async () => {
-    const response = await fetch(`${BASE_URL}/api/public`, {
-        headers: { "Content-Type": "application/json" },
+    const response = await fetch(`${BASE_URL}/api/admin/contact/messages`, {
+        headers: authHeaders(),
     });
-    return parse(response);
+    const data = await parse(response);
+    const arr = Array.isArray(data) ? data : Array.isArray(data.messages) ? data.messages : [];
+    return arr.map((m) => ({
+        id: m.id,
+        name: m.username || m.name,
+        email: m.email,
+        phone: m.phoneNumber || m.phone,
+        message: m.message,
+        subject: m.subject || (m.message || "").slice(0, 60),
+        date: m.date || m.createdAt || "",
+        read: !!m.read,
+    }));
 };
 
 export const sendContact = async (data) => {
@@ -331,7 +342,7 @@ export const clearAuditLogs = async () => {
 
 // ---------- News ----------
 export const getNews = async () => {
-    const url = localStorage.getItem("token")
+    const url = sessionStorage.getItem("token")
         ? `${BASE_URL}/api/auth/admin/news`
         : `${BASE_URL}/api/news`;
     const response = await fetch(url, {
@@ -463,10 +474,28 @@ export const updateEnrollmentStatus = async (id, status) => {
     return parse(response);
 };
 
-// ---------- Reports (admin) ----------
+// ---------- Reports ----------
 export const getReports = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/reports`, {
+    const response = await fetch(`${BASE_URL}/api/auth/report`, {
         headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const submitReport = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/report/submit`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    });
+    return parse(response);
+};
+
+export const updateReport = async (id, data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/report/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
     });
     return parse(response);
 };

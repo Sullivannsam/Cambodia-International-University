@@ -30,10 +30,10 @@ const Navbar = () => {
         return () => document.removeEventListener("click", closeOnClickOutside);
     }, [adminOpen]);
 
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-    const email = localStorage.getItem("email") || (userData ? JSON.parse(userData).email : null);
-    const role = localStorage.getItem("role");
+    const token = sessionStorage.getItem("token");
+    const userData = sessionStorage.getItem("user");
+    const email = sessionStorage.getItem("email") || (userData ? JSON.parse(userData).email : null);
+    const role = sessionStorage.getItem("role");
     const roleLabel = role && role !== "undefined" && role !== "null"
         ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
         : "User";
@@ -67,9 +67,9 @@ const Navbar = () => {
         setShowLogoutConfirm(false);
         setLoggingOut(true);
         setTimeout(() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            localStorage.removeItem("email");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("role");
+            sessionStorage.removeItem("email");
             setLoggingOut(false);
             navigate("/", { state: { logoutSuccess: true } });
         }, 2000);

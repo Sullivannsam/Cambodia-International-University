@@ -1117,11 +1117,11 @@ const DICT = {
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
-    return localStorage.getItem("lang") || "en";
+    return sessionStorage.getItem("lang") || "en";
   });
 
   useEffect(() => {
-    localStorage.setItem("lang", lang);
+    sessionStorage.setItem("lang", lang);
     document.documentElement.lang = lang === "kh" ? "km" : "en";
   }, [lang]);
 

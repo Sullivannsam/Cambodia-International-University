@@ -25,9 +25,9 @@ export default function LoginForm() {
     try {
       const data = await loginUser({ email: form.email, password: form.password });
       if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("email", data.email);
-        localStorage.setItem("role", data.role || "USER");
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("email", data.email);
+        sessionStorage.setItem("role", data.role || "USER");
         navigate("/", { state: { loginSuccess: true } });
       } else {
         setError(data.message || t("Invalid credentials"));

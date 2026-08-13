@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Search, Loader2, FileBarChart, FileDown, CheckCircle2, RotateCcw
 } from "lucide-react";
-import { getReportsLocal, setReportRead } from "../../services/reportsStore";
+import { getReports, updateReport } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function ReportPage() {
@@ -14,26 +14,34 @@ export default function ReportPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [notice, setNotice] = useState("");
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     setError("");
     try {
-      const data = getReportsLocal();
-      setReports(Array.isArray(data) ? data : []);
+      const data = await getReports();
+      const arr = Array.isArray(data) ? data : Array.isArray(data.reports) ? data.reports : [];
+      setReports(arr);
     } catch {
-      setReports([]);
-      setError(t("Failed to load reports. Make sure the backend server is running."));
+      if (showSpinner) {
+        setReports([]);
+        setError(t("Failed to load reports. Make sure the backend server is running."));
+      }
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   };
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const id = setInterval(() => load(false), 10000);
+    return () => clearInterval(id);
+  }, []);
+
   const q = query.trim().toLowerCase();
   const filtered = reports.filter((r) => {
     const matchesQuery = q
-      ? [r.title, r.content, r.type, r.name, r.studentId]
+      ? [r.name, r.subjectName, r.category, r.description, r.email, r.subjectEmail]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q))
       : true;
@@ -44,17 +52,21 @@ export default function ReportPage() {
     return matchesQuery && matchesStatus;
   });
 
-  const toggleRead = (r) => {
-    const next = reports.map((x) => x.id === r.id ? { ...x, read: !x.read } : x);
-    setReports(next);
-    setReportRead(r.id, !r.read);
-    setNotice(r.read ? t("Report marked as unread.") : t("Report marked as resolved."));
+  const toggleRead = async (r) => {
+    try {
+      await updateReport(r.id, { read: !r.read });
+      const next = reports.map((x) => x.id === r.id ? { ...x, read: !x.read } : x);
+      setReports(next);
+      setNotice(r.read ? t("Report marked as unread.") : t("Report marked as resolved."));
+    } catch {
+      setNotice(t("Failed to update the report. Make sure the backend server is running."));
+    }
   };
 
   const exportCSV = () => {
-    const header = `${t("ID")},${t("Student")},${t("Type")},${t("Title")},${t("Status")},${t("Date")}`;
+    const header = `${t("ID")},${t("Reporter")},${t("Reported")},${t("Category")},${t("Description")},${t("Status")},${t("Date")}`;
     const rows = filtered.map((r) =>
-      `"${r.id}","${r.name || r.studentId}","${r.type || ""}","${(r.title || "").replace(/"/g, '""')}","${r.read ? t("Resolved") : t("Pending")}","${r.date || ""}"`
+      `"${r.id}","${r.name || ""}","${r.subjectName || ""}","${r.category || ""}","${(r.description || "").replace(/"/g, '""')}","${r.read ? t("Resolved") : t("Pending")}","${r.date || ""}"`
     ).join("\n");
     const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -66,17 +78,7 @@ export default function ReportPage() {
   };
 
   const typeColor = (type) => {
-    const map = {
-      Academic: "#3E5EDB",
-      Financial: "#2E9E6C",
-      Facility: "#D69A1E",
-      Other: "#7A5CDB",
-      Misconduct: "#D2483C",
-      Harassment: "#D2483C",
-      Absent: "#D69A1E",
-      "Poor Teaching": "#D69A1E",
-      Attendance: "#D69A1E",
-    };
+    const map = { Academic: "#3E5EDB", Financial: "#2E9E6C", Facility: "#D69A1E", Other: "#7A5CDB" };
     return map[type] || "#6B7280";
   };
 
@@ -133,7 +135,7 @@ export default function ReportPage() {
       `}</style>
 
       <div className="content-row">
-        <div className="date-label">{t("Student-submitted reports and requests from across the university.")}</div>
+        <div className="date-label">{t("Student- and teacher-submitted reports from across the university.")}</div>
         <div className="rp-toolbar">
           <div className="search-box">
             <Search size={15} />
@@ -177,8 +179,8 @@ export default function ReportPage() {
               <table className="rp-table">
                 <thead>
                   <tr>
+                    <th>{t("Reporter")}</th>
                     <th>{t("Reported")}</th>
-                    <th>{t("By")}</th>
                     <th>{t("Category")}</th>
                     <th>{t("Report")}</th>
                     <th>{t("Date")}</th>
@@ -190,19 +192,17 @@ export default function ReportPage() {
                   {filtered.map((r) => (
                     <tr key={r.id} style={!r.read ? { background: "#FBF7EE" } : undefined}>
                       <td style={{ whiteSpace: "nowrap" }}>
-                        <div style={{ fontWeight: 600, color: "#182644" }}>{r.subjectName || "-"}</div>
-                        <span className="type-pill" style={{ background: r.subjectRole === "STUDENT" ? "#2E9E6C" : r.subjectRole === "TEACHER" ? "#3E5EDB" : "#6B7280", fontSize: 10 }}>
-                          {r.subjectRole || ""}
-                        </span>
+                        <div style={{ fontWeight: 600, color: "#182644" }}>{r.name || "-"}</div>
+                        <div style={{ color: "#3E5EDB", fontSize: 11.5, fontWeight: 700 }}>{r.email || ""}</div>
+                        <div style={{ fontSize: 11, color: "#9A8F80" }}>{r.role || ""}</div>
                       </td>
                       <td style={{ whiteSpace: "nowrap" }}>
-                        <div style={{ fontWeight: 600, color: "#182644" }}>{r.reporterName || "-"}</div>
-                        <div style={{ color: "#6B7280", fontSize: 11.5 }}>{r.reporterRole || ""}{r.reporterEmail ? ` · ${r.reporterEmail}` : ""}</div>
+                        <div style={{ fontWeight: 600, color: "#182644" }}>{r.subjectName || "-"}</div>
+                        <div style={{ fontSize: 11, color: "#6B7280" }}>{r.subjectEmail || ""} {r.subjectRole || ""}</div>
                       </td>
                       <td><span className="type-pill" style={{ background: typeColor(r.category) }}>{r.category || t("Other")}</span></td>
                       <td>
-                        <div className="rp-report-title">{r.subjectName ? `${t("Report about")} ${r.subjectName}` : "-"}</div>
-                        <div className="rp-report-body">{r.description || r.content || r.details || ""}</div>
+                        <div className="rp-report-body">{r.description || ""}</div>
                       </td>
                       <td style={{ whiteSpace: "nowrap", color: "#6B7280" }}>{r.date || r.createdAt?.slice?.(0, 10) || "-"}</td>
                       <td>

@@ -20,13 +20,13 @@ export default function Settings() {
   const [msgType, setMsgType] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) {
       navigate('/public/login');
       return;
     }
-    const storedEmail = localStorage.getItem('email');
-    const userData = localStorage.getItem('user');
+    const storedEmail = sessionStorage.getItem('email');
+    const userData = sessionStorage.getItem('user');
     const parsedUser = userData ? JSON.parse(userData) : null;
     setForm(prev => ({
       ...prev,
@@ -47,8 +47,8 @@ export default function Settings() {
       setMessage(t('Passwords do not match.'));
       return;
     }
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
+    const token = sessionStorage.getItem('token');
+    const userId = sessionStorage.getItem('userId');
     try {
       const res = await fetch(`${BASE_URL}/api/auth/users/update/${userId}`, {
         method: 'PUT',
@@ -65,11 +65,11 @@ export default function Settings() {
       if (res.ok) {
         setMsgType('success');
         setMessage(t('Changes saved successfully!'));
-        const userData = localStorage.getItem('user');
+        const userData = sessionStorage.getItem('user');
         if (userData) {
           const parsed = JSON.parse(userData);
           parsed.username = form.username;
-          localStorage.setItem('user', JSON.stringify(parsed));
+          sessionStorage.setItem('user', JSON.stringify(parsed));
         }
       } else {
         const data = await res.json();

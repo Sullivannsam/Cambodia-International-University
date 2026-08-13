@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { getContact, replyContact } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import { getViewedIds, markViewed, markManyViewed } from "../../utils/contactRead";
 
 export default function ContactInbox({ onUnreadChange }) {
   const { t } = useLanguage();
@@ -26,7 +27,8 @@ export default function ContactInbox({ onUnreadChange }) {
     try {
       const data = await getContact();
       const arr = Array.isArray(data) ? data : Array.isArray(data.messages) ? data.messages : [];
-      const normalized = arr.map(m => ({ ...m, read: !!m.read }));
+      const viewed = getViewedIds();
+      const normalized = arr.map(m => ({ ...m, read: !!m.read || viewed.has(m.id) }));
       setMessages(normalized);
       onUnreadChange?.(countUnread(normalized));
     } catch {
@@ -46,6 +48,7 @@ export default function ContactInbox({ onUnreadChange }) {
   const openMessage = (m) => {
     setSelected(m);
     if (!m.read) {
+      markViewed(m.id);
       const next = messages.map(x => x.id === m.id ? { ...x, read: true } : x);
       setMessages(next);
       onUnreadChange?.(countUnread(next));
@@ -65,6 +68,7 @@ export default function ContactInbox({ onUnreadChange }) {
   };
 
   const markSelectedRead = () => {
+    markManyViewed(selectedIds);
     const next = messages.map((m) => selectedIds.includes(m.id) ? { ...m, read: true } : m);
     setMessages(next);
     onUnreadChange?.(countUnread(next));

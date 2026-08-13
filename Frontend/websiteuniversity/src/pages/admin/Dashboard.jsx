@@ -7,16 +7,14 @@ import {
   LayoutGrid, TrendingUp, ClipboardCheck, UserCheck, Users,
   BookOpen, CalendarDays, FileBarChart, UserCircle2, LogOut,
   Search, ChevronRight, Loader2, UserCog, FileClock, Newspaper,
-  ChevronsLeft, ChevronsRight, UserPlus, Inbox, Megaphone, FileDown,
-  X, MapPin, Clock, Radio, Eye
+  ChevronsLeft, ChevronsRight, UserPlus, Inbox, Megaphone, FileDown
 } from "lucide-react";
 import {
   getDashboardStats, getStudentAttendance, getTeacherAttendance,
   getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers,
   getStudentAccounts, getTeacherAccounts, getAdminAccounts,
-  getEnrollments, getContact, getUsers, getAdminSchedule
+  getEnrollments, getContact, getReports
 } from "../../services/endpoints";
-import { getReportsLocal } from "../../services/reportsStore";
 import LogoutModal from "../../components/common/LogoutModal";
 import UserManagement from "./UserManagement";
 import CourseManagement from "./CourseManagement";
@@ -28,6 +26,7 @@ import ReportPage from "./ReportPage";
 import ScheduleBuilder from "./ScheduleBuilder";
 import NotificationsCenter from "./NotificationsCenter";
 import { useLanguage } from "../../context/LanguageContext";
+import { useActiveTab } from "../../hooks/useActiveTab";
 
 const NAV = [
   {
@@ -155,7 +154,7 @@ function GroupSection({ title, members }) {
   );
 }
 
-function AccountTable({ title, accounts, query, onSelect }) {
+function AccountTable({ title, accounts, query }) {
   const { t } = useLanguage();
   const rows = Array.isArray(accounts) ? accounts : [];
   const q = (query || "").toString().toLowerCase().trim();
@@ -178,294 +177,39 @@ function AccountTable({ title, accounts, query, onSelect }) {
           {t("account")} "{query}" {t("doesn't exist in table")}
         </div>
       ) : filtered.length > 0 ? (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-            <thead>
-              <tr style={{ textAlign: "left", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB" }}>
-                <th style={{ padding: "10px 12px" }}>{t("ID")}</th>
-                <th style={{ padding: "10px 12px" }}>{t("Username")}</th>
-                <th style={{ padding: "10px 12px" }}>{t("Email")}</th>
-                <th style={{ padding: "10px 12px" }}>{t("Phone")}</th>
-                <th style={{ padding: "10px 12px" }}>{t("Role")}</th>
-                <th style={{ padding: "10px 12px" }}>{t("Status")}</th>
-                <th style={{ padding: "10px 12px" }}>{t("Date")}</th>
-                {onSelect && <th style={{ padding: "10px 12px" }}></th>}
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB" }}>
+              <th style={{ padding: "10px 12px" }}>{t("ID")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Username")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Email")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Phone")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Role")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Status")}</th>
+              <th style={{ padding: "10px 12px" }}>{t("Date")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((a, i) => (
+              <tr key={i} style={{ borderBottom: "1px solid #F0EEE9" }}>
+                <td style={{ padding: "10px 12px", fontWeight: 700, color: "#3E5EDB" }}>{a.id ?? "-"}</td>
+                <td style={{ padding: "10px 12px", fontWeight: 600, color: "#182644" }}>{a.username || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>{a.email || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>{a.phone || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>{a.role || "-"}</td>
+                <td style={{ padding: "10px 12px" }}>
+                  <span style={{ color: a.active === false ? "#D2483C" : "#2E9E6C", fontWeight: 700 }}>
+                    {a.active === false ? t("Inactive") : t("Active")}
+                  </span>
+                </td>
+                <td style={{ padding: "10px 12px" }}>{a.date || "-"}</td>
               </tr>
-            </thead>
-            <tbody>
-              {filtered.map((a, i) => (
-                <tr key={i} style={{
-                  borderBottom: "1px solid #F0EEE9",
-                  cursor: onSelect ? "pointer" : "default",
-                }}
-                  onClick={onSelect ? () => onSelect(a) : undefined}>
-                  <td style={{ padding: "10px 12px", fontWeight: 700, color: "#3E5EDB" }}>{a.id ?? "-"}</td>
-                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#182644" }}>{a.username || "-"}</td>
-                  <td style={{ padding: "10px 12px" }}>{a.email || "-"}</td>
-                  <td style={{ padding: "10px 12px" }}>{a.phone || "-"}</td>
-                  <td style={{ padding: "10px 12px" }}>{a.role || "-"}</td>
-                  <td style={{ padding: "10px 12px" }}>
-                    <span style={{ color: a.active === false ? "#D2483C" : "#2E9E6C", fontWeight: 700 }}>
-                      {a.active === false ? t("Inactive") : t("Active")}
-                    </span>
-                  </td>
-                  <td style={{ padding: "10px 12px" }}>{a.date || "-"}</td>
-                  {onSelect && (
-                    <td style={{ padding: "10px 12px" }}>
-                      <span style={{
-                        display: "inline-flex", alignItems: "center", gap: 5,
-                        background: "#E7E3F7", color: "#3E5EDB", borderRadius: 999,
-                        padding: "4px 10px", fontSize: 11, fontWeight: 700,
-                      }}>
-                        <Eye size={12} /> {t("Live View")}
-                      </span>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       ) : (
         <div className="date-label">{t("No accounts found.")}</div>
       )}
-    </div>
-  );
-}
-
-function computeLive(student, users, schedule, now) {
-  const MAJORS = ["CS", "IT", "BBA", "ENG"];
-  const LEVELS = [
-    { label: "Year 1", mult: 100 },
-    { label: "Year 2", mult: 200 },
-    { label: "Year 3", mult: 300 },
-    { label: "Year 4", mult: 400 },
-    { label: "Master", mult: 500 },
-    { label: "PhD", mult: 600 },
-  ];
-  const user = (users || []).find((u) => (u.email || "").toLowerCase() === (student.email || "").toLowerCase());
-  const course = (user?.course || "").trim();
-  const major = MAJORS.find((m) => course.toUpperCase().startsWith(m)) || (course && !/^\d/.test(course) ? course.slice(0, 2).toUpperCase() : "CS");
-  const num = parseInt(String(course).replace(/[^0-9]/g, ""), 10) || 100;
-  const level = Math.floor(num / 100) * 100;
-  const lvl = LEVELS.find((l) => l.mult === level) || LEVELS[0];
-
-  const scheduleArr = Array.isArray(schedule) ? schedule : [];
-  const classes = scheduleArr
-    .filter((s) => {
-      const c = (s.course || "").toUpperCase();
-      if (!c.startsWith(major.toUpperCase())) return false;
-      const d = String(s.course || "").replace(/[^0-9]/g, "");
-      if (!d) return false;
-      return Math.floor(parseInt(d, 10) / 100) * 100 === level;
-    })
-    .map((s) => ({
-      course: s.course,
-      day: s.day,
-      time: s.time,
-      room: s.room,
-      instructor: s.instructor,
-    }));
-
-  const today = now.toLocaleDateString("en-US", { weekday: "short" });
-  const mins = now.getHours() * 60 + now.getMinutes();
-  let current = null;
-  classes.forEach((c) => {
-    if (!c.day || c.day.toLowerCase() !== today.toLowerCase() || !c.time || !c.time.includes("-")) return;
-    const [a, b] = c.time.split("-").map((x) => x.trim());
-    const [ah, am] = a.split(":").map(Number);
-    const [bh, bm] = b.split(":").map(Number);
-    const start = (ah || 0) * 60 + (am || 0);
-    const end = (bh || 0) * 60 + (bm || 0);
-    if (mins >= start && mins < end) current = c;
-  });
-
-  return { user, course, major, year: lvl.label, level, classes, current, today };
-}
-
-function StudentLiveModal({ student, onClose }) {
-  const { t } = useLanguage();
-  const [state, setState] = useState({ users: [], schedule: [] });
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState("");
-  const [now, setNow] = useState(new Date());
-
-  useEffect(() => {
-    let alive = true;
-    setLoaded(false);
-    Promise.all([
-      getUsers().catch(() => []),
-      getAdminSchedule().catch(() => []),
-    ]).then(([users, schedule]) => {
-      if (!alive) return;
-      const u = Array.isArray(users) ? users : Array.isArray(users?.users) ? users.users : [];
-      const s = Array.isArray(schedule) ? schedule : Array.isArray(schedule?.schedule) ? schedule.schedule : [];
-      setState({ users: u, schedule: s });
-      setLoaded(true);
-    }).catch(() => {
-      if (alive) setError(t("Failed to load live data."));
-    });
-    const timer = setInterval(() => setNow(new Date()), 15000);
-    return () => { alive = false; clearInterval(timer); };
-  }, [student.id]);
-
-  const live = computeLive(student, state.users, state.schedule, now);
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9998,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 16, padding: 26,
-        width: "min(94vw, 680px)", maxHeight: "90vh", overflowY: "auto",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.2)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-          <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 600, fontSize: 17, color: "#182644" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: 8 }}>
-              <Radio size={16} style={{ color: "#3E5EDB" }} />
-            </span>
-            {t("Live Student View")} — #{student.id}
-          </div>
-          <button onClick={onClose} aria-label={t("Close")} style={{ background: "none", border: "none", cursor: "pointer", color: "#9A8F80", padding: 4 }}>
-            <X size={18} />
-          </button>
-        </div>
-
-        {!loaded ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "50px 0" }}>
-            <Loader2 size={28} className="animate-spin" style={{ color: "#3E5EDB" }} />
-          </div>
-        ) : error ? (
-          <div style={{ color: "#D2483C", fontSize: 13 }}>{error}</div>
-        ) : (
-          <>
-            <div style={{
-              display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap",
-              marginBottom: 16, padding: 14, borderRadius: 12, background: "#F6F4EF",
-            }}>
-              <UserCircle2 size={34} style={{ color: "#3E5EDB" }} />
-              <div>
-                <div style={{ fontWeight: 700, color: "#182644" }}>{student.username || "-"}</div>
-                <div style={{ color: "#6B7280", fontSize: 12 }}>{student.email || "-"} · {student.phone || "-"}</div>
-              </div>
-              <div style={{ flex: 1 }} />
-              <span style={{ fontWeight: 600, color: "#3E5EDB", fontSize: 13 }}>
-                {t("Class")}: <strong>{live.course || "—"}</strong>
-              </span>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, marginBottom: 18 }}>
-              {[
-                { label: t("Major"), value: live.major },
-                { label: t("Year"), value: live.year },
-                { label: t("Classes"), value: live.classes.length },
-              ].map((c, i) => (
-                <div key={i} style={{ background: "#FBF4EE", borderRadius: 12, padding: "12px 14px" }}>
-                  <div style={{ fontSize: 11, color: "#9A8F80", fontWeight: 600 }}>{c.label}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#182644" }}>{c.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#182644", marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                background: live.current ? "#E3F0E7" : "#FBE3E0",
-                color: live.current ? "#1E7A4E" : "#D2483C",
-                borderRadius: 999, padding: "3px 12px", fontSize: 12,
-              }}>
-                <span style={{
-                  width: 8, height: 8, borderRadius: "50%", background: live.current ? "#2E9E6C" : "#D2483C",
-                  animation: live.current ? "blink 1s infinite" : "none",
-                }} />
-                {live.current ? t("Class is happening NOW") : t("No class right now")}
-              </span>
-            </div>
-
-            {live.current ? (
-              <div style={{
-                border: "2px solid #2E9E6C", borderRadius: 12, padding: 14, marginBottom: 16,
-                background: "#F0FAF3",
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#1E7A4E", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-                  {t("Teacher teaching right now")}
-                </div>
-                <div style={{ fontWeight: 700, color: "#182644", fontSize: 16 }}>
-                  {live.current.instructor || t("Unassigned")}
-                </div>
-                <div style={{ color: "#6B7280", fontSize: 12.5, marginTop: 6 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, marginRight: 14 }}>
-                    <BookOpen size={13} /> {live.current.course}
-                  </span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, marginRight: 14 }}>
-                    <Clock size={13} /> {live.current.time}
-                  </span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <MapPin size={13} /> {live.current.room || "—"}
-                  </span>
-                </div>
-              </div>
-            ) : live.classes.length ? (
-              <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 16 }}>
-                {t("Next class is on")} {live.today} {t("according to the weekly schedule.")}
-              </div>
-            ) : null}
-
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#182644", marginBottom: 8 }}>
-              {t("Weekly Classes")} ({live.classes.length})
-            </div>
-            {live.classes.length ? (
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
-                <thead>
-                  <tr style={{ color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", textAlign: "left" }}>
-                    <th style={{ padding: "8px 10px" }}>{t("Day")}</th>
-                    <th style={{ padding: "8px 10px" }}>{t("Code")}</th>
-                    <th style={{ padding: "8px 10px" }}>{t("Time")}</th>
-                    <th style={{ padding: "8px 10px" }}>{t("Room")}</th>
-                    <th style={{ padding: "8px 10px" }}>{t("Teacher")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {live.classes.map((c, i) => (
-                    <tr key={i} style={{
-                      borderBottom: "1px solid #F0EEE9",
-                      background: c === live.current ? "#E3F0E7" : undefined,
-                    }}>
-                      <td style={{ padding: "8px 10px", fontWeight: 600 }}>{t(c.day)}</td>
-                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#3E5EDB" }}>{c.course}</td>
-                      <td style={{ padding: "8px 10px" }}>{c.time}</td>
-                      <td style={{ padding: "8px 10px" }}>{c.room || "-"}</td>
-                      <td style={{ padding: "8px 10px" }}>
-                        {c.instructor || "-"}
-                        {c === live.current && (
-                          <span style={{ color: "#1E7A4E", fontWeight: 700, marginLeft: 6, fontSize: 11 }}>
-                            ● {t("NOW")}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div style={{ color: "#6B7280", fontSize: 13 }}>{t("No schedule found for this student's class.")}</div>
-            )}
-
-            <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
-              <button onClick={onClose} style={{
-                flex: 1, padding: "11px 0", borderRadius: 10, border: "1.5px solid #E5E7EB",
-                background: "#F6F4EF", color: "#6B7280", fontSize: 14, fontWeight: 600, cursor: "pointer",
-              }}>
-                {t("Close")}
-              </button>
-            </div>
-            <style>{`@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }`}</style>
-          </>
-        )}
-      </div>
     </div>
   );
 }
@@ -493,14 +237,13 @@ function LoadingSpinner() {
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
-  const [active, setActive] = useState("overview");
+  const [active, setActive] = useActiveTab("overview");
   const [collapsed, setCollapsed] = useState(false);
   const [studentQuery, setStudentQuery] = useState("");
   const [teacherQuery, setTeacherQuery] = useState("");
   const [studentAccQuery, setStudentAccQuery] = useState("");
   const [teacherAccQuery, setTeacherAccQuery] = useState("");
   const [adminAccQuery, setAdminAccQuery] = useState("");
-  const [liveStudent, setLiveStudent] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -536,7 +279,7 @@ export default function AdminDashboard() {
 
   const user = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("user") || "{}");
+      return JSON.parse(sessionStorage.getItem("user") || "{}");
     } catch {
       return {};
     }
@@ -590,13 +333,14 @@ export default function AdminDashboard() {
         setTeacherAccounts(Array.isArray(teaAcc) ? teaAcc : []);
         setAdminAccounts(Array.isArray(admAcc) ? admAcc : []);
 
-        const [enrollRes, contactRes, reportsArr] = await Promise.all([
+        const [enrollRes, contactRes, reportsRes] = await Promise.all([
           getEnrollments().catch(() => []),
           getContact().catch(() => []),
-          Promise.resolve(getReportsLocal()),
+          getReports().catch(() => []),
         ]);
         const enrollArr = Array.isArray(enrollRes) ? enrollRes : Array.isArray(enrollRes.enrollments) ? enrollRes.enrollments : [];
         const contactArr = Array.isArray(contactRes) ? contactRes : Array.isArray(contactRes.messages) ? contactRes.messages : [];
+        const reportsArr = Array.isArray(reportsRes) ? reportsRes : Array.isArray(reportsRes.reports) ? reportsRes.reports : [];
         setBadges({
           enrollments: enrollArr.filter((e) => e.status === "PENDING").length,
           contact: contactArr.filter((m) => !m.read).length,
@@ -609,6 +353,21 @@ export default function AdminDashboard() {
       }
     }
     fetchAll();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refreshReports = async () => {
+      try {
+        const data = await getReports();
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : Array.isArray(data.reports) ? data.reports : [];
+        setBadges((b) => ({ ...b, report: arr.filter((r) => !r.read).length }));
+      } catch { /* keep last count */ }
+    };
+    refreshReports();
+    const id = setInterval(refreshReports, 10000);
+    return () => { cancelled = true; clearInterval(id); };
   }, []);
 
   const filteredStudents = students.filter((s) =>
@@ -639,7 +398,7 @@ export default function AdminDashboard() {
   const activeLabel =
     NAV.flatMap((s) => s.items).find((i) => i.key === active)?.label || "Overview";
 
-  if (localStorage.getItem("role") !== "ADMIN") {
+  if (sessionStorage.getItem("role") !== "ADMIN") {
     window.location.href = "/";
     return null;
   }
@@ -1238,7 +997,7 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-              <AccountTable title={t("Student Accounts")} accounts={studentAccounts} query={studentAccQuery} onSelect={setLiveStudent} />
+              <AccountTable title={t("Student Accounts")} accounts={studentAccounts} query={studentAccQuery} />
             </>
           )}
 
@@ -1339,8 +1098,6 @@ export default function AdminDashboard() {
           })}
         </nav>
       </div>
-
-      {liveStudent && <StudentLiveModal student={liveStudent} onClose={() => setLiveStudent(null)} />}
     </div>
   );
 }
