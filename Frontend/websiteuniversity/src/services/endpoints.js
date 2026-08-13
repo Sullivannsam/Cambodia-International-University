@@ -1,4 +1,4 @@
-const BASE_URL = process.env.REACT_APP_API_URL;
+const BASE_URL = process.env.REACT_APP_API_URL || "https://cambodia-international-university.onrender.com";
 
 const authHeaders = () => ({
     "Content-Type": "application/json",

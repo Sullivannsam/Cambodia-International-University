@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+const BASE_URL = process.env.REACT_APP_API_URL || "https://cambodia-international-university.onrender.com";
 
 const majors = ["Computer Science", "Business Administration", "Engineering", "Medicine", "Law", "Architecture", "Education", "Arts & Design"];
 const degrees = ["Bachelor's Degree", "Master's Degree", "PhD", "Associate Degree", "Diploma"];
