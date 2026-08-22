@@ -271,6 +271,22 @@ export const replyContact = async (data) => {
     return parse(response);
 };
 
+export const markContactRead = async (id) => {
+    const response = await fetch(`${BASE_URL}/api/admin/contact/${id}/read`, {
+        method: "PUT",
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const deleteContact = async (id) => {
+    const response = await fetch(`${BASE_URL}/api/admin/contact/delete/message/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 // ---------- Password Reset ----------
 export const forgotPassword = async (data) => {
     const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {

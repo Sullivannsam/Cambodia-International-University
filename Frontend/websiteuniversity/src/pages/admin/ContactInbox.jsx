@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   Search, Loader2, Mail, User, Trash2, Phone, MessageSquare, Send, Reply, CheckCheck, FileDown
 } from "lucide-react";
-import { getContact, replyContact } from "../../services/endpoints";
+import { getContact, replyContact, markContactRead, deleteContact } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
-import { getViewedIds, markViewed, markManyViewed } from "../../utils/contactRead";
 
 export default function ContactInbox({ onUnreadChange }) {
   const { t } = useLanguage();
@@ -27,8 +26,7 @@ export default function ContactInbox({ onUnreadChange }) {
     try {
       const data = await getContact();
       const arr = Array.isArray(data) ? data : Array.isArray(data.messages) ? data.messages : [];
-      const viewed = getViewedIds();
-      const normalized = arr.map(m => ({ ...m, read: !!m.read || viewed.has(m.id) }));
+      const normalized = arr.map(m => ({ ...m, read: !!m.read }));
       setMessages(normalized);
       onUnreadChange?.(countUnread(normalized));
     } catch {
@@ -48,7 +46,7 @@ export default function ContactInbox({ onUnreadChange }) {
   const openMessage = (m) => {
     setSelected(m);
     if (!m.read) {
-      markViewed(m.id);
+      markContactRead(m.id).catch(() => {});
       const next = messages.map(x => x.id === m.id ? { ...x, read: true } : x);
       setMessages(next);
       onUnreadChange?.(countUnread(next));
@@ -68,7 +66,7 @@ export default function ContactInbox({ onUnreadChange }) {
   };
 
   const markSelectedRead = () => {
-    markManyViewed(selectedIds);
+    selectedIds.forEach((id) => markContactRead(id).catch(() => {}));
     const next = messages.map((m) => selectedIds.includes(m.id) ? { ...m, read: true } : m);
     setMessages(next);
     onUnreadChange?.(countUnread(next));
@@ -76,13 +74,18 @@ export default function ContactInbox({ onUnreadChange }) {
     setNotice(t("Selected messages marked as read."));
   };
 
-  const deleteSelected = () => {
-    const next = messages.filter((m) => !selectedIds.includes(m.id));
-    setMessages(next);
-    onUnreadChange?.(countUnread(next));
-    if (selected && selectedIds.includes(selected.id)) setSelected(null);
-    setSelectedIds([]);
-    setNotice(t("Selected messages deleted."));
+  const deleteSelected = async () => {
+    try {
+      await Promise.all(selectedIds.map((id) => deleteContact(id)));
+      const next = messages.filter((m) => !selectedIds.includes(m.id));
+      setMessages(next);
+      onUnreadChange?.(countUnread(next));
+      if (selected && selectedIds.includes(selected.id)) setSelected(null);
+      setSelectedIds([]);
+      setNotice(t("Selected messages deleted."));
+    } catch {
+      setNotice(t("Failed to delete some messages. Please try again."));
+    }
   };
 
   const exportCSV = () => {
@@ -99,11 +102,16 @@ export default function ContactInbox({ onUnreadChange }) {
     URL.revokeObjectURL(url);
   };
 
-  const remove = (id) => {
-    const next = messages.filter(m => m.id !== id);
-    setMessages(next);
-    onUnreadChange?.(countUnread(next));
-    if (selected?.id === id) setSelected(null);
+  const remove = async (id) => {
+    try {
+      await deleteContact(id);
+      const next = messages.filter(m => m.id !== id);
+      setMessages(next);
+      onUnreadChange?.(countUnread(next));
+      if (selected?.id === id) setSelected(null);
+    } catch {
+      setNotice(t("Failed to delete the message. Please try again."));
+    }
   };
 
   const sendReply = async () => {
