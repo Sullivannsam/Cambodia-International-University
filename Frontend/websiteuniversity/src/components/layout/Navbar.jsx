@@ -132,6 +132,7 @@ const Navbar = () => {
                                 { label: t("aboutUs"), href: "/public/aboutus" },
                                 { label: t("contact"), href: "/public/contact" },
                                 { label: t("enroll"), href: "/public/content/enroll" },
+                                { label: t("tuition"), href: "/public/tuition" },
                             ].map(({ label, href }) => (
                                 <a key={label} href={href} className="nav-link" style={linkStyle}>
                                     {label}
@@ -288,6 +289,10 @@ const Navbar = () => {
                                                 label: t("enroll"), href: "/public/content/enroll",
                                                 icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />,
                                             },
+                                            {
+                                                label: t("tuition"), href: "/public/tuition",
+                                                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-2.485 0-4.5-1.119-4.5-2.5S9.515 12 12 12m0 0c2.485 0 4.5.672 4.5 1.5S14.485 15 12 15m0-10c2.21 0 4 1.343 4 3s-1.79 3-4 3-4-1.343-4-3 1.79-3 4-3z" />,
+                                            },
                                         ].map(({ label, href, icon }) => (
                                             <a key={label} href={href} onClick={closeAdminMenu} style={{
                                                 display: "flex", alignItems: "center", gap: 10,
@@ -397,6 +402,7 @@ const Navbar = () => {
                         { label: t("aboutUs"), href: "/public/aboutus" },
                         { label: t("contact"), href: "/public/contact" },
                         { label: t("enroll"), href: "/enroll" },
+                        { label: t("tuition"), href: "/public/tuition" },
                     ].map(({ label, href }) => (
                         <a key={label} href={href} className="mobile-link" style={{ ...linkStyle, padding: "10px 0", display: "block", borderBottom: "1px solid var(--border)" }}>
                             {label}

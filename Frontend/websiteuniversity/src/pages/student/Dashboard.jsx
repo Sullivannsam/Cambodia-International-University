@@ -20,6 +20,7 @@ import LogoutModal from "../../components/common/LogoutModal";
 import EmptyState from "../../components/common/EmptyState";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
+import StudentIdCard from "../../components/common/StudentIdCard";
 import { useActiveTab } from "../../hooks/useActiveTab";
 
 const NAV = [
@@ -1013,43 +1014,19 @@ export default function StudentDashboard() {
               <div className="content-row">
                 <div className="date-label">{today}</div>
               </div>
-              <div className="panel">
-                <div className="panel-title">{t("My Profile")}</div>
-                {profileSaved && <div className="notice-banner">{t("Profile updated successfully.")}</div>}
-                <form onSubmit={saveProfile} className="sp-profile-form" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div className="sp-field" style={{ marginBottom: 0 }}>
-                    <label className="sp-label">{t("Full name")}</label>
-                    <input className="sp-input" value={displayName} disabled />
-                  </div>
-                  <div className="sp-field" style={{ marginBottom: 0 }}>
-                    <label className="sp-label">{t("Student ID")}</label>
-                    <input className="sp-input" value={studentId} disabled />
-                  </div>
-                  <div className="sp-field" style={{ marginBottom: 0 }}>
-                    <label className="sp-label">{t("Email")}</label>
-                    <input className="sp-input" value={profile.email || user.email || "-"} disabled />
-                  </div>
-                  <div className="sp-field" style={{ marginBottom: 0 }}>
-                    <label className="sp-label">{t("Major")}</label>
-                    <input className="sp-input" name="major" value={profileForm.major} onChange={(e) => setProfileForm({ ...profileForm, major: e.target.value })} placeholder={t("e.g. Computer Science")} />
-                  </div>
-                  <div className="sp-field" style={{ marginBottom: 0 }}>
-                    <label className="sp-label">{t("Year")}</label>
-                    <input className="sp-input" name="year" value={profileForm.year} onChange={(e) => setProfileForm({ ...profileForm, year: e.target.value })} placeholder={t("e.g. Year 2")} />
-                  </div>
-                  <div className="sp-field" style={{ marginBottom: 0 }}>
-                    <label className="sp-label">{t("Phone")}</label>
-                    <input className="sp-input" name="phone" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder="+855 ..." />
-                  </div>
-                  <div className="sp-field" style={{ marginBottom: 0, gridColumn: "1 / -1" }}>
-                    <label className="sp-label">{t("Address")}</label>
-                    <input className="sp-input" name="address" value={profileForm.address} onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })} placeholder={t("Your current address")} />
-                  </div>
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <button type="submit" className="add-btn"><Save size={15} /> {t("Save Changes")}</button>
-                  </div>
-                </form>
-              </div>
+              <StudentIdCard
+                fallback={{
+                  id: studentId,
+                  fullName: displayName,
+                  username: displayName,
+                  email: profile.email || user.email,
+                  phone: profile.phone,
+                  major: profile.major,
+                  year: profile.year,
+                  address: profile.address,
+                  photoUrl: profile.photoUrl,
+                }}
+              />
             </>
           )}
         </div>

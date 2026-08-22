@@ -37,6 +37,7 @@ import NewsList from './pages/public/NewsList.jsx'
 import Faq from './pages/public/Faq.jsx'
 import AcademicCalendar from './pages/public/AcademicCalendar.jsx'
 import Scholarships from './pages/public/Scholarships.jsx'
+import Tuition from './pages/public/Tuition.jsx'
 import Facilities from './pages/public/Facilities.jsx'
 import Staff from './pages/public/Staff.jsx'
 import ApplicationStatus from './pages/public/ApplicationStatus.jsx'
@@ -97,13 +98,18 @@ function App() {
           <Route path="/public/faq" element={withNavbar(<Faq />)} />
           <Route path="/public/calendar" element={withNavbar(<AcademicCalendar />)} />
           <Route path="/public/scholarships" element={withNavbar(<Scholarships />)} />
+          <Route path="/public/tuition" element={withNavbar(<Tuition />)} />
           <Route path="/public/facilities" element={withNavbar(<Facilities />)} />
           <Route path="/public/staff" element={withNavbar(<Staff />)} />
           <Route path="/public/application-status" element={withNavbar(<ApplicationStatus />)} />
 
           {/* Admin pages */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/register" element={<AdminRegister />} />
+          <Route path="/admin/register" element={
+            <ProtectedRoute role="ADMIN">
+              <AdminRegister />
+            </ProtectedRoute>
+          } />
           
           <Route path = "/admin/dashboard" element = {
             <ProtectedRoute role="ADMIN">

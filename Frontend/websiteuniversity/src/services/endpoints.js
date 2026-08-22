@@ -475,14 +475,14 @@ export const postTeacherAnnouncement = async (data) => {
 
 // ---------- Enrollments (admin) ----------
 export const getEnrollments = async () => {
-    const response = await fetch(`${BASE_URL}/api/admin/enrollments`, {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/enrollments`, {
         headers: authHeaders(),
     });
     return parse(response);
 };
 
 export const updateEnrollmentStatus = async (id, status) => {
-    const response = await fetch(`${BASE_URL}/api/admin/enrollments/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/enrollments/${id}`, {
         method: "PUT",
         headers: authHeaders(),
         body: JSON.stringify({ status }),
@@ -634,6 +634,57 @@ export const sendTeacherMessage = async (data) => {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify(data),
+    });
+    return parse(response);
+};
+
+// ---------- Progression ----------
+export const getProgressionPreview = async () => {
+    const response = await fetch(`${BASE_URL}/api/admin/progression/preview`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const processProgression = async () => {
+    const response = await fetch(`${BASE_URL}/api/admin/progression/process`, {
+        method: "POST",
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const getStudentProgression = async () => {
+    const response = await fetch(`${BASE_URL}/api/students/progression`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+// ---------- Student Card (ID card) ----------
+export const getStudentCard = async () => {
+    const response = await fetch(`${BASE_URL}/api/students/card`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const updateStudentCard = async (id, data) => {
+    const response = await fetch(`${BASE_URL}/api/admin/students/${id}/card`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+    });
+    return parse(response);
+};
+
+export const uploadStudentPhoto = async (id, file) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const response = await fetch(`${BASE_URL}/api/admin/students/${id}/photo`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
+        body: fd,
     });
     return parse(response);
 };

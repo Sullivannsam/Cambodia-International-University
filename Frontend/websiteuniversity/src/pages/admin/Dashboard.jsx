@@ -7,7 +7,7 @@ import {
   LayoutGrid, TrendingUp, ClipboardCheck, UserCheck, Users,
   BookOpen, CalendarDays, FileBarChart, UserCircle2, LogOut,
   Search, ChevronRight, Loader2, UserCog, FileClock, Newspaper,
-  ChevronsLeft, ChevronsRight, UserPlus, Inbox, Megaphone, FileDown
+  ChevronsLeft, ChevronsRight, UserPlus, Inbox, Megaphone, FileDown, IdCard
 } from "lucide-react";
 import {
   getDashboardStats, getStudentAttendance, getTeacherAttendance,
@@ -21,6 +21,8 @@ import CourseManagement from "./CourseManagement";
 import NewsManagement from "./NewsManagement";
 import AuditLog from "./AuditLog";
 import EnrollmentManagement from "./EnrollmentManagement";
+import Progression from "./Progression";
+import StudentCardManager from "./StudentCardManager";
 import ContactInbox from "./ContactInbox";
 import ReportPage from "./ReportPage";
 import ScheduleBuilder from "./ScheduleBuilder";
@@ -50,6 +52,8 @@ const NAV = [
       { key: "classes", label: "Classes", icon: BookOpen },
       { key: "schedule", label: "Schedule", icon: CalendarDays },
       { key: "report", label: "Report", icon: FileBarChart },
+      { key: "progression", label: "Progression", icon: TrendingUp },
+      { key: "cards", label: "Student Cards", icon: IdCard },
     ],
   },
   {
@@ -1061,6 +1065,14 @@ export default function AdminDashboard() {
 
           {!loading && active === "audit-log" && (
             <AuditLog />
+          )}
+
+          {!loading && active === "progression" && (
+            <Progression />
+          )}
+
+          {!loading && active === "cards" && (
+            <StudentCardManager />
           )}
 
           {!loading && active === "schedule" && (
