@@ -63,6 +63,8 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/auth/account/admin").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/auth/report").hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, "/api/auth/report/*").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/auth/register/admin").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/api/auth/admin/**").hasRole("ADMIN")
 
             // DELETE
             .anyRequest().authenticated());

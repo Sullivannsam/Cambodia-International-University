@@ -17,11 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.admin.AdminDto;
 import com.ciu.sys.common.LoginRequest;
-import com.ciu.sys.admin.Admin;
 import com.ciu.sys.service.Jwt.JwtService;
-import com.ciu.sys.admin.AdminService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -58,6 +55,27 @@ public class AdminController {
           "role", "ADMIN"));
     }
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid credentials"));
+  }
+
+  @PostMapping("/register/admin")
+  public ResponseEntity<?> adminRegisteration(@RequestBody AdminRegister request) {
+
+    if (request.username() == null || request.email() == null || request.password() == null) {
+      return ResponseEntity.badRequest().body(Map.of("message", "All field are required"));
+
+    } else if (adminService.findAccountByEmail(request.email()) != null) {
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Email already register"));
+
+    }
+    Admin admin = new Admin();
+    admin.setUsername(request.username());
+    admin.setEmail(request.email());
+    admin.setPassword(passwordEncoder.encode(request.password()));
+    admin.setRole("ADMIN");
+    adminService.save(admin);
+
+    return ResponseEntity.ok(Map.of("message", "Admin registeration successful"));
+
   }
 
   @PreAuthorize("hasRole ('ADMIN')")

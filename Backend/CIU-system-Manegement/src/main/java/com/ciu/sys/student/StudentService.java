@@ -6,8 +6,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.student.StudentAccount;
-import com.ciu.sys.student.StudentRepository;
 import com.ciu.sys.common.ResourceNotFoundException;
 
 @Service
@@ -31,5 +29,14 @@ public class StudentService {
   public StudentAccount findStudentById(Long id) {
     return studentRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Student not found by id" + id));
+  }
+
+  public String nextCardCode() {
+    String last = studentRepository.findTopByOrderByCardCodeDesc()
+        .map(StudentAccount::getCardCode).orElse("000000");
+    int next = Integer.parseInt(last) + 1;
+    if (next > 999_999)
+      throw new IllegalStateException("Card codes exhausted");
+    return String.format("%06d", next);
   }
 }

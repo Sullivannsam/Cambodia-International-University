@@ -48,6 +48,24 @@ public class StudentAccount {
   @Column(name = "Birtdate")
   private Date date;
 
+  @Column(name = "Year")
+  private int year = 1;
+
+  @Column(name = "Semester")
+  private int semester = 1;
+
+  @Column(name = "CardCode", unique = true)
+  private String cardCode;
+
+  @Column(name = "Major")
+  private String major;
+
+  @Column(name = "Address")
+  private String address;
+
+  @Column(name = "Photo_Url")
+  private String photoUrl;
+
   @OneToOne
   @JoinColumn(name = "student_info_id")
   private StudentInfo studentInfo;

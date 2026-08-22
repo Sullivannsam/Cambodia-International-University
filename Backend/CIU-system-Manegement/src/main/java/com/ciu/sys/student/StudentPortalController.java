@@ -34,7 +34,15 @@ public class StudentPortalController {
         "phone", s.getPhone() == null ? "" : s.getPhone(),
         "role", s.getRole() == null ? "STUDENT" : s.getRole(),
         "isActive", s.isActive()));
+  }
 
+  @GetMapping("/progression")
+  public ResponseEntity<?> progression(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName()); // your repo
+    return me.<ResponseEntity<?>>map(s -> ResponseEntity.ok(Map.of(
+        "year", s.getYear(),
+        "semester", s.getSemester())))
+        .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
 }

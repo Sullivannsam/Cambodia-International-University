@@ -10,6 +10,10 @@ import org.springframework.stereotype.Repository;
 public interface StudentRepository extends JpaRepository<StudentAccount, Long> {
   Optional<StudentAccount> findByEmail(String email);
 
+  Optional<StudentAccount> findTopByOrderByCardCodeDesc();
+
+  Optional<StudentAccount> findByCardCode(String cardCode);
+
   @Query("SELECT COUNT(s) FROM StudentAccount s")
   long countStudents();
 }
