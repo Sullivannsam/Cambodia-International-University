@@ -14,7 +14,7 @@ public class ContactService {
   private ContactRepository contactRepo;
 
   public List<Contact> getAllContact() {
-    return contactRepo.findAll();
+    return contactRepo.findAllByOrderByIdDesc();
   }
 
   public Contact getUserContact() {
@@ -25,7 +25,17 @@ public class ContactService {
     return contactRepo.save(contact);
   }
 
-  public Contact reply(Contact contact) {
-    return contactRepo.save(contact);
+  public Contact readContact(Long id) {
+    Contact c = contactRepo.findById(id).orElse(null);
+    if (c != null) {
+      c.setRead(true);
+      return contactRepo.save(c);
+    }
+    return null;
   }
+
+  public void deleteContactById(Long id) {
+    contactRepo.deleteById(id);
+  }
+
 }

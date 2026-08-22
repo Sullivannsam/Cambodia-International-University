@@ -17,13 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.common.LoginRequest;
-import com.ciu.sys.student.StudentRequestDto;
-import com.ciu.sys.student.StudentResponse;
-import com.ciu.sys.student.StudentAccount;
 import com.ciu.sys.service.Jwt.JwtService;
-import com.ciu.sys.student.StudentService;
-
-import io.jsonwebtoken.Jwt;
 
 @RestController
 @RequestMapping("/api/auth/students")
