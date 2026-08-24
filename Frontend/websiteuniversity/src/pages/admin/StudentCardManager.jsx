@@ -30,6 +30,12 @@ export default function StudentCardManager() {
     return () => { document.body.style.overflow = prev; };
   }, [editing]);
 
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(""), 3200);
+    return () => clearTimeout(id);
+  }, [notice]);
+
   const filtered = students.filter((s) =>
     `${s.username} ${s.email} ${s.id} ${s.cardCode || ""}`.toLowerCase().includes(query.toLowerCase())
   );
@@ -39,9 +45,9 @@ export default function StudentCardManager() {
     setForm({
       fullName: s.fullName || s.username || "",
       major: s.major || "",
-      phone: s.phone || "",
+      phone: s.phone || s.phone_number || "",
       address: s.address || "",
-      cardCode: s.cardCode || "",
+      cardCode: s.cardCode || s.card_code || "",
     });
     setPhotoFile(null);
     setNotice("");
@@ -55,13 +61,15 @@ export default function StudentCardManager() {
     setNotice("");
     setError("");
     try {
-      await updateStudentCard(editing.id, form);
+      const updated = await updateStudentCard(editing.id, form);
+      let extra = {};
       if (photoFile) {
-        await uploadStudentPhoto(editing.id, photoFile);
-        setForm((f) => ({ ...f }));
+        const up = await uploadStudentPhoto(editing.id, photoFile);
+        if (up && up.photoUrl) extra = { photoUrl: up.photoUrl };
       }
-      setStudents((list) => list.map((s) => (s.id === editing.id ? { ...s, ...form } : s)));
-      setNotice(t("Card updated successfully."));
+      setStudents((list) => list.map((s) => (s.id === editing.id ? { ...s, ...form, username: form.fullName || s.username, ...(updated || {}), ...extra } : s)));
+      setNotice(photoFile ? t("Card saved & photo uploaded successfully.") : t("Card updated successfully."));
+      setEditing(null);
       setPhotoFile(null);
     } catch (err) {
       setError(err?.status === 404
@@ -170,7 +178,7 @@ export default function StudentCardManager() {
                 style={{ border: "none", background: "none", cursor: "pointer" }}><X size={18} /></button>
             </div>
 
-            {notice && <p style={{ color: "#1E7A4E", fontWeight: 600, fontSize: 14 }}>✓ {notice}</p>}
+            {error && <p style={{ color: "#DC2626", fontWeight: 600, fontSize: 14 }}>✕ {error}</p>}
             {error && <p style={{ color: "#D2483C", fontWeight: 600, fontSize: 14 }}>{error}</p>}
 
             <div className="scm-grid" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
@@ -225,6 +233,17 @@ export default function StudentCardManager() {
               </div>
             </div>
           </form>
+        </div>
+      )}
+
+      {notice && (
+        <div style={{
+          position: "fixed", top: 18, left: "50%", transform: "translateX(-50%)", zIndex: 100,
+          background: "#0F7B4D", color: "#fff", padding: "10px 20px", borderRadius: 12,
+          fontWeight: 700, fontSize: 14, boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
+          <Save size={15} /> {notice}
         </div>
       )}
     </div>
