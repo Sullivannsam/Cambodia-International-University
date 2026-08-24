@@ -76,8 +76,18 @@ public class StudentAccountController {
   public ResponseEntity<List<StudentResponse>> listAllStudent() {
     List<StudentAccount> students = studentService.findAllStudent();
     List<StudentResponse> dto = students.stream()
-        .map(s -> new StudentResponse(s.getId(), s.getUsername(), s.getEmail(), s.getPhone(), s.getRole(),
-            s.isActive(), s.getDate()))
+        .map(s -> new StudentResponse(
+            s.getId(),
+            s.getUsername(),
+            s.getEmail(),
+            s.getPhone(),
+            s.getRole(),
+            s.isActive(),
+            s.getDate(),
+            s.getMajor(),
+            s.getAddress(),
+            s.getCardCode(),
+            s.getPhotoUrl()))
         .toList();
 
     return ResponseEntity.ok(dto);
@@ -94,7 +104,11 @@ public class StudentAccountController {
         student.getPhone(),
         student.getRole(),
         student.isActive(),
-        student.getDate());
+        student.getDate(),
+        student.getMajor(),
+        student.getAddress(),
+        student.getCardCode(),
+        student.getPhotoUrl());
   }
 
 }

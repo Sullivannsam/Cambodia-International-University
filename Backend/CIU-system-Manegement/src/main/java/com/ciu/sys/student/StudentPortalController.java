@@ -3,6 +3,7 @@ package com.ciu.sys.student;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.catalina.valves.rewrite.InternalRewriteMap.Escape;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -34,6 +35,25 @@ public class StudentPortalController {
         "phone", s.getPhone() == null ? "" : s.getPhone(),
         "role", s.getRole() == null ? "STUDENT" : s.getRole(),
         "isActive", s.isActive()));
+  }
+
+  @GetMapping("/card")
+  public ResponseEntity<?> getCard(Authentication authentication) {
+    Optional<StudentAccount> found = repository.findByEmail(authentication.getName());
+    if (found.isEmpty())
+      return ResponseEntity.noContent().build();
+    StudentAccount s = found.get();
+    return ResponseEntity.ok(Map.of(
+        "id", s.getId(),
+        "username", s.getUsername() == null ? "" : s.getUsername(),
+        "email", s.getEmail(),
+        "phone", s.getPhone() == null ? "" : s.getPhone(),
+        "major", s.getMajor() == null ? "" : s.getMajor(),
+        "address", s.getAddress() == null ? "" : s.getAddress(),
+        "year", s.getYear(),
+        "semester", s.getSemester(),
+        "cardCode", s.getCardCode() == null ? String.format("%06d", s.getId()) : s.getCardCode(),
+        "photoUrl", s.getPhotoUrl() == null ? "" : s.getPhotoUrl()));
   }
 
   @GetMapping("/progression")

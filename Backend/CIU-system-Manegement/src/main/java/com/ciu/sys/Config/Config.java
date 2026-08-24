@@ -1,10 +1,12 @@
 package com.ciu.sys.Config;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @CrossOrigin
@@ -29,5 +31,11 @@ public class Config {
             .allowCredentials(true);
       }
     };
+  }
+
+  public void addResourceHandles(ResourceHandlerRegistry registry) {
+    registry.addResourceHandler("/photo/**")
+        .addResourceLocations("file:" + Paths.get("/uploads/photos").toAbsolutePath() + "/");
+
   }
 }

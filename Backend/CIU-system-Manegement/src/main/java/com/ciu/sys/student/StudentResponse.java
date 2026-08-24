@@ -9,6 +9,10 @@ public record StudentResponse(
     String phone,
     String role,
     Boolean isActive,
-    Date date) {
+    Date date,
+    String marjor,
+    String address,
+    String cardCode,
+    String photoUrl) {
 
 }
