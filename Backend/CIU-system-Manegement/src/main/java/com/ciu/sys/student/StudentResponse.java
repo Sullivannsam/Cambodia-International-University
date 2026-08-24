@@ -10,7 +10,7 @@ public record StudentResponse(
     String role,
     Boolean isActive,
     Date date,
-    String marjor,
+    String major,
     String address,
     String cardCode,
     String photoUrl) {

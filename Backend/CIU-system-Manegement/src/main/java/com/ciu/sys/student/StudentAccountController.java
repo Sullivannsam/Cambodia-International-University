@@ -34,6 +34,7 @@ public class StudentAccountController {
 
   @PostMapping("/register/account")
   public ResponseEntity<?> studentRegisterAccount(@RequestBody StudentRequestDto request) {
+
     StudentAccount student = new StudentAccount();
     student.setUsername(request.username());
     student.setPassword(passwordEncoder.encode(request.password()));
@@ -46,8 +47,12 @@ public class StudentAccountController {
 
   @PostMapping("/login/account")
   public ResponseEntity<?> studentLogin(@RequestBody LoginRequest request) {
+
     Optional<StudentAccount> found = studentService.findByEmail(request.email());
-    if (found.isPresent() && passwordEncoder.matches(request.password(), found.get().getPassword())) {
+
+    if (found.isPresent()
+        && passwordEncoder.matches(request.password(), found.get().getPassword() && found.get().isActive())) {
+
       return ResponseEntity.ok(Map.of(
           "token", jwtService.generateToken(found.get().getEmail(), "STUDENT"),
           "message", "Login successfully",
@@ -61,6 +66,7 @@ public class StudentAccountController {
 
   @PutMapping("/update/{id}")
   public ResponseEntity<?> updateStudentById(@PathVariable Long id, @RequestBody StudentRequestDto dto) {
+
     StudentAccount student = studentService.findStudentById(id);
     student.setUsername(dto.username());
     student.setPassword(passwordEncoder.encode(dto.password()));
@@ -74,7 +80,9 @@ public class StudentAccountController {
 
   @GetMapping
   public ResponseEntity<List<StudentResponse>> listAllStudent() {
+
     List<StudentAccount> students = studentService.findAllStudent();
+
     List<StudentResponse> dto = students.stream()
         .map(s -> new StudentResponse(
             s.getId(),

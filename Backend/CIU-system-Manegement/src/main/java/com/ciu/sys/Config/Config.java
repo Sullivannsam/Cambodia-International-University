@@ -33,8 +33,8 @@ public class Config {
     };
   }
 
-  public void addResourceHandles(ResourceHandlerRegistry registry) {
-    registry.addResourceHandler("/photo/**")
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    registry.addResourceHandler("/photos/**")
         .addResourceLocations("file:" + Paths.get("/uploads/photos").toAbsolutePath() + "/");
 
   }

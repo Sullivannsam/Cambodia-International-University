@@ -58,6 +58,7 @@ public class SecurityConfig {
             .requestMatchers("/api/teachers/**").hasRole("TEACHER")
 
             // Adminaccount lists
+            .requestMatchers(HttpMethod.GET, "/api/auth/admin/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/auth/users/users").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/auth/students").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/auth/teacher/list").hasRole("ADMIN")
