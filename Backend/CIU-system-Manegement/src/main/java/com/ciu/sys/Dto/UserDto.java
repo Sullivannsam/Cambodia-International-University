@@ -1,4 +1,4 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Dto;
 
 public record UserDto(
     Long id,

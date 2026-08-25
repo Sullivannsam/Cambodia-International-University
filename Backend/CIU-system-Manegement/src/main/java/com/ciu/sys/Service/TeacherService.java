@@ -1,4 +1,4 @@
-package com.ciu.sys.teacher;
+package com.ciu.sys.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.teacher.Teacher;
-import com.ciu.sys.teacher.TeacherRepository;
+import com.ciu.sys.Model.Teacher;
+import com.ciu.sys.Repository.TeacherRepository;
 import com.ciu.sys.common.ResourceNotFoundException;
 
 @Service

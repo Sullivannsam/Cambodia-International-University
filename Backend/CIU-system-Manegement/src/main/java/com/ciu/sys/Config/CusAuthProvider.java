@@ -1,6 +1,6 @@
 package com.ciu.sys.Config;
 
-import com.ciu.sys.user.CustomAuthUserService;
+import com.ciu.sys.Service.CustomAuthUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;

@@ -1,12 +1,12 @@
-package com.ciu.sys.service.Course;
+package com.ciu.sys.Service;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.Course.Course;
-import com.ciu.sys.repository.Course.CourseRepository;
+import com.ciu.sys.Model.Course;
+import com.ciu.sys.Repository.CourseRepository;
 
 @Service
 public class CourseService {

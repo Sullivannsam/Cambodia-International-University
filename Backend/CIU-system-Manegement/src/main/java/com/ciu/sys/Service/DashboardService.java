@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,19 +12,19 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.finance.Payment;
-import com.ciu.sys.student.StudentAttendance;
-import com.ciu.sys.student.StudentClass;
-import com.ciu.sys.teacher.TeacherAttendance;
-import com.ciu.sys.admin.AdminRepository;
-import com.ciu.sys.repository.contact.ContactRepository;
-import com.ciu.sys.repository.finance.PaymentRepository;
-import com.ciu.sys.student.StudentClassRepository;
-import com.ciu.sys.student.StudentRepository;
-import com.ciu.sys.student.studentAttendanceRepository;
-import com.ciu.sys.teacher.TeacherAttendanceRepository;
-import com.ciu.sys.teacher.TeacherRepository;
-import com.ciu.sys.user.UserRepository;
+import com.ciu.sys.Model.Payment;
+import com.ciu.sys.Model.StudentAttendance;
+import com.ciu.sys.Model.StudentClass;
+import com.ciu.sys.Model.TeacherAttendance;
+import com.ciu.sys.Repository.AdminRepository;
+import com.ciu.sys.Repository.ContactRepository;
+import com.ciu.sys.Repository.PaymentRepository;
+import com.ciu.sys.Repository.StudentClassRepository;
+import com.ciu.sys.Repository.StudentRepository;
+import com.ciu.sys.Repository.studentAttendanceRepository;
+import com.ciu.sys.Repository.TeacherAttendanceRepository;
+import com.ciu.sys.Repository.TeacherRepository;
+import com.ciu.sys.Repository.UserRepository;
 
 @Service
 public class DashboardService {

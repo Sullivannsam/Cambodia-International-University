@@ -1,4 +1,4 @@
-package com.ciu.sys.service.contact;
+package com.ciu.sys.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

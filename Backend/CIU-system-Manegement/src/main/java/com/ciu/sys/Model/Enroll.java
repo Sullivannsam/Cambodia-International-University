@@ -1,4 +1,4 @@
-package com.ciu.sys.model.enrollment;
+package com.ciu.sys.Model;
 
 import java.sql.Date;
 

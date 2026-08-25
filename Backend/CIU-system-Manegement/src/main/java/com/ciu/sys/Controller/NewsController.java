@@ -1,4 +1,4 @@
-package com.ciu.sys.controller.News;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.ciu.sys.model.News.News;
-import com.ciu.sys.service.News.NewsService;
+import com.ciu.sys.Model.News;
+import com.ciu.sys.Service.NewsService;
 
 @RestController
 @RequestMapping("/api/auth/admin")

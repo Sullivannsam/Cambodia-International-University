@@ -1,8 +1,8 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Controller;
 
 import java.util.Map;
 
-import com.ciu.sys.user.User;
+import com.ciu.sys.Model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.common.LoginRequest;
 import com.ciu.sys.common.RegisterRequest;
-import com.ciu.sys.service.Jwt.JwtService;
-import com.ciu.sys.admin.AdminService;
-import com.ciu.sys.user.UserService;
+import com.ciu.sys.Service.JwtService;
+import com.ciu.sys.Service.AdminService;
+import com.ciu.sys.Service.UserService;
 
 @RestController
 @RequestMapping("/api/auth")

@@ -1,4 +1,4 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.common.LoginRequest;
-import com.ciu.sys.service.Jwt.JwtService;
+import com.ciu.sys.Service.JwtService;
+import com.ciu.sys.Dto.StudentRequestDto;
+import com.ciu.sys.Dto.StudentResponse;
+import com.ciu.sys.Model.StudentAccount;
+import com.ciu.sys.Service.StudentService;
 
 @RestController
 @RequestMapping("/api/auth/students")
@@ -51,7 +55,8 @@ public class StudentAccountController {
     Optional<StudentAccount> found = studentService.findByEmail(request.email());
 
     if (found.isPresent()
-        && passwordEncoder.matches(request.password(), found.get().getPassword() && found.get().isActive())) {
+        && passwordEncoder.matches(request.password(), found.get().getPassword())
+        && found.get().isActive()) {
 
       return ResponseEntity.ok(Map.of(
           "token", jwtService.generateToken(found.get().getEmail(), "STUDENT"),

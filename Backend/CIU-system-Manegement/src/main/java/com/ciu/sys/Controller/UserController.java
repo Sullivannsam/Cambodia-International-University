@@ -1,4 +1,4 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 import java.util.Map;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.user.UserDto;
-import com.ciu.sys.user.User;
-import com.ciu.sys.user.UserService;
+import com.ciu.sys.Dto.UserDto;
+import com.ciu.sys.Model.User;
+import com.ciu.sys.Service.UserService;
 
 @RestController
 @RequestMapping("/api/auth/users")

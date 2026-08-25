@@ -1,10 +1,10 @@
-package com.ciu.sys.service.finance;
+package com.ciu.sys.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.finance.Payment;
-import com.ciu.sys.repository.finance.PaymentRepository;
+import com.ciu.sys.Model.Payment;
+import com.ciu.sys.Repository.PaymentRepository;
 
 @Service
 public class PaymentService {

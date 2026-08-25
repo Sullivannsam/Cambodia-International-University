@@ -1,4 +1,4 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Dto;
 
 public record StudentRequestDto(
     String username,

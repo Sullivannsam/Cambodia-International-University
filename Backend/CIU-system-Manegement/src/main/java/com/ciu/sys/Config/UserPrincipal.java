@@ -1,4 +1,4 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Config;
 
 import java.util.Collection;
 import java.util.List;
@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.ciu.sys.Model.User;
 
 public class UserPrincipal implements UserDetails {
 

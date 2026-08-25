@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Controller;
 
 import java.nio.file.*;
 import java.util.Map;
@@ -10,8 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ciu.sys.student.StudentAccount;
-import com.ciu.sys.student.StudentRepository;
+import com.ciu.sys.Model.StudentAccount;
+import com.ciu.sys.Repository.StudentRepository;
+import com.ciu.sys.Model.Student;
 
 @RestController
 @RequestMapping("/api/admin/students")

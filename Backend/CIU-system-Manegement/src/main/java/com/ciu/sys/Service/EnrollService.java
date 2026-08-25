@@ -1,10 +1,10 @@
-package com.ciu.sys.service.Enroll;
+package com.ciu.sys.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.enrollment.Enroll;
-import com.ciu.sys.repository.Enroll.EnrollRepository;
+import com.ciu.sys.Model.Enroll;
+import com.ciu.sys.Repository.EnrollRepository;
 
 @Service
 public class EnrollService {

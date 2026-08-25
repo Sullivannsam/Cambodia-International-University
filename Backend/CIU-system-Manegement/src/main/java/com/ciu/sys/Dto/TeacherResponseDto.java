@@ -1,4 +1,4 @@
-package com.ciu.sys.teacher;
+package com.ciu.sys.Dto;
 
 import java.sql.Date;
 

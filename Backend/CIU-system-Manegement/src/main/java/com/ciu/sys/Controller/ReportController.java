@@ -1,4 +1,4 @@
-package com.ciu.sys.controller.ReportController;
+package com.ciu.sys.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
-import com.ciu.sys.model.Report.Report;
-import com.ciu.sys.service.ReportService.ReportService;
+import com.ciu.sys.Model.Report;
+import com.ciu.sys.Service.ReportService;
 
 @RestController
 @RequestMapping("/api/auth/report")

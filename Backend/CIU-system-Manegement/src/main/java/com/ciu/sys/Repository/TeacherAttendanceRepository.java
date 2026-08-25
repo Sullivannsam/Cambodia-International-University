@@ -1,9 +1,9 @@
-package com.ciu.sys.teacher;
+package com.ciu.sys.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ciu.sys.teacher.TeacherAttendance;
+import com.ciu.sys.Model.TeacherAttendance;
 
 @Repository
 public interface TeacherAttendanceRepository extends JpaRepository<TeacherAttendance, Long> {

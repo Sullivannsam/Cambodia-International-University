@@ -1,4 +1,4 @@
-package com.ciu.sys.model.notification;
+package com.ciu.sys.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,12 +1,12 @@
-package com.ciu.sys.service.ReportService;
+package com.ciu.sys.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import com.ciu.sys.model.Report.Report;
-import com.ciu.sys.repository.ReportRepository.ReportRepository;
+import com.ciu.sys.Model.Report;
+import com.ciu.sys.Repository.ReportRepository;
 
 @Service
 public class ReportService {

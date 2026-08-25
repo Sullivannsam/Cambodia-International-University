@@ -1,10 +1,10 @@
-package com.ciu.sys.repository.News;
+package com.ciu.sys.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.ciu.sys.model.News.News;
+import com.ciu.sys.Model.News;
 import java.util.List;
 
 @Repository

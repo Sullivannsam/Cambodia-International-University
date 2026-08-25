@@ -1,8 +1,5 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Model;
 
-import com.ciu.sys.model.finance.ExamResult;
-import com.ciu.sys.model.finance.Payment;
-import com.ciu.sys.model.finance.Scholarship;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

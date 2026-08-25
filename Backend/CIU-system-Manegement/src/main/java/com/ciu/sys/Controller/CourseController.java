@@ -1,4 +1,4 @@
-package com.ciu.sys.controller.Course;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.model.Course.Course;
-import com.ciu.sys.service.Course.CourseService;
+import com.ciu.sys.Model.Course;
+import com.ciu.sys.Service.CourseService;
 
 @RestController
 @RequestMapping("/api/admin/course")

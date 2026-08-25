@@ -1,4 +1,4 @@
-package com.ciu.sys.model.contact;
+package com.ciu.sys.Model;
 
 import java.time.LocalDateTime;
 

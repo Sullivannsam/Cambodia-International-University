@@ -1,11 +1,11 @@
-package com.ciu.sys.service.Schedule;
+package com.ciu.sys.Service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.Schedule.Schedule;
-import com.ciu.sys.repository.Schedule.ScheduleRepository;
+import com.ciu.sys.Model.Schedule;
+import com.ciu.sys.Repository.ScheduleRepository;
 
 @Service
 public class ScheduleService {

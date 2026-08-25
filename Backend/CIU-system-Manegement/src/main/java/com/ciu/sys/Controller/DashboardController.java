@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Controller;
 
 import java.util.Map;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.admin.DashboardService;
+import com.ciu.sys.Service.DashboardService;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")

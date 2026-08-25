@@ -1,6 +1,5 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Model;
 
-import com.ciu.sys.teacher.Teacher;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

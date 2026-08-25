@@ -1,12 +1,12 @@
-package com.ciu.sys.service.contact;
+package com.ciu.sys.Service;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.contact.Contact;
-import com.ciu.sys.repository.contact.ContactRepository;
+import com.ciu.sys.Model.Contact;
+import com.ciu.sys.Repository.ContactRepository;
 
 @Service
 public class ContactService {

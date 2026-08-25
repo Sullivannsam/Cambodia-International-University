@@ -1,4 +1,4 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,11 +10,11 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.user.UserDto;
-import com.ciu.sys.user.User;
-import com.ciu.sys.user.Verification;
-import com.ciu.sys.user.UserRepository;
-import com.ciu.sys.user.VerificationRepository;
+import com.ciu.sys.Dto.UserDto;
+import com.ciu.sys.Model.User;
+import com.ciu.sys.Model.Verification;
+import com.ciu.sys.Repository.UserRepository;
+import com.ciu.sys.Repository.VerificationRepository;
 
 @Service
 public class UserService {

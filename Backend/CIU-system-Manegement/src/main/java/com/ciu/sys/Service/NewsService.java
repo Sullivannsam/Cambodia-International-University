@@ -1,4 +1,4 @@
-package com.ciu.sys.service.News;
+package com.ciu.sys.Service;
 
 import java.util.List;
 
@@ -6,8 +6,8 @@ import java.sql.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.model.News.News;
-import com.ciu.sys.repository.News.NewRepository;
+import com.ciu.sys.Model.News;
+import com.ciu.sys.Repository.NewRepository;
 
 @Service
 public class NewsService {

@@ -1,4 +1,4 @@
-package com.ciu.sys.controller.contact;
+package com.ciu.sys.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.model.contact.Contact;
-import com.ciu.sys.service.contact.ContactService;
+import com.ciu.sys.Model.Contact;
+import com.ciu.sys.Service.ContactService;
 
 @RestController
 @RequestMapping("/api/public")

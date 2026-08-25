@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 import java.util.Map;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.model.enrollment.StudentEnrollment;
-import com.ciu.sys.repository.Enroll.StudentEnrollmentRepository;
-import com.ciu.sys.student.StudentService;
+import com.ciu.sys.Model.StudentEnrollment;
+import com.ciu.sys.Repository.StudentEnrollmentRepository;
+import com.ciu.sys.Service.StudentService;
 
 @RestController
 @RequestMapping("/api/auth/admin/enrollments")

@@ -1,4 +1,4 @@
-package com.ciu.sys.controller.contact;
+package com.ciu.sys.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
-import com.ciu.sys.model.contact.Contact;
-import com.ciu.sys.service.contact.ContactMailService;
-import com.ciu.sys.service.contact.ContactService;
+import com.ciu.sys.Model.Contact;
+import com.ciu.sys.Service.ContactMailService;
+import com.ciu.sys.Service.ContactService;
+import com.ciu.sys.Model.Message;
 
 @RestController
 @RequestMapping("/api/admin/contact")

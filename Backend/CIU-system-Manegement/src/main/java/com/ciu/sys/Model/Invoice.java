@@ -1,4 +1,4 @@
-package com.ciu.sys.model.finance;
+package com.ciu.sys.Model;
 
 import java.sql.Date;
 import java.time.LocalDate;

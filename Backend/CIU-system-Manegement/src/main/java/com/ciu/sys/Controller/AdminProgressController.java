@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Controller;
 
 import java.util.Map;
 import java.util.ArrayList;
@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ciu.sys.model.finance.ExamResult;
-import com.ciu.sys.model.finance.Invoice;
-import com.ciu.sys.repository.finance.ExamResultRepository;
-import com.ciu.sys.repository.finance.InvoiceRepository;
-import com.ciu.sys.student.StudentAccount;
-import com.ciu.sys.student.StudentRepository;
+import com.ciu.sys.Model.ExamResult;
+import com.ciu.sys.Model.Invoice;
+import com.ciu.sys.Repository.ExamResultRepository;
+import com.ciu.sys.Repository.InvoiceRepository;
+import com.ciu.sys.Model.StudentAccount;
+import com.ciu.sys.Repository.StudentRepository;
 
 @RestController
 @RequestMapping("/api/admin/progression")

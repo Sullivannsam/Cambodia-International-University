@@ -1,4 +1,4 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Controller;
 
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ciu.sys.Model.StudentAccount;
+import com.ciu.sys.Repository.StudentRepository;
 
 @RestController
 @RequestMapping("/api/students")

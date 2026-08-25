@@ -1,4 +1,4 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ciu.sys.common.ResourceNotFoundException;
+import com.ciu.sys.Model.StudentAccount;
+import com.ciu.sys.Repository.StudentRepository;
 
 @Service
 public class StudentService {

@@ -1,4 +1,4 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

@@ -1,4 +1,4 @@
-package com.ciu.sys.model.News;
+package com.ciu.sys.Model;
 
 import java.sql.Date;
 

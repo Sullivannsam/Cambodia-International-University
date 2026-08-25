@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Service;
 
 import java.util.List;
 
@@ -7,6 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ciu.sys.common.ResourceNotFoundException;
+import com.ciu.sys.Model.Admin;
+import com.ciu.sys.Repository.AdminRepository;
 
 @Service
 public class AdminService {

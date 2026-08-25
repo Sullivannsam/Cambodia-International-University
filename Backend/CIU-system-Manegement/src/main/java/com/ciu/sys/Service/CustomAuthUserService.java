@@ -1,4 +1,4 @@
-package com.ciu.sys.user;
+package com.ciu.sys.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -6,9 +6,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.ciu.sys.user.User;
-import com.ciu.sys.user.UserPrincipal;
-import com.ciu.sys.user.UserRepository;
+import com.ciu.sys.Model.User;
+import com.ciu.sys.Config.UserPrincipal;
+import com.ciu.sys.Repository.UserRepository;
 
 @Service
 public class CustomAuthUserService implements UserDetailsService {

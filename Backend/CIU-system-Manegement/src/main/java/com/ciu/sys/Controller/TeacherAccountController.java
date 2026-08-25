@@ -1,4 +1,4 @@
-package com.ciu.sys.teacher;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 import java.util.Map;
@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.common.LoginRequest;
-import com.ciu.sys.teacher.TeacherRequestDto;
-import com.ciu.sys.teacher.TeacherResponseDto;
-import com.ciu.sys.teacher.Teacher;
-import com.ciu.sys.service.Jwt.JwtService;
-import com.ciu.sys.teacher.TeacherService;
+import com.ciu.sys.Dto.TeacherRequestDto;
+import com.ciu.sys.Dto.TeacherResponseDto;
+import com.ciu.sys.Model.Teacher;
+import com.ciu.sys.Service.JwtService;
+import com.ciu.sys.Service.TeacherService;
 import com.ciu.sys.common.ResourceNotFoundException;
 
 @RestController

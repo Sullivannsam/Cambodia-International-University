@@ -1,4 +1,4 @@
-package com.ciu.sys.student;
+package com.ciu.sys.Model;
 
 import java.util.List;
 

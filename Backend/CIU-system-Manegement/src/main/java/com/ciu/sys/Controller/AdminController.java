@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Controller;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.common.LoginRequest;
-import com.ciu.sys.service.Jwt.JwtService;
+import com.ciu.sys.Service.JwtService;
+import com.ciu.sys.Dto.AdminRegister;
+import com.ciu.sys.Model.Admin;
+import com.ciu.sys.Service.AdminService;
 
 @RestController
 @RequestMapping("/api/auth")

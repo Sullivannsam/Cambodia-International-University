@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Dto;
 
 public record AdminDto(
     String username,

@@ -1,4 +1,4 @@
-package com.ciu.sys.dto.enrollment;
+package com.ciu.sys.Dto;
 
 public record EntrollDto(
 

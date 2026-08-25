@@ -1,10 +1,8 @@
-package com.ciu.sys.model.enrollment;
+package com.ciu.sys.Model;
 
 import java.sql.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
-
-import com.ciu.sys.student.StudentAccount;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

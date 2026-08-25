@@ -1,9 +1,8 @@
-package com.ciu.sys.teacher;
+package com.ciu.sys.Model;
 
 import java.sql.Date;
 import java.util.List;
 
-import com.ciu.sys.student.StudentClass;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;

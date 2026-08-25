@@ -1,4 +1,4 @@
-package com.ciu.sys.admin;
+package com.ciu.sys.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

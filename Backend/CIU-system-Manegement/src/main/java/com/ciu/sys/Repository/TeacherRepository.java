@@ -1,4 +1,4 @@
-package com.ciu.sys.teacher;
+package com.ciu.sys.Repository;
 
 import java.util.Optional;
 
@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.ciu.sys.teacher.Teacher;
+import com.ciu.sys.Model.Teacher;
 
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
