@@ -16,7 +16,6 @@ import java.util.Map;
 import com.ciu.sys.Model.Contact;
 import com.ciu.sys.Service.ContactMailService;
 import com.ciu.sys.Service.ContactService;
-import com.ciu.sys.Model.Message;
 
 @RestController
 @RequestMapping("/api/admin/contact")

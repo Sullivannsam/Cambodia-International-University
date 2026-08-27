@@ -38,6 +38,7 @@ public class TeacherAccountController {
 
   @PostMapping("/login/account")
   public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+
     Teacher found = teacherService.findAllByEmail(request.email())
         .orElseThrow(() -> new ResourceNotFoundException("Account Not Found"));
     if (passwordEncoder.matches(request.password(), found.getPassword())) {
@@ -55,6 +56,18 @@ public class TeacherAccountController {
   @PostMapping("/register/account")
   public ResponseEntity<?> teacherRegisterAccount(
       @RequestBody TeacherRequestDto request) {
+
+    if (request.username() == null && request.email() == null && request.password() == null
+        || request.phone() == null) {
+
+      return ResponseEntity.badRequest().body(Map.of("message", "All field are required"));
+
+    } else if (request.password().length() < 6) {
+      return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+          .body(Map.of("message", "Password must at least 6 characters"));
+
+    }
+
     Teacher teacher = new Teacher();
     teacher.setUsername(request.username());
     teacher.setEmail(request.email());
@@ -62,11 +75,12 @@ public class TeacherAccountController {
     teacher.setPhone(request.phone());
 
     teacherService.register(teacher);
-    return ResponseEntity.ok(Map.of("message", "Register Account Successfully"));
+    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Account create successfullys"));
   }
 
   @PutMapping("/update/account/{id}")
   public ResponseEntity<?> update(@PathVariable Long id, @RequestBody TeacherRequestDto request) {
+
     Teacher teacher = teacherService.findAllById(id);
     teacher.setUsername(request.username());
     teacher.setEmail(request.email());
@@ -79,6 +93,7 @@ public class TeacherAccountController {
 
   @GetMapping("/list")
   public ResponseEntity<?> listTeacher() {
+
     List<Teacher> teacher = teacherService.findAllTeacher();
     List<TeacherResponseDto> found = teacher.stream()
         .map(s -> new TeacherResponseDto(
@@ -96,6 +111,7 @@ public class TeacherAccountController {
 
   @GetMapping("/{id}")
   public ResponseEntity<?> findAllById(@PathVariable Long id) {
+
     Teacher found = teacherService.findAllById(id);
     return ResponseEntity.ok(Map.of(
         "message", "Found",

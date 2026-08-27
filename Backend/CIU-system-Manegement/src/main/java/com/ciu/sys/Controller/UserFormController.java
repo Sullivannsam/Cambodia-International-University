@@ -50,6 +50,7 @@ public class UserFormController {
     try {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+
       return ResponseEntity.ok(Map.of(
           "token", jwtService.generateToken(request.email(), "USER"),
           "message", "Login Successful!",
@@ -62,6 +63,18 @@ public class UserFormController {
 
   @PostMapping("/register")
   public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest request) {
+
+    if (request.username() == null && request.password() == null && request.email() == null
+        || request.phone() == null) {
+
+      return ResponseEntity.badRequest().body(Map.of("message", "All field are required"));
+
+    } else if (request.password().length() < 6) {
+      return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+          .body(Map.of("message", "Password must be at least 6 characters"));
+
+    }
+
     User user = new User();
     user.setUsername(request.username());
     user.setPassword(passwordEncoder.encode(request.password()));

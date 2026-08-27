@@ -39,14 +39,26 @@ public class StudentAccountController {
   @PostMapping("/register/account")
   public ResponseEntity<?> studentRegisterAccount(@RequestBody StudentRequestDto request) {
 
-    StudentAccount student = new StudentAccount();
-    student.setUsername(request.username());
-    student.setPassword(passwordEncoder.encode(request.password()));
-    student.setEmail(request.email());
-    student.setPhone(request.phone());
+    if (request.username() == null && request.password() == null && request.email() == null
+        || request.phone() == null) {
 
-    studentService.studentRegisterAccount(student);
-    return ResponseEntity.ok(Map.of("message", "Account created successfully"));
+      return ResponseEntity.badRequest().body(Map.of("message", "All field are required"));
+
+    } else if (request.password().length() < 6) {
+      return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+          .body(Map.of("message", "Password must at least 6 characters"));
+
+    }
+
+    StudentAccount account = new StudentAccount();
+    account.setUsername(request.username());
+    account.setPassword(passwordEncoder.encode(request.password()));
+    account.setEmail(request.email());
+    account.setPhone(request.phone());
+
+    studentService.studentRegisterAccount(account);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Account create successfully"));
   }
 
   @PostMapping("/login/account")

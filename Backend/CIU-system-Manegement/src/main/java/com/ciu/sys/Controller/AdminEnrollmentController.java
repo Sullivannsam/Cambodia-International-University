@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,14 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ciu.sys.Model.StudentEnrollment;
 import com.ciu.sys.Repository.StudentEnrollmentRepository;
-import com.ciu.sys.Service.StudentService;
 
 @RestController
 @RequestMapping("/api/auth/admin/enrollments")
 public class AdminEnrollmentController {
-
-  @Autowired
-  private StudentService service;
 
   @Autowired
   private StudentEnrollmentRepository repo;

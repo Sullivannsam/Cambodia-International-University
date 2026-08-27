@@ -48,6 +48,7 @@ public class AdminController {
 
   @PostMapping("/login/admin")
   public ResponseEntity<Map<String, String>> adminLogin(@RequestBody LoginRequest request) {
+
     Admin found = adminService.authenticate(request.email(), request.password());
     if (found != null) {
       return ResponseEntity.ok(Map.of(
@@ -69,7 +70,11 @@ public class AdminController {
     } else if (adminService.findAccountByEmail(request.email()) != null) {
       return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Email already register"));
 
+    } else if (request.password().length() < 6) {
+      return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+          .body(Map.of("message", "Password must be at least 6 characters"));
     }
+
     Admin admin = new Admin();
     admin.setUsername(request.username());
     admin.setEmail(request.email());
@@ -84,6 +89,7 @@ public class AdminController {
   @PreAuthorize("hasRole ('ADMIN')")
   @PutMapping("/{id}")
   public Admin updateAdminById(@PathVariable Long id, @RequestBody Admin updateAdmin) {
+
     updateAdmin.setId(id);
     return adminService.updateAdminById(updateAdmin);
   }
@@ -91,10 +97,12 @@ public class AdminController {
   @PreAuthorize("hasRole ('ADMIN')")
   @DeleteMapping("/delete/{id}")
   public ResponseEntity<Admin> deleteAdminById(@PathVariable Long id) {
+
     Admin getAdmin = adminService.deleteAdminById(id);
 
     if (getAdmin != null) {
       return new ResponseEntity<>(getAdmin, HttpStatus.OK);
+
     } else {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

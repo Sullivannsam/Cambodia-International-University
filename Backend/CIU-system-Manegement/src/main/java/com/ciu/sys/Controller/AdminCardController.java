@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Repository.StudentRepository;
-import com.ciu.sys.Model.Student;
 
 @RestController
 @RequestMapping("/api/admin/students")
