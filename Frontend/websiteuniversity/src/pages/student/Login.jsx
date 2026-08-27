@@ -21,6 +21,12 @@ export default function StudentLogin() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+
+    if (form.password.length < 6) {
+      setError(t('Password must be at least 6 characters.'));
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await studentLogin({ email: form.email, password: form.password });

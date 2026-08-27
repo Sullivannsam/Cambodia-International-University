@@ -47,6 +47,11 @@ export default function Settings() {
       setMessage(t('Passwords do not match.'));
       return;
     }
+    if (form.newPassword && form.newPassword.length < 6) {
+      setMsgType('error');
+      setMessage(t('Password must be at least 6 characters.'));
+      return;
+    }
     const token = sessionStorage.getItem('token');
     const userId = sessionStorage.getItem('userId');
     try {

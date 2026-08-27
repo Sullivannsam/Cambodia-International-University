@@ -23,6 +23,11 @@ export default function RegisterForm() {
     e.preventDefault();
     setError('');
 
+    if (form.password.length < 6) {
+      setError(t('Password must be at least 6 characters.'));
+      return;
+    }
+
     if (form.password !== form.repeatPassword) {
       setError(t(`Password don't match`));
       return;

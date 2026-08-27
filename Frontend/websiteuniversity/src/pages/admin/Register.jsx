@@ -28,6 +28,11 @@ export default function Register() {
       return;
     }
 
+    if (form.password.length < 6) {
+      setError(t('Password must be at least 6 characters.'));
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await adminRegister({

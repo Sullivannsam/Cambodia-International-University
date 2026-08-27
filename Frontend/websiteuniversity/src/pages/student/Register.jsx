@@ -29,6 +29,11 @@ export default function StudentRegister() {
       return;
     }
 
+    if (form.password.length < 6) {
+      setError(t('Password must be at least 6 characters.'));
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await studentRegister({
