@@ -55,6 +55,8 @@ public class StudentAccountController {
     account.setPassword(passwordEncoder.encode(request.password()));
     account.setEmail(request.email());
     account.setPhone(request.phone());
+    account.setRole("STUDENT");
+    account.setActive(true);
 
     studentService.studentRegisterAccount(account);
 
@@ -121,6 +123,7 @@ public class StudentAccountController {
 
   @GetMapping("/{id}")
   public StudentResponse listStudentById(@PathVariable Long id) {
+
     StudentAccount student = studentService.findStudentById(id);
     return new StudentResponse(
         student.getId(),
