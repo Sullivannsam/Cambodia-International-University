@@ -401,7 +401,7 @@ const Navbar = () => {
                         { label: t("course"), href: "/public/course" },
                         { label: t("aboutUs"), href: "/public/aboutus" },
                         { label: t("contact"), href: "/public/contact" },
-                        { label: t("enroll"), href: "/enroll" },
+                        { label: t("enroll"), href: "/public/content/enroll" },
                         { label: t("tuition"), href: "/public/tuition" },
                     ].map(({ label, href }) => (
                         <a key={label} href={href} className="mobile-link" style={{ ...linkStyle, padding: "10px 0", display: "block", borderBottom: "1px solid var(--border)" }}>

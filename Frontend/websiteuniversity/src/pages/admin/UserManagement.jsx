@@ -105,6 +105,8 @@ export default function UserManagement() {
       )
     : users;
 
+  const roleCounts = (role) => users.filter((u) => String(u.role || "").toUpperCase() === role).length;
+
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
@@ -387,6 +389,24 @@ export default function UserManagement() {
 
       {error && <div className="um-banner um-error">{error}</div>}
       {notice && <div className="um-banner um-success">{notice}</div>}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 14, marginBottom: 18 }}>
+        {[
+          { role: "ADMIN", label: t("Admin"), color: "#3E5EDB" },
+          { role: "TEACHER", label: t("Teacher"), color: "#2E9E6C" },
+          { role: "STUDENT", label: t("Student"), color: "#D69A1E" },
+          { role: "USER", label: t("User"), color: "#7A5CDB" },
+        ].map(({ role, label, color }) => (
+          <div key={role} style={{
+            background: "#fff", borderRadius: 12, padding: "16px 18px",
+            boxShadow: "0 4px 16px rgba(24,38,68,0.06)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#1F2430" }}>{label}</span>
+            <span style={{ fontSize: 24, fontWeight: 800, color }}>{roleCounts(role)}</span>
+          </div>
+        ))}
+      </div>
 
       <div className="panel">
         <div className="panel-title">{t("Registered Users")} ({filtered.length})</div>

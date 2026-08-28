@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Search, Loader2, Bell, BellRing, Send, X, Megaphone, CheckCheck
 } from "lucide-react";
-import { getStudentNotifications, broadcastNotification } from "../../services/endpoints";
+import { getAdminNotifications, broadcastNotification } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
 const TYPE_COLORS = {
@@ -27,7 +27,7 @@ export default function NotificationsCenter() {
     setLoading(true);
     setError("");
     try {
-      const data = await getStudentNotifications();
+      const data = await getAdminNotifications();
       const arr = Array.isArray(data) ? data : Array.isArray(data.notifications) ? data.notifications : [];
       setNotifications(arr);
     } catch {

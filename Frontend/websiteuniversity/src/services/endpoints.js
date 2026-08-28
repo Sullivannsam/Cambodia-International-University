@@ -605,6 +605,13 @@ export const broadcastNotification = async (data) => {
     return parse(response);
 };
 
+export const getAdminNotifications = async () => {
+    const response = await fetch(`${BASE_URL}/api/admin/notifications`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 // ---------- Messaging / class chat ----------
 export const getStudentMessages = async () => {
     const response = await fetch(`${BASE_URL}/api/students/messages`, {
