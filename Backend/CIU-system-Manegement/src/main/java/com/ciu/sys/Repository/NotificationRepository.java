@@ -12,4 +12,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
   List<Notification> findByTargetRole(String targetRole);
 
+  List<Notification> findByTargetRoleIn(List<String> targetRoles);
+
 }

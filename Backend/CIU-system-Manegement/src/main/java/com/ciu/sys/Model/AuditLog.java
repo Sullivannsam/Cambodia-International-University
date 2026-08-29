@@ -32,7 +32,7 @@ public class AuditLog {
   @Column(name = "Ip")
   private String ip;
 
-  @Column(name = "CreateAt")
-  private String createAt;
+  @Column(name = "create_at")
+  private String timestamp;
 
 }

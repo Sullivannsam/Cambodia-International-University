@@ -1,5 +1,6 @@
 package com.ciu.sys.Controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Repository.StudentRepository;
+import com.ciu.sys.Repository.NotificationRepository;
 
 @RestController
 @RequestMapping("/api/students")
@@ -18,6 +20,9 @@ public class StudentPortalController {
 
   @Autowired
   private StudentRepository repository;
+
+  @Autowired
+  private NotificationRepository notificationRepository;
 
   @GetMapping("/profile")
   public ResponseEntity<?> getProfile(Authentication authentication) {
@@ -64,6 +69,21 @@ public class StudentPortalController {
         "year", s.getYear(),
         "semester", s.getSemester())))
         .orElseGet(() -> ResponseEntity.noContent().build());
+  }
+
+  @GetMapping("/notifications")
+  public ResponseEntity<?> notifications() {
+    List<Map<String, Object>> rows = new java.util.ArrayList<>();
+    for (com.ciu.sys.Model.Notification n : notificationRepository.findByTargetRoleIn(List.of("STUDENT", "ALL"))) {
+      Map<String, Object> m = new java.util.HashMap<>();
+      m.put("id", n.getId());
+      m.put("title", n.getTitles() == null ? "" : n.getTitles());
+      m.put("body", n.getMessage() == null ? "" : n.getMessage());
+      m.put("date", n.getCreaeteAt() == null ? "" : n.getCreaeteAt());
+      m.put("read", n.isRead());
+      rows.add(m);
+    }
+    return ResponseEntity.ok(rows);
   }
 
 }

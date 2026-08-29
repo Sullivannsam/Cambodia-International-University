@@ -103,7 +103,15 @@
           <artifactId>jjwt-jackson</artifactId>
           <version>0.12.6</version>
           <scope>runtime</scope>
+    </dependency>
+
+      <!-- AOP aspect -->
+      <dependency>
+          <groupId>org.aspectj</groupId>
+          <artifactId>aspectjweaver</artifactId>
       </dependency>
+
+
 
     </dependencies>
 

@@ -73,6 +73,8 @@ public class TeacherAccountController {
     teacher.setEmail(request.email());
     teacher.setPassword(passwordEncoder.encode(request.password()));
     teacher.setPhone(request.phone());
+    teacher.setActive(true);
+    teacher.setRole("TEACHER");
 
     teacherService.register(teacher);
     return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Account create successfullys"));
