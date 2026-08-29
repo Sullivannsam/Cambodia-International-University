@@ -579,6 +579,14 @@ export const deleteTeacherAssignment = async (id) => {
     return parse(response);
 };
 
+export const deleteTeacherAnnouncement = async (id) => {
+    const response = await fetch(`${BASE_URL}/api/teachers/announcements/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 // ---------- Notifications ----------
 export const getStudentNotifications = async () => {
     const response = await fetch(`${BASE_URL}/api/students/notifications`, {

@@ -8,6 +8,7 @@ import LogoutModal from '../../components/common/LogoutModal';
 import {
   getTeacherClasses, getTeacherStudents, getTeacherAnnouncements,
   saveTeacherAttendance, submitTeacherGrades, postTeacherAnnouncement,
+  deleteTeacherAnnouncement,
   getTeacherAssignments, createTeacherAssignment, deleteTeacherAssignment,
   getTeacherMessages, sendTeacherMessage,
   joinTeacherClass, getTeacherNotifications,
@@ -51,6 +52,7 @@ export default function TeacherDashboard() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [notifications, setNotifications] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [reportStudent, setReportStudent] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportStudentName, setReportStudentName] = useState("");
@@ -141,9 +143,13 @@ export default function TeacherDashboard() {
   };
 
   const deleteAnnouncement = async (id) => {
-    const next = announcements.filter(a => a.id !== id);
-    setAnnouncements(next);
-    toast(t("Announcement deleted."));
+    try {
+      await deleteTeacherAnnouncement(id);
+      setAnnouncements(announcements.filter(a => a.id !== id));
+      toast(t("Announcement deleted."));
+    } catch {
+      toast(t("Delete failed."));
+    }
   };
 
   const openEditAnnouncement = (a) => {
@@ -257,6 +263,15 @@ export default function TeacherDashboard() {
       setNotifications(Array.isArray(n) ? n : Array.isArray(n?.notifications) ? n.notifications : []);
     } catch {
       toast(t("Failed to join. Check the class code."), "error");
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const openNotifications = () => {
+    setNotifOpen(o => !o);
+    if (!notifOpen && unreadCount > 0) {
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
     }
   };
 
@@ -386,6 +401,46 @@ export default function TeacherDashboard() {
             <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
               {email && <>{t("Signed in as")} <strong style={{ color: 'var(--text-primary)' }}>{email}</strong></>}
             </div>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", position: "relative" }}>
+              <button
+                onClick={openNotifications}
+                className="logout-btn"
+                style={{ background: "#182644", position: "relative", padding: "10px 14px" }}
+                aria-label={t("Notifications")}
+              >
+                <Bell size={15} />
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: "absolute", top: -5, right: -5,
+                    background: "#ef4444", color: "#fff", fontSize: 10, fontWeight: 800,
+                    minWidth: 18, height: 18, borderRadius: 999, display: "flex",
+                    alignItems: "center", justifyContent: "center", padding: "0 4px",
+                  }}>{unreadCount}</span>
+                )}
+              </button>
+              {notifOpen && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 10px)", right: 0, zIndex: 100,
+                  background: "#fff", borderRadius: 14, boxShadow: "0 12px 32px rgba(24,38,68,0.18)",
+                  width: 340, maxHeight: 380, overflow: "auto", padding: 8, border: "1px solid #ECE6DC",
+                }}>
+                  <div style={{ padding: "10px 12px 6px", fontWeight: 700, fontSize: 14, color: "#182644" }}>
+                    {t("Notifications")}
+                  </div>
+                  {notifications.length ? notifications.map(n => (
+                    <div key={n.id} style={{ padding: "10px 12px", borderBottom: "1px solid #F0EEE9" }}>
+                      <div style={{ fontSize: 13, fontWeight: n.read ? 600 : 700, color: "#182644" }}>{t(n.title)}</div>
+                      <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2, lineHeight: 1.5 }}>{t(n.body)}</div>
+                      <div style={{ fontSize: 11, color: "#9A8F80", marginTop: 4 }}>{n.date}</div>
+                    </div>
+                  )) : (
+                    <div style={{ padding: "16px 12px", fontSize: 13, color: "#9A8F80", textAlign: "center" }}>
+                      {t("No notifications")}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button className="logout-btn" style={{ background: "#182644" }} onClick={() => (window.location.href = "/")}>
               <LayoutGrid size={15} /> {t("Visit Public Page")}
             </button>
@@ -448,11 +503,6 @@ export default function TeacherDashboard() {
             <div className="td-row">
               <div className="td-panel-title" style={{ margin: 0 }}>{t("My Classes")}</div>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                {notifications.length > 0 && notifications.slice(0, 4).map((n, i) => (
-                  <span key={i} className="td-pill" style={{ background: "#D69A1E", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    <Bell size={13} /> {n.title}
-                  </span>
-                ))}
                 {!joinOpen ? (
                   <button className="td-btn" onClick={() => setJoinOpen(true)}><KeyRound size={15} /> {t("Join Class")}</button>
                 ) : (
