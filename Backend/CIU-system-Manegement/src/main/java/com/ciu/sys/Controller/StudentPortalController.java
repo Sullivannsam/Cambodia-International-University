@@ -8,11 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Repository.StudentRepository;
 import com.ciu.sys.Repository.NotificationRepository;
+import com.ciu.sys.Service.StudentPortalService;
 
 @RestController
 @RequestMapping("/api/students")
@@ -23,6 +26,9 @@ public class StudentPortalController {
 
   @Autowired
   private NotificationRepository notificationRepository;
+
+  @Autowired
+  private StudentPortalService service;
 
   @GetMapping("/profile")
   public ResponseEntity<?> getProfile(Authentication authentication) {
@@ -64,7 +70,7 @@ public class StudentPortalController {
 
   @GetMapping("/progression")
   public ResponseEntity<?> progression(Authentication auth) {
-    Optional<StudentAccount> me = repository.findByEmail(auth.getName()); // your repo
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
     return me.<ResponseEntity<?>>map(s -> ResponseEntity.ok(Map.of(
         "year", s.getYear(),
         "semester", s.getSemester())))
@@ -86,4 +92,87 @@ public class StudentPortalController {
     return ResponseEntity.ok(rows);
   }
 
+  // ---------- Student portal data ----------
+
+  @GetMapping("/enrollments")
+  public ResponseEntity<?> enrollments(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getEnrollments(me.get()));
+  }
+
+  @GetMapping("/grades")
+  public ResponseEntity<?> grades(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getGrades(me.get()));
+  }
+
+  @GetMapping("/announcements")
+  public ResponseEntity<?> announcements() {
+    return ResponseEntity.ok(service.getAnnouncements());
+  }
+
+  @GetMapping("/schedule")
+  public ResponseEntity<?> schedule(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getSchedule(me.get()));
+  }
+
+  @GetMapping("/attendance")
+  public ResponseEntity<?> attendance(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getAttendance(me.get()));
+  }
+
+  @GetMapping("/assignments")
+  public ResponseEntity<?> assignments(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getAssignments(me.get()));
+  }
+
+  @PostMapping("/assignments/submit")
+  public ResponseEntity<?> submit(Authentication auth, @RequestBody Map<String, Object> body) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.submitAssignment(me.get(), body));
+  }
+
+  @GetMapping("/messages")
+  public ResponseEntity<?> messages(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getMessages(me.get()));
+  }
+
+  @PostMapping("/messages")
+  public ResponseEntity<?> sendMessage(Authentication auth, @RequestBody Map<String, Object> body) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.sendMessage(me.get(), body));
+  }
+
+  @GetMapping("/invoices")
+  public ResponseEntity<?> invoices(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getInvoices(me.get()));
+  }
+
+  @PostMapping("/notifications/read")
+  public ResponseEntity<?> markNotificationsRead() {
+    return ResponseEntity.ok(Map.of("message", "ok"));
+  }
 }

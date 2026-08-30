@@ -8,4 +8,5 @@ import com.ciu.sys.Model.Schedule;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
+  java.util.Optional<Schedule> findByJoinCode(String joinCode);
 }

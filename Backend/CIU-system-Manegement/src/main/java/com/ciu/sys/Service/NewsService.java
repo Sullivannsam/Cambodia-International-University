@@ -16,7 +16,7 @@ public class NewsService {
   private NewRepository repo;
 
   public List<News> getallnews() {
-    return repo.findAll();
+    return repo.findAllByOrderByCreatedAtDesc();
   }
 
   public News createdNews(News news) {

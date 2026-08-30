@@ -26,8 +26,20 @@ public class ScheduleController {
   }
 
   @PostMapping
-  public List<Schedule> saveSchedule(@RequestBody Map<String, List<Schedule>> body) {
-    return service.saveSchedule(body.get("schedule"));
+  public List<Schedule> saveSchedule(@RequestBody SaveScheduleRequest request) {
+    return service.saveSchedule(
+        request.schedule() == null ? List.of() : request.schedule(),
+        request.major(),
+        request.field(),
+        request.level(),
+        request.semester());
   }
 
+  public record SaveScheduleRequest(
+      List<Schedule> schedule,
+      String major,
+      String field,
+      String level,
+      String semester) {
+  }
 }

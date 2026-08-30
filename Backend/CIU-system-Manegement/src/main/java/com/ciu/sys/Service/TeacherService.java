@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.ciu.sys.Model.Message;
 import com.ciu.sys.Model.Notification;
+import com.ciu.sys.Model.Schedule;
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Model.StudentAttendance;
 import com.ciu.sys.Model.StudentClass;
@@ -22,6 +23,7 @@ import com.ciu.sys.Repository.AssignmentRepository;
 import com.ciu.sys.Repository.ExamResultRepository;
 import com.ciu.sys.Repository.MessageRepository;
 import com.ciu.sys.Repository.NotificationRepository;
+import com.ciu.sys.Repository.ScheduleRepository;
 import com.ciu.sys.Repository.StudentClassRepository;
 import com.ciu.sys.Repository.StudentRepository;
 import com.ciu.sys.Repository.SubmissionRepository;
@@ -38,6 +40,9 @@ public class TeacherService {
 
   @Autowired
   private StudentClassRepository studentClassRepository;
+
+  @Autowired
+  private ScheduleRepository scheduleRepository;
 
   @Autowired
   private TeacherAnnouncementRepository announcementRepository;
@@ -330,6 +335,35 @@ public class TeacherService {
     if (c.isBlank()) {
       return "Class not found";
     }
+    // New flow: codes generated on the schedule (JoinCode column).
+    Optional<Schedule> bySchedule = scheduleRepository.findByJoinCode(c);
+    if (bySchedule.isPresent()) {
+      Schedule s = bySchedule.get();
+      if (s.getTeacher() == null || !s.getTeacher().equalsIgnoreCase(teacher.getEmail())) {
+        return "This join code is assigned to another teacher.";
+      }
+      String subject = (s.getSubject() == null || s.getSubject().isBlank())
+          ? (s.getCourse() == null ? c : s.getCourse())
+          : s.getSubject();
+      StudentClass existing = studentClassRepository.findByGroup(c).stream().findFirst().orElse(null);
+      if (existing != null) {
+        existing.setTeacher(teacher);
+        existing.setMajor(s.getMajor());
+        existing.setYear(s.getLevel());
+        existing.setShift(s.getSemester());
+        studentClassRepository.save(existing);
+      } else {
+        StudentClass clss = new StudentClass();
+        clss.setGroup(c);
+        clss.setMajor(s.getMajor());
+        clss.setYear(s.getLevel());
+        clss.setShift(s.getSemester());
+        clss.setTeacher(teacher);
+        studentClassRepository.save(clss);
+      }
+      return null;
+    }
+    // Legacy flow: code is a StudentClass group name.
     List<StudentClass> matches = studentClassRepository.findByGroup(c);
     if (matches.isEmpty()) {
       return "Class not found";

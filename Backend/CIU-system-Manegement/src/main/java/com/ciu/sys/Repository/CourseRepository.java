@@ -1,6 +1,7 @@
 package com.ciu.sys.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
   @Query("SELECT COUNT(c) > 0 FROM Course c WHERE c.code = :code")
   boolean existsByCode(@Param("code") String code);
+
+  Optional<Course> findByCode(String code);
 
   @Query("SELECT c FROM Course c WHERE c.active = true")
   List<Course> findByActiveTrue();
