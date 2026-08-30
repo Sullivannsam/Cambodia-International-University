@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { getAuditLogs, clearAuditLogs } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import StyledSelect from "../../components/common/StyledSelect";
 
 const ACTION_COLORS = {
   CREATE: "#2E9E6C",
@@ -164,14 +165,8 @@ export default function AuditLog() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <select
-            className="filter-select"
-            value={actionFilter}
-            onChange={(e) => setActionFilter(e.target.value)}
-          >
-            <option value="ALL">{t("All actions")}</option>
-            {actions.map((a) => <option key={a} value={a}>{a}</option>)}
-          </select>
+          <StyledSelect value={actionFilter} onChange={setActionFilter} width="160px"
+            options={[{ value: "ALL", label: t("All actions") }, ...actions.map((a) => ({ value: a, label: a }))]} />
           <button className="export-btn" onClick={exportCSV} disabled={filtered.length === 0}>
             <FileDown size={15} /> {t("Export CSV")}
           </button>

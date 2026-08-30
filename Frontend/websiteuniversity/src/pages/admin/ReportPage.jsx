@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { getReports, updateReport } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import StyledSelect from "../../components/common/StyledSelect";
 
 export default function ReportPage() {
   const { t } = useLanguage();
@@ -141,11 +142,8 @@ export default function ReportPage() {
             <Search size={15} />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Search reports...")} />
           </div>
-          <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="ALL">{t("All reports")}</option>
-            <option value="UNREAD">{t("Pending")}</option>
-            <option value="READ">{t("Resolved")}</option>
-          </select>
+          <StyledSelect value={statusFilter} onChange={setStatusFilter} width="150px"
+            options={[{ value: "ALL", label: t("All reports") }, { value: "UNREAD", label: t("Pending") }, { value: "READ", label: t("Resolved") }]} />
           <button className="export-btn" onClick={exportCSV} disabled={filtered.length === 0}>
             <FileDown size={15} /> {t("Export CSV")}
           </button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Presentation, LogOut, LayoutGrid, LayoutDashboard, BookOpen, Users, ClipboardCheck,
   GraduationCap, Megaphone, Search, CheckCircle2, XCircle,
@@ -15,6 +15,7 @@ import {
   submitReport,
 } from '../../services/endpoints';
 import EmptyState from '../../components/common/EmptyState';
+import StyledSelect from '../../components/common/StyledSelect';
 import { useToast } from '../../context/ToastContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useActiveTab } from '../../hooks/useActiveTab';
@@ -248,6 +249,18 @@ export default function TeacherDashboard() {
     }
   };
 
+  const renderAnnBody = (body) => {
+    const text = String(body ?? "");
+    const parts = text.split(/join code is:\s*([A-Z0-9]+)/i);
+    if (parts.length === 1) return text;
+    return parts.map((p, i) => i % 2 === 1 ? (
+      <React.Fragment key={i}>
+        {"join code is: "}
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, fontSize: 14, color: "#1F4FD8", background: "#EAF0FE", border: "1px solid #B9CBF8", borderRadius: 6, padding: "2px 8px", margin: "0 2px" }}>{p}</span>
+      </React.Fragment>
+    ) : <React.Fragment key={i}>{p}</React.Fragment>);
+  };
+
   const joinClass = async () => {
     if (!joinCode.trim()) return;
     try {
@@ -267,6 +280,18 @@ export default function TeacherDashboard() {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const [annSeenId, setAnnSeenId] = useState(() => Number(localStorage.getItem("teacherAnnouncementSeenId") || 0));
+  const newAnnouncements = announcements.filter(a => Number(a.id) > annSeenId);
+  const markAnnouncementsSeen = () => {
+    const mx = announcements.reduce((m, a) => Math.max(m, Number(a.id) || 0), 0);
+    setAnnSeenId(mx);
+    localStorage.setItem("teacherAnnouncementSeenId", String(mx));
+  };
+
+  useEffect(() => {
+    if (active === "announcements" && announcements.length > 0) markAnnouncementsSeen();
+  }, [active, announcements]);
 
   const openNotifications = () => {
     setNotifOpen(o => !o);
@@ -345,6 +370,12 @@ export default function TeacherDashboard() {
         .td-nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; border: none; background: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-secondary); transition: all 0.2s ease; text-align: left; }
         .td-nav-item:hover { background: var(--hover-bg); color: var(--text-primary); }
         .td-nav-item.active { background: rgba(62,94,219,0.12); color: #3E5EDB; }
+        .td-nav-badge {
+          margin-left: auto; min-width: 17px; height: 17px; padding: 0 5px;
+          border-radius: 999px; background: #ef4444; color: #fff;
+          font-size: 10.5px; font-weight: 700; display: flex;
+          align-items: center; justify-content: center;
+        }
         .td-main { flex: 1; padding: 28px 36px; overflow: auto; }
         .td-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
         .td-greeting { font-size: 20px; font-weight: 800; color: var(--text-primary); }
@@ -387,8 +418,13 @@ export default function TeacherDashboard() {
         </div>
         <nav className="td-nav">
           {navItems.map(item => (
-            <button key={item.key} className={"td-nav-item" + (active === item.key ? " active" : "")} onClick={() => setActive(item.key)}>
+            <button key={item.key} className={"td-nav-item" + (active === item.key ? " active" : "")} onClick={() => {
+              setActive(item.key);
+            }}>
               <item.icon size={18} /> {item.label}
+              {item.key === "announcements" && newAnnouncements.length > 0 && (
+                <span className="td-nav-badge">{newAnnouncements.length}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -478,7 +514,7 @@ export default function TeacherDashboard() {
                 <div className="td-ann" key={a.id}>
                   <div className="td-ann-date">{a.date}</div>
                   <div className="td-ann-title">{t(a.title)}</div>
-                  <div className="td-ann-body">{t(a.body)}</div>
+<div className="td-ann-body">{renderAnnBody(a.body)}</div>
                 </div>
               ))}
             </div>
@@ -577,9 +613,8 @@ export default function TeacherDashboard() {
             <div className="td-row">
               <div className="td-panel-title" style={{ margin: 0 }}>{t("Take Attendance")}</div>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="td-search" style={{ flex: "none", minWidth: 0 }}>
-                  {classes.map(c => <option key={c.code} value={c.code}>{c.code} — {c.title}</option>)}
-                </select>
+                <StyledSelect value={selectedClass} onChange={setSelectedClass} width="200px"
+                  options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
                 <input type="date" value={attDate} onChange={e => setAttDate(e.target.value)} className="td-search" style={{ flex: "none", minWidth: 0 }} />
                 <button className="td-att-toggle" style={{ background: "#E3F0E7", color: "#1E7A4E" }} onClick={() => bulkMark("present")}>{t("All present")}</button>
                 <button className="td-att-toggle" style={{ background: "#FBE3E0", color: "#D2483C" }} onClick={() => bulkMark("absent")}>{t("All absent")}</button>
@@ -615,9 +650,8 @@ export default function TeacherDashboard() {
           <>
             <div className="td-row"><div className="td-panel-title" style={{ margin: 0 }}>{t("Grade Entry")}</div>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="td-search" style={{ flex: "none", minWidth: 0 }}>
-                  {classes.map(c => <option key={c.code} value={c.code}>{c.code} — {c.title}</option>)}
-                </select>
+                <StyledSelect value={selectedClass} onChange={setSelectedClass} width="200px"
+                  options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
                 <button className="td-btn" onClick={submitGrades} disabled={submitting}>{submitting ? t("Submitting...") : (<><GraduationCap size={15} /> {t("Submit Grades")}</>)}</button>
               </div>
             </div>
@@ -644,7 +678,7 @@ export default function TeacherDashboard() {
               <div className="td-ann" key={a.id} style={{ position: "relative", paddingRight: 90 }}>
                 <div className="td-ann-date">{a.date}</div>
                 <div className="td-ann-title">{t(a.title)}</div>
-                <div className="td-ann-body">{t(a.body)}</div>
+                <div className="td-ann-body">{renderAnnBody(a.body)}</div>
                 <div style={{ position: "absolute", right: 12, top: 12, display: "flex", gap: 6 }}>
                   <button onClick={() => openEditAnnouncement(a)} className="td-att-toggle" style={{ background: "var(--hover-bg)", color: "var(--text-secondary)" }} aria-label={t("Edit")}><Pencil size={13} /></button>
                   <button onClick={() => deleteAnnouncement(a.id)} className="td-att-toggle" style={{ background: "#FBE3E0", color: "#D2483C" }} aria-label={t("Delete")}><Trash2 size={13} /></button>
@@ -680,9 +714,8 @@ export default function TeacherDashboard() {
           <div className="td-panel">
             <div className="td-row">
               <div className="td-panel-title" style={{ margin: 0 }}>{t("Class Messages")}</div>
-              <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="td-search" style={{ flex: "none", minWidth: 0 }}>
-                {classes.map(c => <option key={c.code} value={c.code}>{c.code} — {c.title}</option>)}
-              </select>
+              <StyledSelect value={selectedClass} onChange={setSelectedClass} width="200px"
+                options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
             </div>
             <div style={{ maxHeight: 420, overflow: "auto", border: "1px solid var(--border)", borderRadius: 12, padding: 16, marginBottom: 16, background: "var(--input-bg)" }}>
               {messages.length ? messages.map(m => (
@@ -742,9 +775,8 @@ export default function TeacherDashboard() {
         }}>
           <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 26, width: "min(90vw, 480px)", boxShadow: "0 12px 40px rgba(0,0,0,0.2)" }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 17, fontWeight: 700, color: "var(--text-primary)" }}>{t("New Assignment")}</h3>
-            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}>
-              {classes.map(c => <option key={c.code} value={c.code}>{c.code} — {c.title}</option>)}
-            </select>
+            <StyledSelect value={selectedClass} onChange={setSelectedClass} width="100%"
+              options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
             <input value={assignTitle} onChange={e => setAssignTitle(e.target.value)} placeholder={t("Assignment title")} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }} />
             <input type="date" value={assignDue} onChange={e => setAssignDue(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 18 }} />
             <div style={{ display: "flex", gap: 12 }}>
@@ -775,11 +807,8 @@ export default function TeacherDashboard() {
                 style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}
               />
             )}
-            <select value={reportCategory} onChange={e => setReportCategory(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }}>
-              <option value="Academic">Academic</option>
-              <option value="Behavioral">Behavioral</option>
-              <option value="Other">Other</option>
-            </select>
+            <StyledSelect value={reportCategory} onChange={setReportCategory} width="100%"
+              options={["Academic", "Behavioral", "Other"].map(v => ({ value: v, label: v }))} />
             <textarea value={reportDescription} onChange={e => setReportDescription(e.target.value)} placeholder={t("Describe the issue...")} rows={4} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", resize: "vertical", marginBottom: 18, fontFamily: "inherit" }} />
             <div style={{ display: "flex", gap: 12 }}>
               <button onClick={() => { setReportOpen(false); setReportStudent(null); setReportStudentName(""); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid var(--border)", background: "var(--input-bg)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("Cancel")}</button>

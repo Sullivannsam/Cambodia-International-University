@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { getAdminNotifications, broadcastNotification } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import StyledSelect from "../../components/common/StyledSelect";
 
 const TYPE_COLORS = {
   EXAM: "#3E5EDB",
@@ -249,21 +250,13 @@ export default function NotificationsCenter() {
             <div className="nc-input-row">
               <div className="nc-field">
                 <label className="nc-label">{t("Type")}</label>
-                <select className="nc-input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                  <option value="GENERAL">GENERAL</option>
-                  <option value="EXAM">EXAM</option>
-                  <option value="PAYMENT">PAYMENT</option>
-                  <option value="EVENT">EVENT</option>
-                </select>
+                <StyledSelect value={form.type} onChange={(v) => setForm({ ...form, type: v })} width="100%"
+                options={["GENERAL", "EXAM", "PAYMENT", "EVENT"].map(v => ({ value: v, label: v }))} />
               </div>
               <div className="nc-field">
                 <label className="nc-label">{t("Audience")}</label>
-                <select className="nc-input" value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value })}>
-                  <option value="ALL">ALL</option>
-                  <option value="STUDENT">STUDENT</option>
-                  <option value="TEACHER">TEACHER</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
+                <StyledSelect value={form.audience} onChange={(v) => setForm({ ...form, audience: v })} width="100%"
+                options={["ALL", "STUDENT", "TEACHER", "ADMIN"].map(v => ({ value: v, label: v }))} />
               </div>
             </div>
 

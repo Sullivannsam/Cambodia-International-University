@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "../../context/LanguageContext";
+import StyledSelect from "../common/StyledSelect";
 
 const BASE_URL = process.env.REACT_APP_API_URL || "https://cambodia-international-university.onrender.com";
 
@@ -132,9 +133,9 @@ export default function Enrollment() {
       </div>
 
       <div style={{ maxWidth: 860, margin: "40px auto", padding: "0 20px 60px" }}>
-        <div style={{ background: "#f3f4f6", borderRadius: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.1)", overflow: "hidden" }}>
+        <div style={{ background: "#f3f4f6", borderRadius: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.1)" }}>
 
-          <div style={{ background: "var(--bg-secondary)", padding: "20px 32px", borderBottom: "1px solid var(--border)" }}>
+          <div style={{ background: "var(--bg-secondary)", padding: "20px 32px", borderBottom: "1px solid var(--border)", borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
             <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
               <strong style={{ color: "var(--text-primary)" }}>{t("Cambodia International University")}</strong> {t("— Official Enrollment Application Form.")}
               {t("Please fill in all required fields marked with")} <span style={{ color: "#ef4444" }}>*</span>.
@@ -142,7 +143,7 @@ export default function Enrollment() {
           </div>
 
           {page === "form" && (
-            <div style={{ padding: "32px", background: "#f9fafb" }}>
+            <div style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
               <div className="section-header">{t("Student Information")}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
                 {[
@@ -196,11 +197,10 @@ export default function Enrollment() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 36 }}>
                 <div>
                   <div className="field-label">{t("Nationality *")}</div>
-                  <select value={form.nationality} onChange={e => update("nationality", e.target.value)}
-                    style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder("nationality"), color: "var(--text-primary)", cursor: "pointer" }}>
-                    <option value="">{t("Select nationality")}</option>
-                    {nationalities.map(n => <option key={n} value={n}>{t(n)}</option>)}
-                  </select>
+                  <StyledSelect value={form.nationality} onChange={(v) => update("nationality", v)}
+                    width="100%" placeholder={t("Select nationality")}
+                    buttonStyle={{ padding: "10px 14px", borderRadius: 10, border: getBorder("nationality") }}
+                    options={nationalities.map(n => ({ value: n, label: t(n) }))} />
                   {errors.nationality && <div className="error-msg">{errors.nationality}</div>}
                 </div>
                 <div>
@@ -227,11 +227,10 @@ export default function Enrollment() {
                 ].map(({ label, field, options, placeholder }) => (
                   <div key={field}>
                     <div className="field-label">{label}</div>
-                    <select value={form[field]} onChange={e => update(field, e.target.value)}
-                      style={{ ...sharedInputStyle, background: "var(--input-bg)", border: getBorder(field), cursor: "pointer", color: form[field] ? "var(--text-primary)" : "var(--text-muted)" }}>
-                      <option value="">{placeholder}</option>
-                      {options.map(o => <option key={o} value={o} style={{ color: "#1e293b" }}>{t(o)}</option>)}
-                    </select>
+                    <StyledSelect value={form[field]} onChange={(v) => update(field, v)}
+                      width="100%" placeholder={placeholder}
+                      buttonStyle={{ padding: "10px 14px", borderRadius: 10, border: getBorder(field) }}
+                      options={options.map(o => ({ value: o, label: t(o) }))} />
                     {errors[field] && <div className="error-msg">{errors[field]}</div>}
                   </div>
                 ))}
@@ -251,7 +250,7 @@ export default function Enrollment() {
           )}
 
           {page === "success" && (
-            <div style={{ padding: "60px 32px", textAlign: "center" }}>
+            <div style={{ padding: "60px 32px", textAlign: "center", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
               <div style={{ width: 72, height: 72, background: "linear-gradient(135deg,#22c55e,#16a34a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 32, boxShadow: "0 8px 25px rgba(34,197,94,0.35)" }}>✓</div>
               <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: "var(--text-primary)", marginBottom: 12 }}>{t("Submit Successful")}</h2>
               <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 16px" }}>

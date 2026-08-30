@@ -5,6 +5,7 @@ import {
   AlertCircle, Loader2, ArrowRight, Landmark, Smartphone, User
 } from 'lucide-react';
 import Spinner from '../common/Spinner.jsx';
+import StyledSelect from '../common/StyledSelect';
 import { useLanguage } from "../../context/LanguageContext";
 
 const paymentTypes = ["tuition", "registration", "library fee", "lab fee", "other"];
@@ -319,17 +320,14 @@ export default function PaymentForm() {
                 <label style={labelClass}>{t("Payment Type")}</label>
                 <div className="pf-input-wrap">
                   <CreditCard size={17} />
-                  <select
-                    name="type"
+                  <StyledSelect
                     value={form.type}
-                    onChange={handleChange}
-                    onFocus={() => setFocused({ ...focused, type: true })}
-                    onBlur={() => setFocused({ ...focused, type: false })}
-                    style={{ ...inputClass, ...focusStyle('type'), borderColor: errors.type ? '#D2483C' : 'var(--border)', paddingRight: 15 }}
-                  >
-                    <option value="">{t("Select a payment type")}</option>
-                    {paymentTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                    onChange={(v) => { setForm({ ...form, type: v }); setErrors({ ...errors, type: undefined }); }}
+                    width="100%"
+                    placeholder={t("Select a payment type")}
+                    buttonStyle={{ ...inputClass, paddingLeft: 44, paddingRight: 15, borderColor: errors.type ? '#D2483C' : 'var(--border)' }}
+                    options={paymentTypes.map(t => ({ value: t, label: t }))}
+                  />
                 </div>
                 {errors.type && <p className="pf-err"><AlertCircle size={13} /> {errors.type}</p>}
               </div>

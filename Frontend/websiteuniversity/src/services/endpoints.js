@@ -357,15 +357,16 @@ export const clearAuditLogs = async () => {
 };
 
 // ---------- News ----------
-export const getNews = async () => {
-    const url = sessionStorage.getItem("token")
-        ? `${BASE_URL}/api/auth/admin/news`
-        : `${BASE_URL}/api/news`;
-    const response = await fetch(url, {
-        headers: authHeaders(),
-    });
-    return parse(response);
-};
+ export const getNews = async () => {
+     const isAdmin = sessionStorage.getItem("role") === "ADMIN";
+     const url = isAdmin
+         ? `${BASE_URL}/api/auth/admin/news`
+         : `${BASE_URL}/api/news`;
+     const response = await fetch(url, {
+         headers: authHeaders(),
+     });
+     return parse(response);
+ };
 
 export const createNews = async (data) => {
     const response = await fetch(`${BASE_URL}/api/auth/admin/posts/news`, {

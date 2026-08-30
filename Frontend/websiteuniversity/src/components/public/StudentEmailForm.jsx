@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import StyledSelect from '../common/StyledSelect';
 
 const departments = [
   "Computer Science",
@@ -160,22 +161,18 @@ const StudentEmailForm = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>{t("Department")}</label>
-              <select name="department" value={form.department} onChange={handleChange}
-                className={inputClass("department")}
-                style={{backgroundColor:'var(--input-bg)', borderColor: errors.department ? '#f87171' : 'var(--border)', color:'var(--text-primary)'}}>
-                <option value="">{t("Select...")}</option>
-                {departments.map((d) => <option key={d} value={d}>{t(d)}</option>)}
-              </select>
+              <StyledSelect value={form.department} onChange={(v) => handleChange({ target: { name: "department", value: v } })}
+                width="100%" placeholder={t("Select...")}
+                buttonStyle={{ borderColor: errors.department ? '#f87171' : 'var(--border)' }}
+                options={departments.map((d) => ({ value: d, label: t(d) }))} />
               {errors.department && <p className="text-xs mt-1" style={{color:'var(--accent,#ef4444)'}}>{errors.department}</p>}
             </div>
             <div>
               <label className="block text-xs font-medium mb-1" style={{color:'var(--text-secondary)'}}>{t("Year")}</label>
-              <select name="year" value={form.year} onChange={handleChange}
-                className={inputClass("year")}
-                style={{backgroundColor:'var(--input-bg)', borderColor: errors.year ? '#f87171' : 'var(--border)', color:'var(--text-primary)'}}>
-                <option value="">{t("Select...")}</option>
-                {[1, 2, 3, 4, 5].map((y) => <option key={y} value={`Year ${y}`}>{t(`Year ${y}`)}</option>)}
-              </select>
+              <StyledSelect value={form.year} onChange={(v) => handleChange({ target: { name: "year", value: v } })}
+                width="100%" placeholder={t("Select...")}
+                buttonStyle={{ borderColor: errors.year ? '#f87171' : 'var(--border)' }}
+                options={[1, 2, 3, 4, 5].map((y) => ({ value: `Year ${y}`, label: t(`Year ${y}`) }))} />
               {errors.year && <p className="text-xs mt-1" style={{color:'var(--accent,#ef4444)'}}>{errors.year}</p>}
             </div>
           </div>

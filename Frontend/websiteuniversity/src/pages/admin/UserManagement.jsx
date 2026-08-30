@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { getUsers, updateUser, deleteUser, suspendUser, unsuspendUser, importUsers, exportUsers } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import StyledSelect from "../../components/common/StyledSelect";
 
 const ROLES = ["USER", "ADMIN", "STUDENT", "TEACHER"];
 
@@ -548,11 +549,9 @@ export default function UserManagement() {
               </div>
               <div className="um-field">
                 <label className="um-label">{t("Role")}</label>
-                <select className="um-input" name="role" value={form.role} onChange={handleChange}>
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
+                <StyledSelect value={form.role} onChange={(v) => handleChange({ target: { name: "role", value: v } })}
+                  width="100%"
+                  options={ROLES.map((r) => ({ value: r, label: r }))} />
               </div>
               <div className="um-field">
                 <label className="um-check">

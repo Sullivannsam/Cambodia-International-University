@@ -19,8 +19,7 @@ const Footer = () => {
             setStatus("success");
             setEmail("");
         } catch {
-            setStatus("success");
-            setEmail("");
+            setStatus("error");
         }
     };
     return (

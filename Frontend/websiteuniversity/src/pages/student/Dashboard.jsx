@@ -18,6 +18,7 @@ import {
 } from "../../services/endpoints";
 import LogoutModal from "../../components/common/LogoutModal";
 import EmptyState from "../../components/common/EmptyState";
+import StyledSelect from "../../components/common/StyledSelect";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 import StudentIdCard from "../../components/common/StudentIdCard";
@@ -263,6 +264,18 @@ export default function StudentDashboard() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const [annSeenId, setAnnSeenId] = useState(() => Number(localStorage.getItem("studentAnnouncementSeenId") || 0));
+  const newAnnouncements = announcements.filter(a => Number(a.id) > annSeenId);
+  const markAnnouncementsSeen = () => {
+    const mx = announcements.reduce((m, a) => Math.max(m, Number(a.id) || 0), 0);
+    setAnnSeenId(mx);
+    localStorage.setItem("studentAnnouncementSeenId", String(mx));
+  };
+
+  useEffect(() => {
+    if (active === "announcements" && announcements.length > 0) markAnnouncementsSeen();
+  }, [active, announcements]);
+
   const openNotifications = () => {
     setNotifOpen(o => !o);
     if (!notifOpen && unreadCount > 0) {
@@ -386,6 +399,12 @@ export default function StudentDashboard() {
         }
         .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
         .nav-item.active { background: #3E5EDB; color: #fff; box-shadow: 0 4px 14px rgba(62,94,219,0.4); }
+        .nav-badge {
+          margin-left: auto; min-width: 17px; height: 17px; padding: 0 5px;
+          border-radius: 999px; background: #ef4444; color: #fff;
+          font-size: 10.5px; font-weight: 700; display: flex;
+          align-items: center; justify-content: center;
+        }
         .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .topbar {
           background: #FBF4EE; padding: 22px 34px;
@@ -498,10 +517,15 @@ export default function StudentDashboard() {
                   <button
                     key={item.key}
                     className={"nav-item" + (active === item.key ? " active" : "")}
-                    onClick={() => setActive(item.key)}
+                    onClick={() => {
+                      setActive(item.key);
+                    }}
                   >
                     <Icon size={16} strokeWidth={1.8} />
                     {t(item.label)}
+                    {item.key === "announcements" && newAnnouncements.length > 0 && (
+                      <span className="nav-badge">{newAnnouncements.length}</span>
+                    )}
                   </button>
                 );
               })}
@@ -677,16 +701,21 @@ export default function StudentDashboard() {
               {schedule.length ? (
                 <table className="sp-table">
                   <thead>
-                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Course")}</th><th>{t("Time")}</th><th>{t("Room")}</th></tr>
+                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Course")}</th><th>{t("Semester")}</th><th>{t("Time")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th><th>{t("Join Code")}</th></tr>
                   </thead>
                   <tbody>
                     {[...schedule].sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)).map((s, i) => (
                       <tr key={i}>
-                        <td style={{ fontWeight: 600, color: "#182644" }}>{t(s.day)}</td>
+                        <td style={{ fontWeight: 600, color: "#182644" }}>
+                          {t(s.day)}{s.endDay && s.endDay !== s.day ? ` - ${t(s.endDay)}` : ""}
+                        </td>
                         <td><span className="course-code">{s.code}</span></td>
                         <td>{t(s.title)}</td>
+                        <td>{s.semester || "-"}</td>
                         <td>{s.time}</td>
                         <td>{s.room}</td>
+                        <td>{s.teacher || "-"}</td>
+                        <td>{s.joinCode ? <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#1E7A4E", background: "#EAF7F0", padding: "2px 8px", borderRadius: 6 }}>{s.joinCode}</span> : "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1114,12 +1143,8 @@ export default function StudentDashboard() {
             </div>
             <div className="sp-field">
               <label className="sp-label">{t("Category")}</label>
-              <select className="sp-input" value={reportCategory} onChange={(e) => setReportCategory(e.target.value)}>
-                <option value="Academic">Academic</option>
-                <option value="Financial">Financial</option>
-                <option value="Facility">Facility</option>
-                <option value="Other">Other</option>
-              </select>
+              <StyledSelect value={reportCategory} onChange={setReportCategory} width="100%"
+                options={["Academic", "Financial", "Facility", "Other"].map(v => ({ value: v, label: v }))} />
             </div>
             <div className="sp-field">
               <label className="sp-label">{t("Description")}</label>

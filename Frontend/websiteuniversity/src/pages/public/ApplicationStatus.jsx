@@ -36,7 +36,7 @@ export default function ApplicationStatus() {
         setResult(res);
       }
     } catch (err) {
-      setError(t("Backend lookup failed — make sure the backend server is running."));
+      setError(err?.message || t("Backend lookup failed — make sure the backend server is running."));
     } finally {
       setLoading(false);
     }

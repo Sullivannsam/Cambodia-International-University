@@ -3,6 +3,7 @@ import { Award, Loader2, Send } from 'lucide-react';
 import InfoPage from '../../components/public/InfoPage';
 import { useLanguage } from "../../context/LanguageContext";
 import { submitApplication } from "../../services/endpoints";
+import StyledSelect from "../../components/common/StyledSelect";
 
 const SCHOLARSHIPS = [
   {
@@ -65,8 +66,7 @@ export default function Scholarships() {
       setSent(true);
       setForm({ name: "", email: "", program: "", scholarship: SCHOLARSHIPS[0].title, message: "" });
     } catch {
-      setSent(true);
-      setForm({ name: "", email: "", program: "", scholarship: SCHOLARSHIPS[0].title, message: "" });
+      setFormError(t("Application not submitted. Make sure the backend server is running."));
     } finally {
       setSending(false);
     }
@@ -158,9 +158,9 @@ export default function Scholarships() {
             </div>
             <div>
               <label className="sch-label">{t("Scholarship")}</label>
-              <select className="sch-input" value={form.scholarship} onChange={(e) => setForm({ ...form, scholarship: e.target.value })}>
-                {SCHOLARSHIPS.map((s) => <option key={s.title} value={s.title}>{t(s.title)}</option>)}
-              </select>
+              <StyledSelect value={form.scholarship} onChange={(v) => setForm({ ...form, scholarship: v })}
+                width="100%" placeholder={t("Select a scholarship")}
+                options={SCHOLARSHIPS.map((s) => ({ value: s.title, label: t(s.title) }))} />
             </div>
           </div>
           <div style={{ marginTop: 14 }}>

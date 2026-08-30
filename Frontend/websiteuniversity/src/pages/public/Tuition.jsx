@@ -85,6 +85,14 @@ export default function Tuition() {
         .tuition-table tr:hover td { background: rgba(37,99,235,0.05); }
         .tuition-program { display: flex; align-items: center; gap: 10px; font-weight: 600; white-space: nowrap; }
         .fee-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(30,122,78,0.1); color: #1E7A4E; font-weight: 700; }
+        .tuition-cta {
+          display: inline-flex; align-items: center; gap: 10px; padding: 14px 34px; border: none; cursor: pointer;
+          border-radius: 12px; font-size: 15px; font-weight: 700; color: #fff; text-decoration: none;
+          background: linear-gradient(135deg,#3E5EDB,#7A5CDB); box-shadow: 0 10px 24px rgba(62,94,219,0.35);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .tuition-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(62,94,219,0.45); }
+        .tuition-cta svg { display: inline-flex; flex-shrink: 0; }
       `}</style>
 
       <div className="tuition-tabs">
@@ -170,8 +178,8 @@ export default function Tuition() {
       </div>
 
       <div style={{ textAlign: "center", marginTop: 32 }}>
-        <a href="/public/content/enroll" className="auth-link" style={{ fontSize: 16, fontWeight: 700 }}>
-          <GraduationCap size={18} style={{ verticalAlign: -3 }} /> {t("Ready? Start your enrollment")}
+        <a href="/public/content/enroll" className="tuition-cta">
+          <GraduationCap size={20} style={{ verticalAlign: "middle" }} /> {t("Ready? Start your enrollment — click here")}
         </a>
       </div>
     </InfoPage>

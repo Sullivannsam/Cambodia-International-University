@@ -13,7 +13,7 @@ import {
   getDashboardStats, getStudentAttendance, getTeacherAttendance,
   getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers,
   getStudentAccounts, getTeacherAccounts, getAdminAccounts,
-  getEnrollments, getContact, getReports
+  getEnrollments, getContact, getReports, getAdminNotifications
 } from "../../services/endpoints";
 import LogoutModal from "../../components/common/LogoutModal";
 import UserManagement from "./UserManagement";
@@ -50,7 +50,7 @@ const NAV = [
     items: [
       { key: "students", label: "Students", icon: Users },
       { key: "classes", label: "Classes", icon: BookOpen },
-      { key: "schedule", label: "Schedule", icon: CalendarDays },
+      { key: "schedule", label: "Schedule Table", icon: CalendarDays },
       { key: "report", label: "Report", icon: FileBarChart },
       { key: "progression", label: "Progression", icon: TrendingUp },
       { key: "cards", label: "Student Cards", icon: IdCard },
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
   const [studentAccounts, setStudentAccounts] = useState([]);
   const [teacherAccounts, setTeacherAccounts] = useState([]);
   const [adminAccounts, setAdminAccounts] = useState([]);
-  const [badges, setBadges] = useState({ enrollments: 0, contact: 0, report: 0 });
+  const [badges, setBadges] = useState({ enrollments: 0, contact: 0, report: 0, notifications: 0 });
   const [seen, setSeen] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("adminSeenBadges") || "{}");
@@ -337,18 +337,21 @@ export default function AdminDashboard() {
         setTeacherAccounts(Array.isArray(teaAcc) ? teaAcc : []);
         setAdminAccounts(Array.isArray(admAcc) ? admAcc : []);
 
-        const [enrollRes, contactRes, reportsRes] = await Promise.all([
+        const [enrollRes, contactRes, reportsRes, notifRes] = await Promise.all([
           getEnrollments().catch(() => []),
           getContact().catch(() => []),
           getReports().catch(() => []),
+          getAdminNotifications().catch(() => ({ notifications: [] })),
         ]);
         const enrollArr = Array.isArray(enrollRes) ? enrollRes : Array.isArray(enrollRes.enrollments) ? enrollRes.enrollments : [];
         const contactArr = Array.isArray(contactRes) ? contactRes : Array.isArray(contactRes.messages) ? contactRes.messages : [];
         const reportsArr = Array.isArray(reportsRes) ? reportsRes : Array.isArray(reportsRes.reports) ? reportsRes.reports : [];
+        const notifArr = Array.isArray(notifRes) ? notifRes : Array.isArray(notifRes.notifications) ? notifRes.notifications : [];
         setBadges({
           enrollments: enrollArr.filter((e) => e.status === "PENDING").length,
           contact: contactArr.filter((m) => !m.read).length,
           report: reportsArr.filter((r) => !r.read).length,
+          notifications: notifArr.filter((n) => !n.read).length,
         });
       } catch (err) {
         setError(t("Failed to load dashboard data. Make sure the backend server is running."));
@@ -373,6 +376,10 @@ export default function AdminDashboard() {
     const id = setInterval(refreshReports, 10000);
     return () => { cancelled = true; clearInterval(id); };
   }, []);
+
+  useEffect(() => {
+    if (active === "notifications" && badges.notifications > 0) markSeen("notifications");
+  }, [active, badges.notifications]);
 
   const filteredStudents = students.filter((s) =>
     (s.name + s.id).toLowerCase().includes(studentQuery.toLowerCase())
