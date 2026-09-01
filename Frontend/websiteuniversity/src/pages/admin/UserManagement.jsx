@@ -641,7 +641,7 @@ export default function UserManagement() {
 
             <p style={{ fontSize: 13.5, color: "#6B7280", margin: "10px 0 0", lineHeight: 1.6 }}>
               {confirm.action === "delete"
-                ? `${t("Are you sure you want to permanently delete")} "${confirm.user.username || confirm.user.email}"? ${t("This cannot be undone.")}`
+                ? `${t("Are you sure you want to delete")} "${confirm.user.username || confirm.user.email}"? ${t("It will be hidden but can be restored.")}`
                 : `${t("Restore")} "${confirm.user.username || confirm.user.email}"? ${t("They will be able to log in again.")}`}
             </p>
 

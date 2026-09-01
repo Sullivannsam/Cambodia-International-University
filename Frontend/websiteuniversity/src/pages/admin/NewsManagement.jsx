@@ -438,8 +438,8 @@ export default function NewsManagement() {
             <div className="nm-icon"><Trash2 size={26} /></div>
             <div className="nm-modal-title" style={{ textAlign: "center" }}>{t("Delete news post?")}</div>
             <p style={{ fontSize: 13.5, color: "#6B7280", margin: "10px 0 0", lineHeight: 1.6 }}>
-              {t("Are you sure you want to permanently delete news post")}{" "}
-              <strong style={{ color: "#182644" }}>{confirm.item.title}</strong>{t("? This cannot be undone.")}
+              {t("Are you sure you want to delete news post")}{" "}
+              <strong style={{ color: "#182644" }}>{confirm.item.title}</strong>{t("? It will be hidden.")}
             </p>
             <div className="nm-modal-foot">
               <button type="button" className="nm-cancel" onClick={() => setConfirm(null)}>{t("Cancel")}</button>

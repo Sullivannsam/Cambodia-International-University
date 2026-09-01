@@ -445,8 +445,8 @@ export default function CourseManagement() {
             </div>
             <div className="um-modal-title" style={{ textAlign: "center" }}>{t("Delete course?")}</div>
             <p style={{ fontSize: 13.5, color: "#6B7280", margin: "10px 0 0", lineHeight: 1.6 }}>
-              {t("Are you sure you want to permanently delete course")}{" "}
-              <strong style={{ color: "#182644" }}>{confirm.course.code || confirm.course.title}</strong>? {t("This cannot be undone.")}
+              {t("Are you sure you want to delete course")}{" "}
+              <strong style={{ color: "#182644" }}>{confirm.course.code || confirm.course.title}</strong>? {t("It will be hidden.")}
             </p>
             <div className="um-modal-foot">
               <button type="button" className="um-cancel" onClick={() => setConfirm(null)}>{t("Cancel")}</button>

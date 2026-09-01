@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Loader2, CalendarDays, Save, Plus, Trash2, Sparkles, Blocks, Copy, ChevronDown, KeyRound, Check } from "lucide-react";
-import { getAdminSchedule, saveAdminSchedule, getTeacherAccounts } from "../../services/endpoints";
+import { getAdminSchedule, saveAdminSchedule, deleteAdminScheduleRow, deleteAdminScheduleBlock, getTeacherAccounts } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -184,8 +184,8 @@ const StyledSelect = ({ value, onChange, options, placeholder, disabled, openWid
 
 export default function ScheduleBuilder() {
   const { t } = useLanguage();
-  const [major, setMajor] = useState("IT");
-  const [field, setField] = useState("Software Development");
+  const [major, setMajor] = useState(() => localStorage.getItem("sb-major") || "IT");
+  const [field, setField] = useState(() => localStorage.getItem("sb-field") || "Software Development");
   const [entries, setEntries] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -193,6 +193,7 @@ export default function ScheduleBuilder() {
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirm, setConfirm] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -247,6 +248,11 @@ export default function ScheduleBuilder() {
     if (!fields.includes(field)) setField(fields[0]);
   }, [major]);
 
+  useEffect(() => {
+    localStorage.setItem("sb-major", major);
+    localStorage.setItem("sb-field", field);
+  }, [major, field]);
+
   // Visible entries = the selected major+field only
   const visible = useMemo(
     () => entries.filter((e) => e.major === major && e.field === field),
@@ -265,7 +271,51 @@ export default function ScheduleBuilder() {
   };
 
   const removeRow = (id) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id));
+    setConfirm({ type: "remove-row", rowId: id });
+  };
+
+  const runConfirm = async () => {
+    if (!confirm) return;
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      if (confirm.type === "save-block") {
+        const rows = visibleFor(confirm.level, confirm.semester);
+        if (rows.some((e) => !String(e.subject || "").trim())) {
+          setError(t("Every subject needs a name. Fill or remove the empty rows in this block."));
+          setConfirm(null);
+          return;
+        }
+        const saved = await saveAdminSchedule({
+          schedule: toPayload(rows),
+          major, field, level: confirm.level, semester: confirm.semester,
+        });
+        applySaved(saved);
+        setNotice(t("Saved") + ` ${t(confirm.level) || confirm.level}, ${t(confirm.semester) || confirm.semester} ${t("join codes generated and sent to the teachers.")}`);
+      } else if (confirm.type === "save-schedule") {
+        if (visible.some((e) => !String(e.subject || "").trim())) {
+          setError(t("Every subject needs a name. Fill or remove the empty rows."));
+          setConfirm(null);
+          return;
+        }
+        const saved = await saveAdminSchedule({ schedule: toPayload(visible) });
+        applySaved(saved);
+        setNotice(t("Schedule table saved successfully. Join codes generated and sent."));
+      } else if (confirm.type === "remove-row") {
+        const id = confirm.rowId;
+        setEntries((prev) => prev.filter((e) => e.id !== id));
+        if (Number.isInteger(id) && id > 0) {
+          await deleteAdminScheduleRow(id);
+        }
+        setNotice(t("Subject row removed."));
+      }
+    } catch {
+      setNotice(t("Backend error, changes kept locally."));
+    } finally {
+      setSaving(false);
+      setConfirm(null);
+    }
   };
 
   const generateCurriculum = () => {
@@ -326,16 +376,20 @@ export default function ScheduleBuilder() {
     const arr = Array.isArray(rows) ? rows : Array.isArray(rows?.schedule) ? rows.schedule : [];
     if (!arr.length) return;
     setEntries((prev) => prev.map((e) => {
-      const saved = arr.find((sv) => String(sv.course) === (e.course || e.subject) && sv.level === e.level && sv.semester === e.semester && sv.major === e.major && sv.field === e.field);
-      if (!saved) {
-        const byId = arr.find((sv) => typeof sv.id !== "undefined" && e.id !== null && !isNaN(Number(e.id)) && Number(sv.id) === Number(e.id));
-        return byId ? { ...e, joinCode: byId.joinCode || "", id: Number(byId.id) } : e;
-      }
-      return { ...e, joinCode: saved.joinCode || "" };
+      const byId = arr.find((sv) => typeof sv.id !== "undefined"
+        && Number.isInteger(Number(sv.id)) && Number(sv.id) > 0
+        && Number.isInteger(Number(e.id)) && Number(sv.id) === Number(e.id));
+      const saved = byId || arr.find((sv) =>
+        String(sv.course) === (e.course || e.subject)
+        && sv.level === e.level && sv.semester === e.semester
+        && sv.major === e.major && sv.field === e.field);
+      if (!saved) return e;
+      const dbId = Number.isInteger(Number(saved.id)) ? Number(saved.id) : e.id;
+      return { ...e, id: dbId, joinCode: saved.joinCode || "" };
     }));
   };
 
-  const saveBlock = async (level, semester) => {
+  const saveBlock = (level, semester) => {
     setError("");
     setNotice("");
     const rows = visibleFor(level, semester);
@@ -343,41 +397,17 @@ export default function ScheduleBuilder() {
       setError(t("Every subject needs a name. Fill or remove the empty rows in this block."));
       return;
     }
-    setSaving(true);
-    try {
-      const saved = await saveAdminSchedule({
-        schedule: toPayload(rows),
-        major,
-        field,
-        level,
-        semester,
-      });
-      applySaved(saved);
-      setNotice(t(`Saved`) + ` ${t(level) || level}, ${t(semester) || semester} ${t("join codes generated and sent to the teachers.")}`);
-    } catch {
-      setNotice(t("Backend save failed, block kept locally."));
-    } finally {
-      setSaving(false);
-    }
+    setConfirm({ type: "save-block", level, semester });
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     setError("");
     setNotice("");
     if (visible.some((e) => !String(e.subject || "").trim())) {
       setError(t("Every subject needs a name. Fill or remove the empty rows."));
       return;
     }
-    setSaving(true);
-    try {
-      const saved = await saveAdminSchedule({ schedule: toPayload(visible) });
-      applySaved(saved);
-      setNotice(t("Schedule table saved successfully. Join codes generated and sent."));
-    } catch {
-      setNotice(t("Backend save failed, schedule kept locally."));
-    } finally {
-      setSaving(false);
-    }
+    setConfirm({ type: "save-schedule" });
   };
 
   const exportCSV = () => {
@@ -421,7 +451,7 @@ export default function ScheduleBuilder() {
         .sb .sb-dd .sb-dd-val { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sb .sb-dd-btn:hover { border-color: #B9CBF8; }
         .sb .sb-dd-ph { color: #9AA3B2; }
-        .sb .sb-dd-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 100%; max-height: 300px; overflow: auto; background: #fff; border: 1px solid #E9EBF3; border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; animation: sbPop .14s ease; }
+        .sb .sb-dd-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 60; min-width: 100%; max-height: 300px; overflow: auto; background: #fff; border: 1px solid #E9EBF3; border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; animation: sbPop .14s ease; }
         .sb .sb-dd-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 9px 12px; font-size: 13px; color: #1F2430; background: none; border: none; border-radius: 7px; cursor: pointer; text-align: left; }
         .sb .sb-dd-item:hover { background: #F0F3FF; color: #3E5EDB; }
         .sb .sb-dd-sel { background: #F0F3FF; color: #3E5EDB; font-weight: 600; }
@@ -441,8 +471,8 @@ export default function ScheduleBuilder() {
         .sb select.sb-input option:checked, .sb .sb-select option:checked { background: #3E5EDB; color: #fff; }
         .sb select.sb-select:focus { outline: none; }
         .sb .sb-remove { background: #FBE3E0; color: #D2483C; border: none; border-radius: 7px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
-        .sb .sb-block { border: 1px solid #E9EBF3; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-        .sb .sb-block-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; background: linear-gradient(90deg,#F0F3FF,#FBFBFF); border-bottom: 1px solid #E9EBF3; cursor: pointer; user-select: none; }
+        .sb .sb-block { border: 1px solid #E9EBF3; border-radius: 12px; margin-bottom: 16px; overflow: visible; }
+        .sb .sb-block-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; background: linear-gradient(90deg,#F0F3FF,#FBFBFF); border-bottom: 1px solid #E9EBF3; cursor: pointer; user-select: none; border-radius: 12px 12px 0 0; }
         .sb .sb-block-title { font-family: 'Poppins',sans-serif; font-weight: 600; color: #182644; font-size: 13.5px; display: flex; align-items: center; gap: 10px; }
         .sb .sb-block-title .pill { font-size: 11px; font-weight: 700; background: #3E5EDB; color: #fff; border-radius: 999px; padding: 3px 10px; }
         .sb .sb-block-title .chev { color: #9AA3B2; transition: transform .2s; }
@@ -481,7 +511,23 @@ export default function ScheduleBuilder() {
         .sb .sb-menu-save svg { color: #2E9E6C; }
         .sb .sb-menu-save { color: #1E7A4E; }
         .sb .sb-menu-sep { height: 1px; background: #F0EEE9; margin: 6px 4px; }
+        .sb .sb-confirm-overlay { position: fixed; inset: 0; background: rgba(24,38,68,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; animation: sbFade .18s ease; }
+        .sb .sb-confirm-card { background: #fff; border-radius: 16px; padding: 26px 28px; width: min(90vw, 420px); text-align: center; box-shadow: 0 20px 48px rgba(24,38,68,0.28); animation: sbPop .16s ease; }
+        .sb .sb-confirm-icon { width: 58px; height: 58px; border-radius: 50%; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; }
+        .sb .sb-confirm-title { font-family: 'Poppins',sans-serif; font-weight: 600; font-size: 16px; color: #182644; }
+        .sb .sb-confirm-msg { font-size: 13.5px; color: #6B7280; margin: 10px 0 0; line-height: 1.6; }
+        .sb .sb-confirm-foot { display: flex; gap: 12px; margin-top: 24px; }
+        .sb .sb-confirm-cancel { flex: 1; background: #F0F1F5; border: none; color: #4A4F5C; border-radius: 9px; padding: 11px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .sb .sb-confirm-cancel:hover { background: #E6E8EE; }
+        .sb .sb-confirm-cancel:disabled { opacity: .5; cursor: not-allowed; }
+        .sb .sb-confirm-ok { flex: 1; border: none; border-radius: 9px; padding: 11px 14px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+        .sb .sb-confirm-ok.save { background: #2E9E6C; box-shadow: 0 4px 12px rgba(46,158,108,0.3); }
+        .sb .sb-confirm-ok.save:hover { background: #27875C; }
+        .sb .sb-confirm-ok.danger { background: #D2483C; box-shadow: 0 4px 12px rgba(210,72,60,0.3); }
+        .sb .sb-confirm-ok.danger:hover { background: #BC3D32; }
+        .sb .sb-confirm-ok:disabled { opacity: .5; cursor: not-allowed; }
         @keyframes sbPop { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes sbFade { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
       <div className="content-row">
@@ -569,14 +615,14 @@ export default function ScheduleBuilder() {
                     <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <span className="sb-join">
                         <span className="sb-join-label"><KeyRound size={12} /> {t("JOIN class")}</span>
-                        {rows.filter((e) => e.joinCode).length ? (
+                        {Array.from(new Set(rows.map((e) => e.joinCode).filter(Boolean))).length ? (
                           <span className="sb-codes-inline">
-                            {rows.filter((e) => e.joinCode).map((e) => (
-                              <span className="sb-code-chip" key={`code-${e.id}`}>
-                                <input className="sb-code-input" readOnly value={e.joinCode}
+                            {Array.from(new Set(rows.map((e) => e.joinCode).filter(Boolean))).map((code) => (
+                              <span className="sb-code-chip" key={`code-${code}`}>
+                                <input className="sb-code-input" readOnly value={code}
                                   title={t("Select to copy")} onFocus={(ev) => ev.target.select()} />
                                 <button className="sb-code-copy" title={t("Copy")} onClick={() => {
-                                  navigator.clipboard?.writeText(e.joinCode);
+                                  navigator.clipboard?.writeText(code);
                                 }}>
                                   <Copy size={12} />
                                 </button>
@@ -663,6 +709,41 @@ export default function ScheduleBuilder() {
           )}
         </div>
       )}
+
+      {confirm && (() => {
+        const isSave = confirm.type === "save-block" || confirm.type === "save-schedule";
+        const isBlockSave = confirm.type === "save-block";
+        const iconBg = isSave ? { background: "#E3F0E7", color: "#1E7A4E" } : { background: "#FBE3E0", color: "#D2483C" };
+        return (
+          <div className="sb-confirm-overlay">
+            <div className="sb-confirm-card">
+              <div className="sb-confirm-icon" style={iconBg}>
+                {isSave ? <Save size={26} /> : <Trash2 size={26} />}
+              </div>
+              <div className="sb-confirm-title">
+                {isBlockSave
+                  ? `${t("Save")} ${t(confirm.level) || confirm.level}, ${t(confirm.semester) || confirm.semester}?`
+                  : isSave ? t("Save schedule?")
+                  : t("Delete subject?")}
+              </div>
+              <p className="sb-confirm-msg">
+                {isSave
+                  ? t("Join codes will be generated and sent to the assigned teachers. Existing rows in this block will be updated.")
+                  : t("The subject row will be hidden from the schedule. It stays in the database and can be restored later.")}
+              </p>
+              <div className="sb-confirm-foot">
+                <button type="button" className="sb-confirm-cancel" onClick={() => setConfirm(null)} disabled={saving}>
+                  {t("Cancel")}
+                </button>
+                <button type="button" className={"sb-confirm-ok " + (isSave ? "save" : "danger")} onClick={runConfirm} disabled={saving}>
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : isSave ? <Save size={14} /> : <Trash2 size={14} />}
+                  {saving ? t("Please wait...") : isSave ? t("Confirm Save") : t("Confirm Delete")}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

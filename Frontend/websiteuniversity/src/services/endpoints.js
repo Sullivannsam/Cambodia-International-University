@@ -105,6 +105,14 @@ export const getFeeGroups = async () => {
     return parse(response);
 };
 
+// ---------- Classes ----------
+export const getAdminClasses = async () => {
+    const response = await fetch(`${BASE_URL}/api/admin/dashboard/classes`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 // ---------- Fee Group Members ----------
 export const getFeeGroupMembers = async (group) => {
     const response = await fetch(`${BASE_URL}/api/admin/dashboard/fee-groups/${encodeURIComponent(group)}`, {
@@ -733,6 +741,23 @@ export const saveAdminSchedule = async (data) => {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify(data),
+    });
+    return parse(response);
+};
+
+export const deleteAdminScheduleRow = async (id) => {
+    const response = await fetch(`${BASE_URL}/api/admin/schedule/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const deleteAdminScheduleBlock = async ({ major, field, level, semester }) => {
+    const query = new URLSearchParams({ major, field, level, semester });
+    const response = await fetch(`${BASE_URL}/api/admin/schedule?${query}`, {
+        method: "DELETE",
+        headers: authHeaders(),
     });
     return parse(response);
 };

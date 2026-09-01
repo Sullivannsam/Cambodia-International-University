@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import {
   getDashboardStats, getStudentAttendance, getTeacherAttendance,
-  getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers,
+  getIncomeData, getEarnings, getFeeGroups, getFeeGroupMembers, getAdminClasses, getAdminSchedule,
   getStudentAccounts, getTeacherAccounts, getAdminAccounts,
   getEnrollments, getContact, getReports, getAdminNotifications
 } from "../../services/endpoints";
@@ -123,6 +123,28 @@ function PersonCard({ person, kind }) {
             {person.dates.map((d) => <li key={d}>{d}</li>)}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ClassCard({ cls, schedule }) {
+  const { t } = useLanguage();
+  return (
+    <div className="panel class-card">
+      <div className="class-card-head">
+        <span className="class-card-title">{cls.title || t("Class")}</span>
+        <span className="class-code-chip">{cls.code}</span>
+      </div>
+      <div className="class-card-meta">
+        <div><span className="label">{t("Semester:")}</span> {cls.schedule || "—"}</div>
+        <div><span className="label">{t("Subject:")}</span> {schedule?.subject || "—"}</div>
+        <div><span className="label">{t("Days:")}</span> {schedule?.startDay ? (schedule.startDay === schedule.endDay ? schedule.startDay : `${schedule.startDay} - ${schedule.endDay}`) : (schedule?.day || "—")}</div>
+        <div><span className="label">{t("Time:")}</span> {schedule?.time || "—"}</div>
+        <div><span className="label">{t("Room:")}</span> {schedule?.room || "—"}</div>
+        <div><span className="label">{t("Teacher:")}</span> {schedule?.instructor || schedule?.teacher || "—"}</div>
+        <div><span className="label">{t("Students:")}</span> {cls.students ?? 0}</div>
+        <div><span className="label">{t("Credits:")}</span> {cls.credits ?? 3}</div>
       </div>
     </div>
   );
@@ -257,6 +279,8 @@ export default function AdminDashboard() {
   const [incomePie, setIncomePie] = useState([]);
   const [earnings, setEarnings] = useState([]);
   const [feeGroups, setFeeGroups] = useState([]);
+  const [adminClasses, setAdminClasses] = useState([]);
+  const [adminSchedule, setAdminSchedule] = useState([]);
   const [feeGroupMembers, setFeeGroupMembers] = useState({});
   const [studentAccounts, setStudentAccounts] = useState([]);
   const [teacherAccounts, setTeacherAccounts] = useState([]);
@@ -299,7 +323,7 @@ export default function AdminDashboard() {
       setLoading(true);
       setError("");
       try {
-        const [statsRes, studentsRes, teachersRes, incomeRes, earningsRes, groupsRes] =
+        const [statsRes, studentsRes, teachersRes, incomeRes, earningsRes, groupsRes, classesRes, scheduleRes] =
           await Promise.all([
             getDashboardStats().catch(() => ({ stats: [] })),
             getStudentAttendance().catch(() => []) ,
@@ -307,6 +331,8 @@ export default function AdminDashboard() {
             getIncomeData().catch(() => ({ TotalIncome: 0 })),
             getEarnings().catch(() => []),
             getFeeGroups().catch(() => []),
+            getAdminClasses().catch(() => []),
+            getAdminSchedule().catch(() => []),
           ]);
 
         setStats(Array.isArray(statsRes.stats) ? statsRes.stats : []);
@@ -320,6 +346,8 @@ export default function AdminDashboard() {
 
         const groups = Array.isArray(groupsRes) ? groupsRes : [];
         setFeeGroups(groups);
+        setAdminClasses(Array.isArray(classesRes) ? classesRes : []);
+        setAdminSchedule(Array.isArray(scheduleRes) ? scheduleRes : []);
 
         const memberMap = {};
         for (const g of groups) {
@@ -686,6 +714,16 @@ export default function AdminDashboard() {
         }
         .dot { width: 9px; height: 9px; border-radius: 50%; }
         .group-section { background: #fff; border-radius: 14px; padding: 20px 22px 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
+        .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .class-card { padding: 18px 20px; margin: 0; }
+        .class-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+        .class-card-title { font-family:'Poppins',sans-serif; font-weight: 600; font-size: 16px; color: #182644; }
+        .class-code-chip {
+          font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px; font-weight: 700; letter-spacing: .5px;
+          padding: 4px 10px; border-radius: 999px; background: rgba(62,94,219,.1); color: #3E5EDB;
+        }
+        .class-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px; line-height: 1.7; }
+        .class-card-meta .label { color: #8A93A6; font-weight: 500; }
         .group-title { font-family:'Poppins',sans-serif; color: #3E5EDB; font-weight: 600; margin-bottom: 14px; font-size: 14.5px; }
         .group-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .group-row {
@@ -1086,6 +1124,24 @@ export default function AdminDashboard() {
             <ScheduleBuilder />
           )}
 
+          {!loading && active === "classes" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{t("Classes created from the schedule — share the join code so students can join.")}</div>
+              </div>
+              {adminClasses.length > 0 ? (
+                <div className="class-grid">
+                  {adminClasses.map((c) => {
+                    const sched = adminSchedule.find((s) => s.joinCode === c.code);
+                    return <ClassCard key={c.id} cls={c} schedule={sched} />;
+                  })}
+                </div>
+              ) : (
+                <div className="date-label">{t("No classes yet — save a schedule with a teacher assigned.")}</div>
+              )}
+            </>
+          )}
+
           {!loading && active === "report" && (
             <ReportPage />
           )}
@@ -1094,7 +1150,7 @@ export default function AdminDashboard() {
             <NotificationsCenter />
           )}
 
-          {!loading && !["overview", "income", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
+          {!loading && !["overview", "income", "classes", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
             <Placeholder title={t(activeLabel)} />
           )}
         </div>
