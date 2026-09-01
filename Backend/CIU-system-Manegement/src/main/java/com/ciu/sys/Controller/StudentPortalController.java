@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Repository.StudentRepository;
 import com.ciu.sys.Repository.NotificationRepository;
+import com.ciu.sys.Service.PaymentService;
 import com.ciu.sys.Service.StudentPortalService;
+import com.ciu.sys.Service.TuitionService;
 
 @RestController
 @RequestMapping("/api/students")
@@ -29,6 +31,12 @@ public class StudentPortalController {
 
   @Autowired
   private StudentPortalService service;
+
+  @Autowired
+  private TuitionService tuitionService;
+
+  @Autowired
+  private PaymentService paymentService;
 
   @GetMapping("/profile")
   public ResponseEntity<?> getProfile(Authentication authentication) {
@@ -174,5 +182,29 @@ public class StudentPortalController {
   @PostMapping("/notifications/read")
   public ResponseEntity<?> markNotificationsRead() {
     return ResponseEntity.ok(Map.of("message", "ok"));
+  }
+
+  @PostMapping("/tuition/quote")
+  public ResponseEntity<?> tuitionQuote(@RequestBody Map<String, Object> body) {
+    Object sid = body.get("studentId");
+    if (sid == null)
+      return ResponseEntity.badRequest().body(Map.of("error", "studentId required"));
+    Optional<StudentAccount> found = repository.findById(Long.valueOf(sid.toString()));
+    if (found.isEmpty())
+      return ResponseEntity.badRequest().body(Map.of("error", "Student not found"));
+    return ResponseEntity.ok(tuitionService.quote(found.get()));
+  }
+
+  @PostMapping("/tuition/pay")
+  public ResponseEntity<?> tuitionPay(Authentication auth) {
+    Optional<StudentAccount> students = repository.findByEmail(auth.getName());
+
+    if (students.isEmpty()) {
+
+      return ResponseEntity.noContent().build();
+    }
+
+    return ResponseEntity.ok(paymentService.payTuition(students.get()));
+
   }
 }

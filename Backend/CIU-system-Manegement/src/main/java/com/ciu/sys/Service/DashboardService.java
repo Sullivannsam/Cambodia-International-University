@@ -154,4 +154,23 @@ public class DashboardService {
     }
     return result;
   }
+
+  public List<Map<String, Object>> getClasses() {
+    List<Map<String, Object>> result = new ArrayList<>();
+    for (StudentClass c : studentClassRepo.findByActiveTrue()) {
+      long count = studentRepo.findAll().stream()
+          .filter(s -> s.getClasses() != null && c.getId() != null
+              && c.getId().equals(s.getClasses().getId()))
+          .count();
+      result.add(Map.of(
+          "id", c.getId(),
+          "code", c.getGroup() == null ? "" : c.getGroup(),
+          "title", (c.getMajor() == null ? "" : c.getMajor()) + " "
+              + (c.getYear() == null ? "" : c.getYear()),
+          "schedule", c.getShift() == null ? "" : c.getShift(),
+          "students", count,
+          "credits", 3));
+    }
+    return result;
+  }
 }

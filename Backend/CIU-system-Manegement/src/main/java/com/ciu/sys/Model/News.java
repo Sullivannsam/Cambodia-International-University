@@ -34,6 +34,9 @@ public class News {
   @Column(name = "Category")
   private String category;
 
+  @Column(name = "IsActive")
+  private boolean active = true;
+
   @Column(name = "Public")
   private boolean published = true;
 

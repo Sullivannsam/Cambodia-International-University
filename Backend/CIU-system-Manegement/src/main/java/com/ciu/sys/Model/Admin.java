@@ -31,4 +31,7 @@ public class Admin {
 
   @Column(name = "Role")
   private String role;
+
+  @Column(name = "IsActive")
+  private boolean active = true;
 }

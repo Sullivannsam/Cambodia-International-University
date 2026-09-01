@@ -59,4 +59,7 @@ public class Schedule {
   @Column(name = "JoinCode")
   private String joinCode;
 
+  @Column(name = "IsActive")
+  private boolean active = true;
+
 }

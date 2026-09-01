@@ -53,4 +53,7 @@ public class User {
   @Column(name = "suspended_message")
   private String suspendedMessage;
 
+  @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+  private boolean deleted;
+
 }

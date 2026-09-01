@@ -49,7 +49,7 @@ public class UserPrincipal implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return !user.isSuspended();
+    return !user.isSuspended() && !user.isDeleted();
   }
 
 }

@@ -43,6 +43,9 @@ public class NewsService {
   }
 
   public void deleteNewsById(Long id) {
-    repo.deleteById(id);
+    repo.findById(id).ifPresent(news -> {
+      news.setActive(false);
+      repo.save(news);
+    });
   }
 }

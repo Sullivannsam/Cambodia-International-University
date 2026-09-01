@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface NewRepository extends JpaRepository<News, Long> {
 
-  @Query("SELECT n FROM News n ORDER BY n.createdAt DESC")
+  @Query("SELECT n FROM News n WHERE n.active = true ORDER BY n.createdAt DESC")
   List<News> findAllByOrderByCreatedAtDesc();
 }

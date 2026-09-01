@@ -35,7 +35,10 @@ public class ContactService {
   }
 
   public void deleteContactById(Long id) {
-    contactRepo.deleteById(id);
+    contactRepo.findById(id).ifPresent(contact -> {
+      contact.setActive(false);
+      contactRepo.save(contact);
+    });
   }
 
 }

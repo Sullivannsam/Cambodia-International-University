@@ -34,4 +34,7 @@ public class StudentClass {
   @ManyToOne
   @JoinColumn(name = "teacher_class")
   private Teacher teacher;
+
+  @Column(name = "IsActive")
+  private boolean active = true;
 }

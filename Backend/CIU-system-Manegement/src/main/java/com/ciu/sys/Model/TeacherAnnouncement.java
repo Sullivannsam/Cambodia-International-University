@@ -34,4 +34,7 @@ public class TeacherAnnouncement {
   @Column(name = "Create_At")
   private LocalDateTime createAt;
 
+  @Column(name = "IsActive")
+  private boolean active = true;
+
 }

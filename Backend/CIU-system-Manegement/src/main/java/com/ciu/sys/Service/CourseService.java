@@ -15,7 +15,7 @@ public class CourseService {
   private CourseRepository courseRepository;
 
   public List<Course> getAllCourse() {
-    return courseRepository.findAll();
+    return courseRepository.findByActiveTrue();
   }
 
   public Course createCourse(Course course) {
@@ -40,7 +40,10 @@ public class CourseService {
   }
 
   public void deleteCourseById(Long id) {
-    courseRepository.deleteById(id);
+    courseRepository.findById(id).ifPresent(course -> {
+      course.setActive(false);
+      courseRepository.save(course);
+    });
   }
 
 }

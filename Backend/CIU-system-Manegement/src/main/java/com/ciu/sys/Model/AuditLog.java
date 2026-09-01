@@ -35,4 +35,7 @@ public class AuditLog {
   @Column(name = "create_at")
   private String timestamp;
 
+  @Column(name = "IsActive")
+  private boolean active = true;
+
 }

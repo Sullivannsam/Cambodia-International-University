@@ -169,8 +169,10 @@ public class TeacherService {
   }
 
   public void deleteAnnouncementById(Long id) {
-
-    announcementRepository.deleteById(id);
+    announcementRepository.findById(id).ifPresent(a -> {
+      a.setActive(false);
+      announcementRepository.save(a);
+    });
   }
 
   // ---------- Attendance ----------
@@ -267,7 +269,10 @@ public class TeacherService {
   }
 
   public void deleteAssignment(Long id) {
-    assignmentRepository.deleteById(id);
+    assignmentRepository.findById(id).ifPresent(a -> {
+      a.setActive(false);
+      assignmentRepository.save(a);
+    });
   }
 
   // ---------- Messages ----------

@@ -39,4 +39,7 @@ public class Contact {
 
   @Column(name = "read_flag")
   private boolean read;
+
+  @Column(name = "IsActive")
+  private boolean active = true;
 }

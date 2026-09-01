@@ -37,4 +37,7 @@ public class Assignment {
   @Column(name = "Create_At")
   private String createAt;
 
+  @Column(name = "IsActive")
+  private boolean active = true;
+
 }

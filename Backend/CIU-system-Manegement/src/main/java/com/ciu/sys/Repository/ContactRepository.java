@@ -14,6 +14,7 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
   @Query("SELECT COUNT(c) FROM Contact c")
   long countContacts();
 
+  @Query("SELECT c FROM Contact c WHERE c.active = true ORDER BY c.id DESC")
   List<Contact> findAllByOrderByIdDesc();
 
 }

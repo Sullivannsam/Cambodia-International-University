@@ -20,7 +20,7 @@ public class AdminService {
   private PasswordEncoder passwordEncoder;
 
   public List<Admin> getListAdmins() {
-    return adminRepository.findAll();
+    return adminRepository.findAll().stream().filter(Admin::isActive).toList();
   }
 
   public Admin findAccountByEmail(String email) {
@@ -43,14 +43,15 @@ public class AdminService {
   public Admin deleteAdminById(Long id) {
     Admin admin = adminRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Admin Not Found" + id));
-    adminRepository.delete(admin);
-    return admin;
+    admin.setActive(false);
+    return adminRepository.save(admin);
 
   }
 
   public Admin authenticate(String email, String password) {
     Admin admin = adminRepository.findByEmail(email).orElse(null);
-    if (admin != null && passwordEncoder.matches(password, admin.getPassword()) && "ADMIN".equals(admin.getRole())) {
+    if (admin != null && admin.isActive()
+        && passwordEncoder.matches(password, admin.getPassword()) && "ADMIN".equals(admin.getRole())) {
       return admin;
     }
     return null;

@@ -40,6 +40,7 @@ public class UserService {
   public List<UserDto> getListUser() {
     return userRepository.findAll()
         .stream()
+        .filter(user -> !user.isDeleted())
         .map(user -> new UserDto(
             user.getId(),
             user.getUsername(),
@@ -83,7 +84,11 @@ public class UserService {
   }
 
   public void deleteUserById(Long id) {
-    userRepository.deleteById(id);
+    userRepository.findById(id).ifPresent(user -> {
+      user.setDeleted(true);
+      user.setActive(false);
+      userRepository.save(user);
+    });
   }
 
   public User register(User user) {

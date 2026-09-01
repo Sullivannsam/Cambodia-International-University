@@ -101,7 +101,7 @@ public class StudentPortalService {
 
   public List<Map<String, Object>> getAnnouncements() {
     List<Map<String, Object>> result = new ArrayList<>();
-    for (TeacherAnnouncement a : teacherAnnouncementRepository.findAll()) {
+    for (TeacherAnnouncement a : teacherAnnouncementRepository.findAllByActiveTrue()) {
       Map<String, Object> m = new java.util.HashMap<>();
       m.put("id", a.getId());
       m.put("title", nz(a.getTitle()));
@@ -165,7 +165,7 @@ public class StudentPortalService {
   public List<Map<String, Object>> getAssignments(StudentAccount student) {
     List<String> codes = enrollCodes(student);
     List<Map<String, Object>> result = new ArrayList<>();
-    for (Assignment a : assignmentRepository.findAll()) {
+    for (Assignment a : assignmentRepository.findAllByActiveTrue()) {
       boolean matched = codes.isEmpty() || codes.contains(a.getCourseCode());
       if (!matched)
         continue;
