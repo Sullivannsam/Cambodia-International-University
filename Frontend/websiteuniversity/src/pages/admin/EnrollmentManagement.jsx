@@ -156,7 +156,7 @@ export default function EnrollmentManagement({ onPendingChange }) {
           </tbody>
         </table>
       ) : (
-        <div className="em-empty">{t("No enrollments match your search.")}</div>
+        <div className="em-empty">{query ? `${t("No enrollments match your search.")} \"${query}\"` : t("No enrollments match your search.")}</div>
       )}
 
       <style>{`@keyframes emspin { from { transform: rotate(0); } to { transform: rotate(360deg); } }`}</style>

@@ -22,6 +22,7 @@ import NewsManagement from "./NewsManagement";
 import AuditLog from "./AuditLog";
 import EnrollmentManagement from "./EnrollmentManagement";
 import Progression from "./Progression";
+import StudentRecords from "./StudentRecords";
 import StudentCardManager from "./StudentCardManager";
 import ContactInbox from "./ContactInbox";
 import ReportPage from "./ReportPage";
@@ -128,24 +129,182 @@ function PersonCard({ person, kind }) {
   );
 }
 
-function ClassCard({ cls, schedule }) {
+const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function getDayIndex(d) {
+  if (!d) return 99;
+  const dl = d.toLowerCase();
+  const map = { monday: 0, tuesday: 1, wednesday: 2, thursday: 3, friday: 4, saturday: 5, sunday: 6, mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 };
+  return map[dl] ?? 99;
+}
+
+function ClassCard({ cls, schedule, allStudents }) {
   const { t } = useLanguage();
+  const [showStudents, setShowStudents] = React.useState(false);
+  const [studentQuery, setStudentQuery] = React.useState("");
+  const classStudents = allStudents.filter((s) => s.classes?.id === cls.id);
+  const filteredStudents = classStudents.filter((s) => (s.name || s.username || s.email || "").toLowerCase().includes(studentQuery.toLowerCase()));
   return (
-    <div className="panel class-card">
-      <div className="class-card-head">
-        <span className="class-card-title">{cls.title || t("Class")}</span>
-        <span className="class-code-chip">{cls.code}</span>
+    <div style={{ background: "#fff", border: "1px solid #E9EBF3", borderRadius: 12, marginBottom: 16, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "linear-gradient(90deg,#F0F3FF,#FBFBFF)", borderBottom: "1px solid #E9EBF3" }}>
+        <span style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 600, color: "#182644", fontSize: 13.5, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ color: "#9AA3B2" }}>{'>'}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, background: "#3E5EDB", color: "#fff", borderRadius: 999, padding: "3px 10px" }}>{cls.title || t("Class")} {cls.schedule ? `— ${cls.schedule}` : ""}</span>
+        </span>
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {cls.code && (
+            <span style={{ fontFamily: "'SFMono-Regular', Consolas, monospace", fontSize: 11, fontWeight: 700, background: "rgba(62,94,219,.1)", color: "#3E5EDB", borderRadius: 6, padding: "2px 8px" }}>
+              {cls.code}
+            </span>
+          )}
+          <button onClick={() => setShowStudents(!showStudents)} style={{ background: showStudents ? "#3E5EDB" : "#fff", color: showStudents ? "#fff" : "#3E5EDB", border: "1.5px solid #3E5EDB", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            {showStudents ? t("Hide") : t("View")}
+          </button>
+        </span>
       </div>
-      <div className="class-card-meta">
-        <div><span className="label">{t("Semester:")}</span> {cls.schedule || "—"}</div>
-        <div><span className="label">{t("Subject:")}</span> {schedule?.subject || "—"}</div>
-        <div><span className="label">{t("Days:")}</span> {schedule?.startDay ? (schedule.startDay === schedule.endDay ? schedule.startDay : `${schedule.startDay} - ${schedule.endDay}`) : (schedule?.day || "—")}</div>
-        <div><span className="label">{t("Time:")}</span> {schedule?.time || "—"}</div>
-        <div><span className="label">{t("Room:")}</span> {schedule?.room || "—"}</div>
-        <div><span className="label">{t("Teacher:")}</span> {schedule?.instructor || schedule?.teacher || "—"}</div>
-        <div><span className="label">{t("Students:")}</span> {cls.students ?? 0}</div>
-        <div><span className="label">{t("Credits:")}</span> {cls.credits ?? 3}</div>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 600, tableLayout: "fixed" }}>
+        <thead>
+          <tr style={{ textAlign: "left" }}>
+            <th style={{ width: "28%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Subject")}</th>
+            <th style={{ width: "14%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Day")}</th>
+            <th style={{ width: "18%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Time")}</th>
+            <th style={{ width: "13%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Room")}</th>
+            <th style={{ width: "27%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Teacher")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderBottom: "1px solid #F0EEE9" }}>
+            <td style={{ padding: "8px 12px", fontWeight: 600, color: "#182644", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{schedule?.subject || "—"}</td>
+            <td style={{ padding: "8px 12px" }}>{schedule?.startDay ? (schedule.startDay === schedule.endDay ? schedule.startDay : `${schedule.startDay} - ${schedule.endDay}`) : (schedule?.day || "—")}</td>
+            <td style={{ padding: "8px 12px" }}>{schedule?.time || "—"}</td>
+            <td style={{ padding: "8px 12px" }}>{schedule?.room || "—"}</td>
+            <td style={{ padding: "8px 12px" }}>{schedule?.instructor || schedule?.teacher || "—"}</td>
+          </tr>
+        </tbody>
+      </table>
+      {showStudents && (
+        <div style={{ borderTop: "2px solid #E5E7EB", padding: "12px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 13, color: "#182644" }}>{t("Students")} ({filteredStudents.length})</span>
+            <div className="search-box" style={{ width: 200 }}>
+              <Search size={14} />
+              <input value={studentQuery} onChange={(e) => setStudentQuery(e.target.value)} placeholder={t("Search student name...")} />
+            </div>
+          </div>
+          {filteredStudents.length > 0 ? (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ textAlign: "left" }}>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("ID")}</th>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("Name")}</th>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("Email")}</th>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("Major")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.map((s) => (
+                  <tr key={s.id} style={{ borderBottom: "1px solid #F0F3FF" }}>
+                    <td style={{ padding: "6px 8px" }}>{s.id}</td>
+                    <td style={{ padding: "6px 8px", fontWeight: 600 }}>{s.name || s.username || "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{s.email || "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{s.major || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{ color: "#8A93A6", fontSize: 12 }}>{studentQuery ? `${t("No students match your search.")} \"${studentQuery}\"` : t("No students in this class yet.")}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GroupedClassCard({ title, items, allStudents }) {
+  const { t } = useLanguage();
+  const [showStudents, setShowStudents] = React.useState(false);
+  const [studentQuery, setStudentQuery] = React.useState("");
+  const classId = items[0]?.cls.id;
+  const classStudents = allStudents.filter((s) => s.classes?.id === classId);
+  const filteredStudents = classStudents.filter((s) => (s.name || s.username || s.email || "").toLowerCase().includes(studentQuery.toLowerCase()));
+  const sorted = [...items].sort((a, b) => getDayIndex(a.schedule?.startDay || a.schedule?.day) - getDayIndex(b.schedule?.startDay || b.schedule?.day));
+  return (
+    <div style={{ background: "#fff", border: "1px solid #E9EBF3", borderRadius: 12, marginBottom: 16, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "linear-gradient(90deg,#F0F3FF,#FBFBFF)", borderBottom: "1px solid #E9EBF3" }}>
+        <span style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 600, color: "#182644", fontSize: 13.5, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ color: "#9AA3B2" }}>{'>'}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, background: "#3E5EDB", color: "#fff", borderRadius: 999, padding: "3px 10px" }}>{title || t("Class")}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, background: "#182644", color: "#fff", borderRadius: 999, padding: "3px 10px" }}>{items.length} {t("subject(s)")}</span>
+        </span>
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {items[0]?.cls.code && (
+            <span style={{ fontFamily: "'SFMono-Regular', Consolas, monospace", fontSize: 11, fontWeight: 700, background: "rgba(62,94,219,.1)", color: "#3E5EDB", borderRadius: 6, padding: "2px 8px" }}>
+              {items[0].cls.code}
+            </span>
+          )}
+          <button onClick={() => setShowStudents(!showStudents)} style={{ background: showStudents ? "#3E5EDB" : "#fff", color: showStudents ? "#fff" : "#3E5EDB", border: "1.5px solid #3E5EDB", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            {showStudents ? t("Hide") : t("View")}
+          </button>
+        </span>
       </div>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 600, tableLayout: "fixed" }}>
+        <thead>
+          <tr style={{ textAlign: "left" }}>
+            <th style={{ width: "28%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Subject")}</th>
+            <th style={{ width: "14%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Day")}</th>
+            <th style={{ width: "18%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Time")}</th>
+            <th style={{ width: "13%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Room")}</th>
+            <th style={{ width: "27%", color: "#3E5EDB", borderBottom: "2px solid #E5E7EB", padding: "10px 12px", whiteSpace: "nowrap", fontSize: 12 }}>{t("Teacher")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((item, i) => (
+            <tr key={item.cls.id || i} style={{ borderBottom: "1px solid #F0EEE9" }}>
+              <td style={{ padding: "8px 12px", fontWeight: 600, color: "#182644", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.schedule?.subject || "—"}</td>
+              <td style={{ padding: "8px 12px" }}>{item.schedule?.startDay ? (item.schedule.startDay === item.schedule.endDay ? item.schedule.startDay : `${item.schedule.startDay} - ${item.schedule.endDay}`) : (item.schedule?.day || "—")}</td>
+              <td style={{ padding: "8px 12px" }}>{item.schedule?.time || "—"}</td>
+              <td style={{ padding: "8px 12px" }}>{item.schedule?.room || "—"}</td>
+              <td style={{ padding: "8px 12px" }}>{item.schedule?.instructor || item.schedule?.teacher || "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {showStudents && (
+        <div style={{ borderTop: "2px solid #E5E7EB", padding: "12px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 13, color: "#182644" }}>{t("Students")} ({filteredStudents.length})</span>
+            <div className="search-box" style={{ width: 200 }}>
+              <Search size={14} />
+              <input value={studentQuery} onChange={(e) => setStudentQuery(e.target.value)} placeholder={t("Search student name...")} />
+            </div>
+          </div>
+          {filteredStudents.length > 0 ? (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ textAlign: "left" }}>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("ID")}</th>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("Name")}</th>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("Email")}</th>
+                  <th style={{ padding: "6px 8px", color: "#8A93A6", borderBottom: "1px solid #E5E7EB" }}>{t("Major")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.map((s) => (
+                  <tr key={s.id} style={{ borderBottom: "1px solid #F0F3FF" }}>
+                    <td style={{ padding: "6px 8px" }}>{s.id}</td>
+                    <td style={{ padding: "6px 8px", fontWeight: 600 }}>{s.name || s.username || "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{s.email || "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{s.major || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{ color: "#8A93A6", fontSize: 12 }}>{studentQuery ? `${t("No students match your search.")} \"${studentQuery}\"` : t("No students in this class yet.")}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -195,12 +354,8 @@ function AccountTable({ title, accounts, query }) {
     <div className="panel">
       <div className="panel-title">{title} ({filtered.length})</div>
       {q && filtered.length === 0 ? (
-        <div style={{
-          background: "#FBE3E0", border: "1px solid #E0665A",
-          color: "#D2483C", borderRadius: 10, padding: "12px 16px",
-          fontSize: 13, fontWeight: 600,
-        }}>
-          {t("account")} "{query}" {t("doesn't exist in table")}
+        <div style={{ color: "#8A93A6", fontSize: 13, padding: "4px 0" }}>
+          {t("No accounts match your search.")} "{query}"
         </div>
       ) : filtered.length > 0 ? (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
@@ -714,16 +869,20 @@ export default function AdminDashboard() {
         }
         .dot { width: 9px; height: 9px; border-radius: 50%; }
         .group-section { background: #fff; border-radius: 14px; padding: 20px 22px 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
-        .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 16px; }
         .class-card { padding: 18px 20px; margin: 0; }
-        .class-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+        .class-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
         .class-card-title { font-family:'Poppins',sans-serif; font-weight: 600; font-size: 16px; color: #182644; }
         .class-code-chip {
           font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px; font-weight: 700; letter-spacing: .5px;
           padding: 4px 10px; border-radius: 999px; background: rgba(62,94,219,.1); color: #3E5EDB;
         }
-        .class-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px; line-height: 1.7; }
+        .class-card-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px 14px; font-size: 13px; line-height: 1.7; }
         .class-card-meta .label { color: #8A93A6; font-weight: 500; }
+        @media (max-width: 600px) {
+          .class-grid { grid-template-columns: 1fr; }
+          .class-card-meta { grid-template-columns: 1fr 1fr; }
+        }
         .group-title { font-family:'Poppins',sans-serif; color: #3E5EDB; font-weight: 600; margin-bottom: 14px; font-size: 14.5px; }
         .group-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .group-row {
@@ -1116,6 +1275,10 @@ export default function AdminDashboard() {
             <Progression />
           )}
 
+          {!loading && active === "students" && (
+            <StudentRecords />
+          )}
+
           {!loading && active === "cards" && (
             <StudentCardManager />
           )}
@@ -1130,11 +1293,25 @@ export default function AdminDashboard() {
                 <div className="date-label">{t("Classes created from the schedule — share the join code so students can join.")}</div>
               </div>
               {adminClasses.length > 0 ? (
-                <div className="class-grid">
-                  {adminClasses.map((c) => {
-                    const sched = adminSchedule.find((s) => s.joinCode === c.code);
-                    return <ClassCard key={c.id} cls={c} schedule={sched} />;
-                  })}
+                <div>
+                  {(() => {
+                    const groups = {};
+                    for (const c of adminClasses) {
+                      const key = (c.title || "") + "|" + (c.schedule || "");
+                      if (!groups[key]) groups[key] = { title: (c.title || t("Class")) + (c.schedule ? ` — ${c.schedule}` : ""), items: [] };
+                      const allScheds = adminSchedule.filter((s) => s.joinCode === c.code);
+                      if (allScheds.length) {
+                        allScheds.forEach((sched) => groups[key].items.push({ cls: c, schedule: sched }));
+                      } else {
+                        groups[key].items.push({ cls: c, schedule: null });
+                      }
+                    }
+                    return Object.values(groups).map((g) =>
+                      g.items.length === 1
+                        ? <ClassCard key={g.items[0].cls.id + "-" + (g.items[0].schedule?.id || 0)} cls={g.items[0].cls} schedule={g.items[0].schedule} allStudents={students} />
+                        : <GroupedClassCard key={g.title} title={g.title} items={g.items} allStudents={students} />
+                    );
+                  })()}
                 </div>
               ) : (
                 <div className="date-label">{t("No classes yet — save a schedule with a teacher assigned.")}</div>
@@ -1150,7 +1327,7 @@ export default function AdminDashboard() {
             <NotificationsCenter />
           )}
 
-          {!loading && !["overview", "income", "classes", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
+          {!loading && !["overview", "income", "classes", "students", "progression", "cards", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
             <Placeholder title={t(activeLabel)} />
           )}
         </div>

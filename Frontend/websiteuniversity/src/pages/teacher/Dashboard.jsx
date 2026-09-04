@@ -602,7 +602,7 @@ export default function TeacherDashboard() {
                       </button>
                     </td>
                   </tr>
-                )) : <tr><td colSpan="5" className="td-empty">{t("No students found")}</td></tr>}
+                )) : <tr><td colSpan="5" className="td-empty">{query ? `${t("No students found")} "${query}"` : t("No students found")}</td></tr>}
               </tbody>
             </table>
           </>

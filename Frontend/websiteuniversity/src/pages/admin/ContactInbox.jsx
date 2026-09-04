@@ -263,7 +263,7 @@ export default function ContactInbox({ onUnreadChange }) {
               <div className="ci-preview">{m.message}</div>
             </div>
           )) : (
-            <div className="ci-detail-empty">{t("No messages match your search.")}</div>
+            <div className="ci-detail-empty">{query ? `${t("No messages match your search.")} \"${query}\"` : t("No messages match your search.")}</div>
           )}
         </div>
 

@@ -282,8 +282,14 @@ export default function ScheduleBuilder() {
     try {
       if (confirm.type === "save-block") {
         const rows = visibleFor(confirm.level, confirm.semester);
-        if (rows.some((e) => !String(e.subject || "").trim())) {
-          setError(t("Every subject needs a name. Fill or remove the empty rows in this block."));
+        if (!rows.length) {
+          setError(t("No subjects to save. Add a subject first."));
+          setConfirm(null);
+          return;
+        }
+        const issue = missingFields(rows);
+        if (issue) {
+          setError(t("Every row needs Subject, Room, and Teacher filled.") + (issue.subject ? ` ${t("First empty row subject")}: "${issue.subject || t("(empty)")}" — ${t("missing")}: ${issue.missing.join(", ")}.` : ""));
           setConfirm(null);
           return;
         }
@@ -294,8 +300,14 @@ export default function ScheduleBuilder() {
         applySaved(saved);
         setNotice(t("Saved") + ` ${t(confirm.level) || confirm.level}, ${t(confirm.semester) || confirm.semester} ${t("join codes generated and sent to the teachers.")}`);
       } else if (confirm.type === "save-schedule") {
-        if (visible.some((e) => !String(e.subject || "").trim())) {
-          setError(t("Every subject needs a name. Fill or remove the empty rows."));
+        if (!visible.length) {
+          setError(t("No subjects to save. Add a subject first."));
+          setConfirm(null);
+          return;
+        }
+        const issue = missingFields(visible);
+        if (issue) {
+          setError(t("Every row needs Subject, Room, and Teacher filled.") + (issue.subject ? ` ${t("First empty row subject")}: "${issue.subject || t("(empty)")}" — ${t("missing")}: ${issue.missing.join(", ")}.` : ""));
           setConfirm(null);
           return;
         }
@@ -389,12 +401,28 @@ export default function ScheduleBuilder() {
     }));
   };
 
+  const missingFields = (rows) => {
+    for (const e of rows) {
+      const missing = [];
+      if (!String(e.subject || "").trim()) missing.push(t("Subject"));
+      if (!String(e.room || "").trim()) missing.push(t("Room"));
+      if (!String(e.teacher || "").trim()) missing.push(t("Teacher"));
+      if (missing.length) return { subject: e.subject, missing };
+    }
+    return null;
+  };
+
   const saveBlock = (level, semester) => {
     setError("");
     setNotice("");
     const rows = visibleFor(level, semester);
-    if (rows.some((e) => !String(e.subject || "").trim())) {
-      setError(t("Every subject needs a name. Fill or remove the empty rows in this block."));
+    if (!rows.length) {
+      setError(t("No subjects to save. Add a subject first."));
+      return;
+    }
+    const issue = missingFields(rows);
+    if (issue) {
+      setError(t("Every row needs Subject, Room, and Teacher filled.") + (issue.subject ? ` ${t("First empty row subject")}: "${issue.subject || t("(empty)")}" — ${t("missing")}: ${issue.missing.join(", ")}.` : ""));
       return;
     }
     setConfirm({ type: "save-block", level, semester });
@@ -403,8 +431,13 @@ export default function ScheduleBuilder() {
   const handleSave = () => {
     setError("");
     setNotice("");
-    if (visible.some((e) => !String(e.subject || "").trim())) {
-      setError(t("Every subject needs a name. Fill or remove the empty rows."));
+    if (!visible.length) {
+      setError(t("No subjects to save. Add a subject first."));
+      return;
+    }
+    const issue = missingFields(visible);
+    if (issue) {
+      setError(t("Every row needs Subject, Room, and Teacher filled.") + (issue.subject ? ` ${t("First empty row subject")}: "${issue.subject || t("(empty)")}" — ${t("missing")}: ${issue.missing.join(", ")}.` : ""));
       return;
     }
     setConfirm({ type: "save-schedule" });

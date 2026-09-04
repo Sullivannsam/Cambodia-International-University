@@ -224,9 +224,11 @@ export default function AuditLog() {
           ) : (
             <div style={{ color: "#6B7280", fontSize: 13.5, padding: "20px 0", display: "flex", alignItems: "center", gap: 10 }}>
               <ShieldCheck size={18} style={{ color: "#3E5EDB" }} />
-              {q || actionFilter !== "ALL"
-                ? t("No logs match your filters.")
-                : t("No audit logs recorded yet.")}
+              {q
+                ? `${t("No logs match your search.")} \"${q}\"`
+                : actionFilter !== "ALL"
+                  ? t("No logs match your filters.")
+                  : t("No audit logs recorded yet.")}
             </div>
           )}
         </div>

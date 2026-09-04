@@ -713,6 +713,14 @@ export const uploadStudentPhoto = async (id, file) => {
     return parse(response);
 };
 
+// ---------- Student Records (admin) ----------
+export const getStudentRecords = async () => {
+    const response = await fetch(`${BASE_URL}/api/admin/students/records`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 // ---------- Invoices ----------
 export const getStudentInvoices = async () => {
     const response = await fetch(`${BASE_URL}/api/students/invoices`, {

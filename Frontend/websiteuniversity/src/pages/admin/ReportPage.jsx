@@ -222,7 +222,7 @@ export default function ReportPage() {
               </table>
             ) : (
               <div style={{ color: "#6B7280", fontSize: 13.5, padding: "20px 0" }}>
-                {q || statusFilter !== "ALL" ? t("No reports match your filters.") : t("No reports submitted yet.")}
+                {q ? `${t("No reports match your search.")} \"${q}\"` : statusFilter !== "ALL" ? t("No reports match your filters.") : t("No reports submitted yet.")}
               </div>
             )}
           </div>

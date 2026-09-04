@@ -225,7 +225,7 @@ export default function NotificationsCenter() {
         </div>
       ) : (
         <div style={{ background: "#fff", borderRadius: 14, padding: 40, textAlign: "center", color: "#9CA3AF", fontSize: 13.5 }}>
-          {q ? t("No notifications match your search.") : t("No notifications yet.")}
+          {q ? `${t("No notifications match your search.")} \"${q}\"` : t("No notifications yet.")}
         </div>
       )}
 

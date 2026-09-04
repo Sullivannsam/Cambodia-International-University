@@ -58,6 +58,13 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 2px #2563eb;
 }
 
+.search-box input:focus,
+.ci-search input:focus,
+.em-search input:focus,
+.td-search input:focus {
+    box-shadow: none;
+}
+
 .center-container { 
   display: flex; 
   justify-content: center; 
