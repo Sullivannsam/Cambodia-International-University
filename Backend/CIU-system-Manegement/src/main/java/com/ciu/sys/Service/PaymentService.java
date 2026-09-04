@@ -68,7 +68,7 @@ public class PaymentService {
 
     String level = "Year " + year;
     String sem = "Semester " + semester;
-    Optional<Schedule> sched = scheduleRepository.findAll().stream()
+    Optional<Schedule> sched = scheduleRepository.findActive().stream()
         .filter(s -> Objects.equals(s.getLevel(), level))
         .filter(s -> Objects.equals(s.getSemester(), sem))
         .filter(s -> s.getMajor() != null && major != null && s.getMajor().contains(major))

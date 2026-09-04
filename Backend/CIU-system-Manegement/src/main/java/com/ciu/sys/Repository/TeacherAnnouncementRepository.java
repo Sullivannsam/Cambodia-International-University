@@ -15,6 +15,7 @@ public interface TeacherAnnouncementRepository extends JpaRepository<TeacherAnno
   @Query("SELECT a FROM TeacherAnnouncement a WHERE a.teacherEmail = :email AND a.active = true ORDER BY a.id DESC")
   List<TeacherAnnouncement> findByTeacherEmailOrderByIdDesc(@Param("email") String email);
 
+  @Query("SELECT a FROM TeacherAnnouncement a WHERE a.active = true ORDER BY a.id DESC")
   List<TeacherAnnouncement> findAllByActiveTrue();
 
 }

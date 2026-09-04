@@ -1,6 +1,7 @@
 package com.ciu.sys.Controller;
 
 import java.nio.file.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,7 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ciu.sys.Dto.InvoiceResponse;
+import com.ciu.sys.Dto.StudentRecordResponse;
 import com.ciu.sys.Model.StudentAccount;
+import com.ciu.sys.Repository.InvoiceRepository;
 import com.ciu.sys.Repository.StudentRepository;
 
 @RestController
@@ -20,7 +24,50 @@ public class AdminCardController {
   @Autowired
   private StudentRepository studentRepository;
 
+  @Autowired
+  private InvoiceRepository invoiceRepository;
+
   private final Path photoDir = Paths.get("uploads/photos");
+
+  @GetMapping("/records")
+  public ResponseEntity<List<StudentRecordResponse>> records() {
+    List<StudentAccount> students = studentRepository.findAll();
+
+    List<StudentRecordResponse> dto = students.stream().map(s -> {
+      List<InvoiceResponse> invoices = invoiceRepository.findByStudentEmail(
+          nz(s.getEmail())).stream()
+          .map(inv -> new InvoiceResponse(
+              inv.getId(),
+              inv.getAmount(),
+              "PAID".equalsIgnoreCase(nz(inv.getStatus())) ? inv.getAmount() : 0.0,
+              nz(inv.getStatus()).toUpperCase(),
+              inv.getDueTime() == null ? null : inv.getDueTime().toString()))
+          .toList();
+
+      String place = (s.getStudentInfo() != null && s.getStudentInfo().getPlace() != null)
+          ? s.getStudentInfo().getPlace()
+          : "";
+
+      return new StudentRecordResponse(
+          s.getId(),
+          nz(s.getUsername()),
+          nz(s.getEmail()),
+          nz(s.getUsername()),
+          nz(s.getPhone()),
+          null,
+          s.getDate() == null ? null : s.getDate().toString(),
+          place,
+          nz(s.getAddress()),
+          nz(s.getMajor()),
+          s.getCardCode() == null ? String.format("%06d", s.getId()) : s.getCardCode(),
+          s.getYear(),
+          s.getSemester(),
+          nz(s.getPhotoUrl()),
+          invoices);
+    }).toList();
+
+    return ResponseEntity.ok(dto);
+  }
 
   @PutMapping("/{id}/card")
   public ResponseEntity<?> updateCard(@PathVariable Long id, @RequestBody Map<String, String> body) {

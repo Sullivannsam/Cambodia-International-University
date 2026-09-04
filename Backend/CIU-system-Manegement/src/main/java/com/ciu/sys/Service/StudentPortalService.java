@@ -118,7 +118,7 @@ public class StudentPortalService {
     List<String> codes = enrollCodes(student);
     List<String> majors = nz(student.getMajor()).isBlank() ? List.of() : List.of(student.getMajor());
     List<Map<String, Object>> result = new ArrayList<>();
-    for (Schedule s : scheduleRepository.findAll()) {
+    for (Schedule s : scheduleRepository.findActive()) {
       boolean matched = codes.isEmpty() || codes.contains(s.getCourse());
       if (!matched)
         continue;
