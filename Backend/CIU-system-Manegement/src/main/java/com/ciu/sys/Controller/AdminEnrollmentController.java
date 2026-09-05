@@ -73,6 +73,56 @@ public class AdminEnrollmentController {
     return rows;
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getOne(@PathVariable Long id) {
+
+    if (id < 0) {
+      Enroll e = enrollRepository.findById(-id).orElse(null);
+      if (e == null) {
+        return ResponseEntity.noContent().build();
+      }
+      Map<String, Object> row = new LinkedHashMap<>();
+      row.put("id", -e.getId());
+      row.put("name", trimToNull(e.getFirstNameEN()) + " " + trimToNull(e.getLastNameEN()));
+      row.put("course", trimToNull(e.getMajor()));
+      row.put("courseCode", trimToNull(e.getDegree()));
+      row.put("date", trimToNull(e.getStartDate()));
+      row.put("status", e.getStatus() != null ? e.getStatus() : "PENDING");
+      row.put("firstNameEN", trimToNull(e.getFirstNameEN()));
+      row.put("lastNameEN", trimToNull(e.getLastNameEN()));
+      row.put("firstNameKH", trimToNull(e.getFirstNameKH()));
+      row.put("lastNameKH", trimToNull(e.getLastNameKH()));
+      row.put("age", e.getAge());
+      row.put("birthDate", e.getBirthDate() != null ? e.getBirthDate().toString() : "");
+      row.put("placeOfBirth", trimToNull(e.getPalceOfBirth()));
+      row.put("sex", trimToNull(e.getSex()));
+      row.put("nationality", trimToNull(e.getNational()));
+      row.put("phone", trimToNull(e.getPhoneNumber()));
+      row.put("email", trimToNull(e.getEmail()));
+      row.put("major", trimToNull(e.getMajor()));
+      row.put("year", trimToNull(e.getYear()));
+      row.put("degree", trimToNull(e.getDegree()));
+      row.put("startDate", trimToNull(e.getStartDate()));
+      row.put("khmerNationalIdFile", e.getKhmerNationalIdFile() != null ? e.getKhmerNationalIdFile() : "");
+      row.put("photoFile", e.getPhotoFile() != null ? e.getPhotoFile() : "");
+      row.put("bacIIPhotoFile", e.getBacIIPhotoFile() != null ? e.getBacIIPhotoFile() : "");
+      return ResponseEntity.ok(row);
+    }
+
+    StudentEnrollment s = repo.findById(id).orElse(null);
+    if (s == null) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(Map.<String, Object>of(
+        "id", s.getId(),
+        "name", s.getStudent() != null ? s.getStudent().getUsername() : "-",
+        "course", s.getCourseTitle() != null ? s.getCourseTitle() : "",
+        "courseCode", s.getCourseCode(),
+        "date", s.getDate() != null ? s.getDate().toString() : "",
+        "status", s.getStatus()));
+
+  }
+
   @PutMapping("/{id}")
   public ResponseEntity<?> setStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
     String status = body.get("status");

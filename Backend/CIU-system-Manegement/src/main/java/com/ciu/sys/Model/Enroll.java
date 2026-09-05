@@ -67,4 +67,13 @@ public class Enroll {
   @Column(name = "status")
   private String status = "PENDING";
 
+  @Column(name = "khmer_national_id_file", columnDefinition = "LONGTEXT")
+  private String khmerNationalIdFile;
+
+  @Column(name = "photo_file", columnDefinition = "LONGTEXT")
+  private String photoFile;
+
+  @Column(name = "bacii_photo_file", columnDefinition = "LONGTEXT")
+  private String bacIIPhotoFile;
+
 }
