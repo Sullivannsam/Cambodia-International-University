@@ -490,6 +490,13 @@ export const getEnrollments = async () => {
     return parse(response);
 };
 
+export const getEnrollment = async (id) => {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/enrollments/${id}`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 export const updateEnrollmentStatus = async (id, status) => {
     const response = await fetch(`${BASE_URL}/api/auth/admin/enrollments/${id}`, {
         method: "PUT",

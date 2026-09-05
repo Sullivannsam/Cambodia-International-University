@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Upload, FileCheck2 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import StyledSelect from "../common/StyledSelect";
 
@@ -14,6 +16,7 @@ const steps = ["Application", "Confirmation", "Success"];
 
 export default function Enrollment() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [page, setPage] = useState("form");
   const [errors, setErrors] = useState({});
   const [form, setForm] = useState({
@@ -21,6 +24,7 @@ export default function Enrollment() {
     age: "", birthDate: "", placeOfBirth: "", sex: "",
     nationality: "", phone: "", email: "",
     startDate: "", major: "", year: "", degree: "",
+    khmerNationalIdFile: "", photoFile: "", bacIIPhotoFile: "",
   });
 
   const update = (field, val) => {
@@ -28,8 +32,15 @@ export default function Enrollment() {
     setErrors(e => ({ ...e, [field]: undefined }));
   };
 
+  const handleFile = (field, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => update(field, reader.result);
+    reader.readAsDataURL(file);
+  };
+
   const validate = () => {
-    const required = ["firstNameEN","lastNameEN","age","birthDate","placeOfBirth","sex","nationality","phone","email","startDate","major","year","degree"];
+    const required = ["firstNameEN","lastNameEN","age","birthDate","placeOfBirth","sex","nationality","phone","email","startDate","major","year","degree","khmerNationalIdFile","photoFile","bacIIPhotoFile"];
     const errs = {};
     required.forEach(k => { if (!form[k]) errs[k] = t("Required"); });
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t("Invalid email");
@@ -38,8 +49,12 @@ export default function Enrollment() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleConfirm = async () => {
+  const goReview = () => {
     if (!validate()) return;
+    setPage("review");
+  };
+
+  const handleSubmit = async () => {
     try {
       const res = await fetch(`${BASE_URL}/api/v1/auth/enroll`, {
         method: "POST",
@@ -60,6 +75,9 @@ export default function Enrollment() {
           major: form.major,
           year: form.year,
           degree: form.degree,
+          khmerNationalIdFile: form.khmerNationalIdFile,
+          photoFile: form.photoFile,
+          bacIIPhotoFile: form.bacIIPhotoFile,
         }),
       });
       if (res.ok) {
@@ -75,6 +93,14 @@ export default function Enrollment() {
   const sharedInputStyle = {
     borderRadius: 10, padding: "10px 14px", width: "100%", fontSize: 14, outline: "none", transition: "border 0.2s",
   };
+
+  const docBoxStyle = (error) => ({
+    position: "relative", width: "100%", height: 140, borderRadius: 12, display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", overflow: "hidden",
+    background: "var(--input-bg)", color: "var(--text-muted)", fontSize: 12, textAlign: "center",
+    border: `1.5px dashed ${error ? "#f87171" : "var(--border)"}`,
+    transition: "border-color 0.2s, background 0.2s",
+  });
 
   const getBorder = (field) => `1px solid ${errors[field] ? "#f87171" : "var(--border)"}`;
 
@@ -92,8 +118,15 @@ export default function Enrollment() {
         select option { background: var(--bg-card); color: var(--text-primary); }
         input::placeholder { color: var(--text-muted); }
         .radio-group { display: flex; gap: 16px; }
-        .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: var(--text-secondary); }
-        .radio-item input { accent-color: #3b82f6; width: 16px; height: 16px; cursor: pointer; }
+        .radio-item { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text-secondary); }
+        .radio-item input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .radio-mark { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #c7cdd6; display: inline-flex; align-items: center; justify-content: center; transition: border-color 0.15s; flex-shrink: 0; }
+        .radio-mark::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--text-primary); transform: scale(0); transition: transform 0.15s; }
+        .radio-item:hover .radio-mark { border-color: #3b82f6; }
+        .radio-item input:checked + .radio-mark { border-color: #3b82f6; }
+        .radio-item input:checked + .radio-mark::after { transform: scale(1); }
+        .radio-item input:focus-visible + .radio-mark { outline: 2px solid #3b82f6; outline-offset: 2px; }
+        .radio-item.sel { color: var(--text-primary); font-weight: 600; }
         .error-msg { font-size: 11px; color: #f87171; margin-top: 3px; }
         .field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
         .section-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -114,8 +147,8 @@ export default function Enrollment() {
           <div className="step-bar">
             {steps.map((s, i) => {
               const pageIdx = page === "form" ? 0 : page === "review" ? 1 : 2;
-              const done = i < pageIdx;
-              const active = i === pageIdx;
+              const done = i < pageIdx || page === "success";
+              const active = page !== "success" && i === pageIdx;
               return (
                 <div key={s} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div className="step-item">
@@ -184,8 +217,9 @@ export default function Enrollment() {
                   <div className="field-label">{t("Sex *")}</div>
                   <div className="radio-group" style={{ marginTop: 10 }}>
                     {["Male","Female"].map(s => (
-                      <label key={s} className="radio-item" style={{color:'var(--text-secondary)'}}>
+                      <label key={s} className={`radio-item${form.sex === s ? " sel" : ""}`} style={{color:'var(--text-secondary)'}}>
                         <input type="radio" name="sex" value={s} checked={form.sex === s} onChange={() => update("sex", s)} />
+                        <span className="radio-mark" />
                         {t(s)}
                       </label>
                     ))}
@@ -218,7 +252,7 @@ export default function Enrollment() {
               </div>
 
               <div className="section-header">{t("Class Information")}</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 32 }}>
                 {[
                   { label: t("Start Date *"), field: "startDate", options: startDates, placeholder: t("Select start date") },
                   { label: t("Major *"), field: "major", options: majors, placeholder: t("Select major") },
@@ -236,14 +270,112 @@ export default function Enrollment() {
                 ))}
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 40, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
-                <button onClick={() => setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"" })}
+              <div className="section-header">{t("Documents (required)")}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 36 }}>
+                {[
+                  { label: t("Khmer National ID *"), field: "khmerNationalIdFile", hint: t("ID card / Passport") },
+                  { label: t("Photo *"), field: "photoFile", hint: t("2x3 portrait photo") },
+                  { label: t("BacII Certificate *"), field: "bacIIPhotoFile", hint: t("BacII diploma/result") },
+                ].map(({ label, field, hint }) => (
+                  <div key={field}>
+                    <div className="field-label">{label}</div>
+                    <label className="doc-box" style={docBoxStyle(errors[field])}>
+                      {form[field] ? (
+                        <>
+                          <img src={form[field]} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <span style={{ position: "absolute", bottom: 8, right: 8, display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(30,122,78,0.92)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999 }}>
+                            <FileCheck2 size={12} /> {t("Uploaded")}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={22} />
+                          <span style={{ fontWeight: 600 }}>{t("Click to upload")}</span>
+                          <span style={{ fontSize: 11, opacity: 0.7 }}>{hint}</span>
+                        </>
+                      )}
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleFile(field, e.target.files[0])} />
+                    </label>
+                    {errors[field] && <div className="error-msg">{errors[field]}</div>}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+                <button onClick={() => setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"",khmerNationalIdFile:"",photoFile:"",bacIIPhotoFile:"" })}
                   style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
                   {t("Cancel")}
                 </button>
-                <button onClick={handleConfirm}
+                <button onClick={goReview}
                   style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.4)", transition: "all 0.2s" }}>
                   {t("Confirm & Submit →")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {page === "review" && (
+            <div style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+              <div className="section-header">{t("Confirmation")}</div>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24, lineHeight: 1.6 }}>
+                {t("Please review all the information below before submitting your application.")}
+              </p>
+              {[
+                {
+                  title: t("Student Information"),
+                  items: [
+                    [t("First Name (EN)"), form.firstNameEN], [t("Last Name (EN)"), form.lastNameEN],
+                    [t("First Name (KH)"), form.firstNameKH], [t("Last Name (KH)"), form.lastNameKH],
+                    [t("Age"), form.age], [t("Sex"), form.sex], [t("Date of Birth"), form.birthDate],
+                    [t("Place of Birth"), form.placeOfBirth], [t("Nationality"), form.nationality],
+                  ],
+                },
+                {
+                  title: t("Contact"),
+                  items: [[t("Email"), form.email], [t("Phone"), form.phone]],
+                },
+                {
+                  title: t("Study Program"),
+                  items: [[t("Start Date"), form.startDate], [t("Major"), form.major], [t("Year"), form.year], [t("Degree"), form.degree]],
+                },
+              ].map(({ title, items }) => (
+                <div key={title} style={{ marginBottom: 24 }}>
+                  <div className="section-header" style={{ marginBottom: 4 }}>{title}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
+                    {items.map(([k, v]) => (
+                      <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid var(--border)", fontSize: 14 }}>
+                        <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>{k}</span>
+                        <span style={{ color: "var(--text-primary)", fontWeight: 600, textAlign: "right", wordBreak: "break-word" }}>{v || "—"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <div style={{ marginBottom: 28 }}>
+                <div className="section-header" style={{ marginBottom: 12 }}>{t("Documents")}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                  {[
+                    [t("Khmer National ID"), "khmerNationalIdFile"],
+                    [t("Photo"), "photoFile"],
+                    [t("BacII Certificate"), "bacIIPhotoFile"],
+                  ].map(([k, field]) => form[field] ? (
+                    <div key={field} style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }}>
+                      <img src={form[field]} alt={k} style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
+                      <div style={{ fontSize: 12, fontWeight: 700, textAlign: "center", padding: "8px 4px", background: "var(--bg-card)", color: "var(--text-primary)" }}>{k}</div>
+                    </div>
+                  ) : null)}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+                <button onClick={() => setPage("form")}
+                  style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
+                  {t("← Back to Edit")}
+                </button>
+                <button onClick={handleSubmit}
+                  style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.4)", transition: "all 0.2s" }}>
+                  {t("Submit Application →")}
                 </button>
               </div>
             </div>
@@ -257,30 +389,16 @@ export default function Enrollment() {
                 {t("Your application has been submitted successfully.")}<br />
                 {t("You will receive our confirmation email within")} <strong>24 hours</strong>.
               </p>
-              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 12, padding: "14px 24px", display: "inline-block", marginBottom: 36 }}>
-                <span style={{ fontSize: 13, color: "var(--accent,#15803d)", fontWeight: 600 }}>📧 {t("Confirmation sent to:")} {form.email || t("your email")}</span>
-              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 32, alignItems: "center", marginBottom: 8 }}>
+                <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 12, padding: "14px 24px" }}>
+                  <span style={{ fontSize: 13, color: "var(--accent,#15803d)", fontWeight: 600 }}>📧 {t("Confirmation sent to:")} {form.email || t("your email")}</span>
+                </div>
 
-              <div style={{ background: "var(--bg-secondary)", borderRadius: 16, padding: "24px 28px", textAlign: "left", maxWidth: 500, margin: "0 auto 36px" }}>
-                <div className="section-header" style={{ marginBottom: 12 }}>{t("Application Summary")}</div>
-                {[
-                  ["Name", `${form.firstNameEN} ${form.lastNameEN}`],
-                  ["Major", form.major],
-                  ["Degree", form.degree],
-                  ["Start Date", form.startDate],
-                  ["Year", form.year],
-                ].map(([k, v]) => (
-                  <div className="confirm-row" key={k}>
-                    <span className="confirm-key">{t(k)}</span>
-                    <span className="confirm-val">{v}</span>
-                  </div>
-                ))}
+                <button onClick={() => { setPage("form"); setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"",khmerNationalIdFile:"",photoFile:"",bacIIPhotoFile:"" }); navigate("/"); }}
+                  style={{ padding: "14px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.35)" }}>
+                  {t("← Back to Home")}
+                </button>
               </div>
-
-              <button onClick={() => { setPage("form"); setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"" }); }}
-                style={{ padding: "14px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.35)" }}>
-                {t("← Back to Home")}
-              </button>
             </div>
           )}
         </div>
