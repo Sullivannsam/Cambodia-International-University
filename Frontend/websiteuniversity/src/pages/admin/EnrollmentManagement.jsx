@@ -12,6 +12,7 @@ export default function EnrollmentManagement({ onPendingChange }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -96,7 +97,17 @@ export default function EnrollmentManagement({ onPendingChange }) {
         .em-banner { background: #E3F0E7; border: 1px solid #2E9E6C; color: #1E7A4E; border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; font-weight: 600; }
         .em-error { background: #FBE3E0; border: 1px solid #E0665A; color: #D2483C; border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; }
         .em-empty { text-align: center; padding: 40px; color: #9CA3AF; font-size: 13.5px; background: #fff; border-radius: 14px; }
-        @media (max-width: 640px) { .em-search { width: 100%; } .em-search input { width: 100%; } }
+        .em-modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+        .em-modal { background: #fff; border-radius: 16px; max-width: 640px; width: 100%; max-height: 85vh; overflow: auto; box-shadow: 0 25px 60px rgba(15,23,42,0.35); }
+        .em-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #F0EEE9; font-size: 15px; font-weight: 800; color: #182644; }
+        .em-modal-close { border: none; background: none; font-size: 22px; line-height: 1; color: #9CA3AF; cursor: pointer; }
+        .em-modal-close:hover { color: #D2483C; }
+        .em-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 8px 0; }
+        .em-detail-item { padding: 12px 20px; border-bottom: 1px solid #F6F4EF; }
+        .em-detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9A8F80; font-weight: 700; margin-bottom: 4px; }
+        .em-detail-value { font-size: 14px; color: #1F2430; font-weight: 600; word-break: break-word; }
+        .em-modal-actions { display: flex; gap: 10px; padding: 16px 20px; justify-content: flex-end; }
+        @media (max-width: 640px) { .em-search { width: 100%; } .em-search input { width: 100%; } .em-detail-grid { grid-template-columns: 1fr; } }
       `}</style>
 
       <div className="em-head">
@@ -127,21 +138,20 @@ export default function EnrollmentManagement({ onPendingChange }) {
       ) : filtered.length ? (
         <table className="em-table">
           <thead>
-            <tr><th>{t("Student")}</th><th>{t("ID")}</th><th>{t("Course")}</th><th>{t("Code")}</th><th>{t("Date")}</th><th>{t("Status")}</th><th>{t("Actions")}</th></tr>
+            <tr><th>{t("Student")}</th><th>{t("Course")}</th><th>{t("Degree")}</th><th>{t("Start")}</th><th>{t("Status")}</th><th>{t("Actions")}</th></tr>
           </thead>
           <tbody>
             {filtered.map(e => {
               const b = badge(e.status);
               return (
-                <tr key={e.id}>
+                <tr key={e.id} style={{ cursor: "pointer" }} onClick={() => setSelected(e)}>
                   <td style={{ fontWeight: 600, color: "#182644" }}>{e.name}</td>
-                  <td>{e.studentId}</td>
                   <td>{e.course}</td>
                   <td style={{ color: "#3E5EDB", fontWeight: 700 }}>{e.courseCode}</td>
                   <td>{e.date}</td>
                   <td><span className="em-badge" style={{ background: b.bg, color: b.color }}>{b.label}</span></td>
                   <td>
-                    <div className="em-actions">
+                    <div className="em-actions" onClick={(ev) => ev.stopPropagation()}>
                       <button className="em-btn" style={{ background: "#E3F0E7", color: "#1E7A4E" }} disabled={e.status === "APPROVED"} onClick={() => setStatus(e, "APPROVED")}>
                         <CheckCircle2 size={13} /> {t("Approve")}
                       </button>
@@ -157,6 +167,54 @@ export default function EnrollmentManagement({ onPendingChange }) {
         </table>
       ) : (
         <div className="em-empty">{query ? `${t("No enrollments match your search.")} \"${query}\"` : t("No enrollments match your search.")}</div>
+      )}
+
+      {selected && (
+        <div className="em-modal-backdrop" onClick={() => setSelected(null)}>
+          <div className="em-modal" onClick={(ev) => ev.stopPropagation()}>
+            <div className="em-modal-head">
+              <span>{t("Enrollment Details")}</span>
+              <button className="em-modal-close" onClick={() => setSelected(null)}>×</button>
+            </div>
+            <div className="em-detail-grid">
+              {[
+                ["firstNameEN", "First Name (EN)"],
+                ["lastNameEN", "Last Name (EN)"],
+                ["firstNameKH", "First Name (KH)"],
+                ["lastNameKH", "Last Name (KH)"],
+                ["email", "Email"],
+                ["phone", "Phone"],
+                ["birthDate", "Date of Birth"],
+                ["age", "Age"],
+                ["sex", "Sex"],
+                ["nationality", "Nationality"],
+                ["placeOfBirth", "Place of Birth"],
+                ["course", "Major"],
+                ["degree", "Degree"],
+                ["year", "Year"],
+                ["startDate", "Start Date"],
+                ["date", "Enrolled"],
+              ]
+              .filter(([k]) => (selected[k] ?? "") !== "")
+              .map(([k, label]) => (
+                <div className="em-detail-item" key={k}>
+                  <div className="em-detail-label">{t(label)}</div>
+                  <div className="em-detail-value">{selected[k]}</div>
+                </div>
+              ))}
+            </div>
+            {selected.status && (
+              <div className="em-modal-actions">
+                <button className="em-btn" style={{ background: "#E3F0E7", color: "#1E7A4E" }} disabled={selected.status === "APPROVED"} onClick={() => { setStatus(selected, "APPROVED"); }}>
+                  <CheckCircle2 size={13} /> {t("Approve")}
+                </button>
+                <button className="em-btn" style={{ background: "#FBE3E0", color: "#D2483C" }} disabled={selected.status === "REJECTED"} onClick={() => { setStatus(selected, "REJECTED"); }}>
+                  <XCircle size={13} /> {t("Reject")}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       <style>{`@keyframes emspin { from { transform: rotate(0); } to { transform: rotate(360deg); } }`}</style>
