@@ -16,7 +16,7 @@ public class EnrollController {
   @Autowired
   private EnrollService enrollService;
 
-  @PostMapping("/enroll/class")
+  @PostMapping("/enroll")
   public Enroll getEnrollClass(@RequestBody Enroll enroll) {
     return enrollService.getEnrollClass(enroll);
   }

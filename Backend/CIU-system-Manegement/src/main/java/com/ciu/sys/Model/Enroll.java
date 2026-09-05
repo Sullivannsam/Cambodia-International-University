@@ -25,10 +25,10 @@ public class Enroll {
   @Column(name = "lastname_English", nullable = false)
   private String lastNameEN;
 
-  @Column(name = "firstname_Khmer", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4", nullable = false)
+  @Column(name = "firstname_Khmer", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4")
   private String firstNameKH;
 
-  @Column(name = "lastname_Khmer", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4", nullable = false)
+  @Column(name = "lastname_Khmer", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4")
   private String lastNameKH;
 
   @Column(nullable = false)
@@ -53,7 +53,7 @@ public class Enroll {
   private String email;
 
   @Column(nullable = false)
-  private Date startDate;
+  private String startDate;
 
   @Column(nullable = false)
   private String major;
@@ -63,5 +63,8 @@ public class Enroll {
 
   @Column(nullable = false)
   private String degree;
+
+  @Column(name = "status")
+  private String status = "PENDING";
 
 }

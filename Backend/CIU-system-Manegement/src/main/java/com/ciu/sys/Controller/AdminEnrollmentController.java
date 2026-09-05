@@ -1,5 +1,7 @@
 package com.ciu.sys.Controller;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ciu.sys.Model.Enroll;
 import com.ciu.sys.Model.StudentEnrollment;
+import com.ciu.sys.Repository.EnrollRepository;
 import com.ciu.sys.Repository.StudentEnrollmentRepository;
 
 @RestController
@@ -22,36 +26,85 @@ public class AdminEnrollmentController {
   @Autowired
   private StudentEnrollmentRepository repo;
 
+  @Autowired
+  private EnrollRepository enrollRepository;
+
   @GetMapping
   public List<Map<String, Object>> list() {
-    return repo.findAll().stream().map(e -> Map.<String, Object>of(
+
+    List<Map<String, Object>> rows = new ArrayList<>();
+
+    repo.findAll().stream().map(e -> Map.<String, Object>of(
         "id", e.getId(),
         "name", e.getStudent() != null ? e.getStudent().getUsername() : "-",
         "studentId", e.getStudent() != null ? e.getStudent().getId() : 0,
         "course", e.getCourseTitle() != null ? e.getCourseTitle() : "",
         "courseCode", e.getCourseCode(),
         "date", e.getDate() != null ? e.getDate().toString() : "",
-        "status", e.getStatus())).toList();
+        "status", e.getStatus())).forEach(rows::add);
+
+    enrollRepository.findAll().forEach(e -> {
+      Map<String, Object> row = new LinkedHashMap<>();
+      row.put("id", -e.getId());
+      row.put("name", trimToNull(e.getFirstNameEN()) + " " + trimToNull(e.getLastNameEN()));
+      row.put("studentId", "");
+      row.put("course", trimToNull(e.getMajor()));
+      row.put("courseCode", trimToNull(e.getDegree()));
+      row.put("date", trimToNull(e.getStartDate()));
+      row.put("status", e.getStatus() != null ? e.getStatus() : "PENDING");
+      row.put("firstNameEN", trimToNull(e.getFirstNameEN()));
+      row.put("lastNameEN", trimToNull(e.getLastNameEN()));
+      row.put("firstNameKH", trimToNull(e.getFirstNameKH()));
+      row.put("lastNameKH", trimToNull(e.getLastNameKH()));
+      row.put("age", e.getAge());
+      row.put("birthDate", e.getBirthDate() != null ? e.getBirthDate().toString() : "");
+      row.put("placeOfBirth", trimToNull(e.getPalceOfBirth()));
+      row.put("sex", trimToNull(e.getSex()));
+      row.put("nationality", trimToNull(e.getNational()));
+      row.put("phone", trimToNull(e.getPhoneNumber()));
+      row.put("email", trimToNull(e.getEmail()));
+      row.put("major", trimToNull(e.getMajor()));
+      row.put("year", trimToNull(e.getYear()));
+      row.put("degree", trimToNull(e.getDegree()));
+      row.put("startDate", trimToNull(e.getStartDate()));
+      rows.add(row);
+    });
+
+    return rows;
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<?> setStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    String status = body.get("status");
+
+    if (!List.of("APPROVED", "PENDING", "REJECTED").contains(status)) {
+      return ResponseEntity.badRequest().body(Map.of("message", "Invalid Status"));
+    }
+
+    if (id < 0) {
+      Enroll enroll = enrollRepository.findById(-id).orElse(null);
+      if (enroll == null) {
+        return ResponseEntity.noContent().build();
+      }
+      enroll.setStatus(status);
+      enrollRepository.save(enroll);
+      return ResponseEntity.ok(Map.of("message", "Status Update"));
+    }
+
     StudentEnrollment s = repo.findById(id).orElse(null);
     if (s == null) {
       return ResponseEntity.noContent().build();
     }
 
-    String e = body.get("status");
-
-    if (!List.of("APPROVED", "PENDING", "REJECTED").contains(e)) {
-      return ResponseEntity.badRequest().body(Map.of("message", "Invalid Status"));
-    }
-
-    s.setStatus(e);
+    s.setStatus(status);
     repo.save(s);
 
     return ResponseEntity.ok(Map.of("message", "Status Update"));
 
+  }
+
+  private String trimToNull(String value) {
+    return value == null ? "" : value;
   }
 
 }
