@@ -7,6 +7,7 @@ import {
 import LogoutModal from '../../components/common/LogoutModal';
 import {
   getTeacherClasses, getTeacherStudents, getTeacherAnnouncements,
+  getTeacherClassStudents,
   saveTeacherAttendance, submitTeacherGrades, postTeacherAnnouncement,
   deleteTeacherAnnouncement,
   getTeacherAssignments, createTeacherAssignment, deleteTeacherAssignment,
@@ -29,6 +30,8 @@ export default function TeacherDashboard() {
   const [saved, setSaved] = useState("");
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
+  const [roster, setRoster] = useState([]);
+  const [rosterLoading, setRosterLoading] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -84,6 +87,9 @@ export default function TeacherDashboard() {
         const notifArr = Array.isArray(notif) ? notif : Array.isArray(notif?.notifications) ? notif.notifications : [];
         setClasses(cArr);
         setStudents(sArr);
+        if (cArr.length && !cArr.some(cls => cls.code === selectedClass)) {
+          setSelectedClass(cArr[0].code);
+        }
         setAnnouncements(aArr);
         setAssignments(asgArr);
         setMessages(msgArr);
@@ -97,14 +103,32 @@ export default function TeacherDashboard() {
     fetchAll();
   }, []);
 
-  const toggleAtt = (sid) => {
-    setAttendance(prev => ({ ...prev, [sid]: prev[sid] ? "absent" : "present" }));
+  const loadRoster = async (code) => {
+    if (!code) return;
+    setRosterLoading(true);
+    try {
+      const data = await getTeacherClassStudents(code);
+      setRoster(Array.isArray(data) ? data : []);
+    } catch {
+      setRoster([]);
+    } finally {
+      setRosterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRoster(selectedClass);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClass]);
+
+  const markAtt = (sid, status) => {
+    setAttendance(prev => ({ ...prev, [sid]: status }));
   };
 
   const saveAttendance = async () => {
     setError("");
     setSavingAtt(true);
-    const marked = students.map(s => ({
+    const marked = roster.map(s => ({
       studentId: s.id,
       status: attendance[s.id] || "present",
       date: attDate || new Date().toISOString().slice(0, 10),
@@ -188,7 +212,7 @@ export default function TeacherDashboard() {
   };
 
   const exportRosterCSV = () => {    const header = `${t("ID")},${t("Name")},${t("Major")},${t("Attendance")}`;
-    const rows = students.map(s => `"${s.id}","${s.name}","${s.major}","${s.att}"`).join("\n");
+    const rows = roster.map(s => `"${s.id}","${s.name}","${s.major}","${s.att}"`).join("\n");
     const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -200,7 +224,7 @@ export default function TeacherDashboard() {
 
   const bulkMark = (status) => {
     const next = {};
-    students.forEach(s => { next[s.id] = status; });
+    roster.forEach(s => { next[s.id] = status; });
     setAttendance(prev => ({ ...prev, ...next }));
   };
 
@@ -347,10 +371,6 @@ export default function TeacherDashboard() {
     { key: "announcements", label: t("Announcements"), icon: Megaphone },
     { key: "messages", label: t("Messages"), icon: MessageSquare },
   ];
-
-  const filteredStudents = students.filter(s =>
-    (s.name + s.id + s.major).toLowerCase().includes(query.toLowerCase())
-  );
 
   const avgAttendance = students.length
     ? Math.round(students.reduce((sum, s) => sum + Number(s.att || 0), 0) / students.length)
@@ -573,7 +593,9 @@ export default function TeacherDashboard() {
           <>
             <div className="td-row">
               <div className="td-panel-title" style={{ margin: 0 }}>{t("Student Roster")}</div>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <StyledSelect value={selectedClass} onChange={setSelectedClass} width="200px"
+                  options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
                 <div className="td-search"><Search size={15} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder={t("Search students...")} /></div>
                 <button className="td-btn" onClick={exportRosterCSV} style={{ padding: "8px 14px", fontSize: 12 }}><FileDown size={14} /> {t("Export CSV")}</button>
               </div>
@@ -581,7 +603,11 @@ export default function TeacherDashboard() {
             <table className="td-table">
               <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Major")}</th><th>{t("Attendance")}</th><th>{t("Actions")}</th></tr></thead>
               <tbody>
-                {filteredStudents.length ? filteredStudents.map(s => (
+                {rosterLoading ? (
+                  <tr><td colSpan="5" className="td-empty">{t("Loading students of the selected class...")}</td></tr>
+                ) : roster.length ? roster
+                  .filter(s => (s.name + s.id + (s.major || "")).toLowerCase().includes(query.toLowerCase()))
+                  .map(s => (
                   <tr key={s.id} style={Number(s.att) < 75 ? { background: "rgba(210,72,60,0.06)" } : undefined}>
                     <td style={{ fontWeight: 600, color: "var(--text-primary)" }}>{s.id}</td>
                     <td>
@@ -602,7 +628,7 @@ export default function TeacherDashboard() {
                       </button>
                     </td>
                   </tr>
-                )) : <tr><td colSpan="5" className="td-empty">{query ? `${t("No students found")} "${query}"` : t("No students found")}</td></tr>}
+                )) : <tr><td colSpan="5" className="td-empty">{t("No students in this class yet. Students appear here after they pay and join the class.")}</td></tr>}
               </tbody>
             </table>
           </>
@@ -624,7 +650,9 @@ export default function TeacherDashboard() {
             <table className="td-table">
               <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Status")}</th><th>{t("Mark")}</th></tr></thead>
               <tbody>
-                {students.map(s => (
+                {rosterLoading ? (
+                  <tr><td colSpan="4" className="td-empty">{t("Loading students of the selected class...")}</td></tr>
+                ) : roster.length ? roster.map(s => (
                   <tr key={s.id}>
                     <td style={{ fontWeight: 600, color: "var(--text-primary)" }}>{s.id}</td>
                     <td>{s.name}</td>
@@ -634,13 +662,27 @@ export default function TeacherDashboard() {
                       </span>
                     </td>
                     <td>
-                      <button className="td-att-toggle" style={{ background: attendance[s.id] === "absent" ? "#FBE3E0" : "#E3F0E7", color: attendance[s.id] === "absent" ? "#D2483C" : "#1E7A4E" }} onClick={() => toggleAtt(s.id)}>
-                        {attendance[s.id] === "absent" ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                        {attendance[s.id] === "absent" ? t("Mark Present") : t("Mark Absent")}
-                      </button>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button
+                          className="td-att-toggle"
+                          style={{ background: attendance[s.id] === "present" ? "#2E9E6C" : "#E3F0E7", color: attendance[s.id] === "present" ? "#fff" : "#1E7A4E" }}
+                          onClick={() => markAtt(s.id, "present")}
+                        >
+                          <CheckCircle2 size={14} /> {t("Present")}
+                        </button>
+                        <button
+                          className="td-att-toggle"
+                          style={{ background: attendance[s.id] === "absent" ? "#D2483C" : "#FBE3E0", color: attendance[s.id] === "absent" ? "#fff" : "#D2483C" }}
+                          onClick={() => markAtt(s.id, "absent")}
+                        >
+                          <XCircle size={14} /> {t("Absent")}
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr><td colSpan="4" className="td-empty">{t("No students in this class yet. Students appear here after they pay and join the class.")}</td></tr>
+                )}
               </tbody>
             </table>
           </>
@@ -775,8 +817,10 @@ export default function TeacherDashboard() {
         }}>
           <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 26, width: "min(90vw, 480px)", boxShadow: "0 12px 40px rgba(0,0,0,0.2)" }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 17, fontWeight: 700, color: "var(--text-primary)" }}>{t("New Assignment")}</h3>
-            <StyledSelect value={selectedClass} onChange={setSelectedClass} width="100%"
-              options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
+            <div style={{ marginBottom: 12 }}>
+              <StyledSelect value={selectedClass} onChange={setSelectedClass} width="100%"
+                options={classes.map(c => ({ value: c.code, label: `${c.code} — ${c.title}` }))} />
+            </div>
             <input value={assignTitle} onChange={e => setAssignTitle(e.target.value)} placeholder={t("Assignment title")} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 12 }} />
             <input type="date" value={assignDue} onChange={e => setAssignDue(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "1.5px solid var(--border)", borderRadius: 10, background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, outline: "none", marginBottom: 18 }} />
             <div style={{ display: "flex", gap: 12 }}>

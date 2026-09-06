@@ -4,17 +4,18 @@ import {
 } from "recharts";
 import {
   LayoutGrid, BookOpen, GraduationCap, UserCircle2, LogOut,
-  Loader2, ClipboardList, Plus, X, RotateCcw, CreditCard,
+  Loader2, ClipboardList, X, RotateCcw, CreditCard,
   FileText, Megaphone, Save, Printer, Bell, CalendarDays,
   ClipboardCheck, MessageSquare, FileDown, Send, Upload, AlertTriangle
 } from "lucide-react";
 import {
-  getStudentProfile, getStudentEnrollments, getStudentGrades, enrollInCourse,
+  getStudentProfile, getStudentEnrollments, getStudentClassInfo, getStudentGrades,
   getStudentAnnouncements, getStudentSchedule, getStudentAttendanceRecords,
   getStudentAssignments, submitStudentAssignment,
   getStudentNotifications, markStudentNotificationsRead,
   getStudentMessages, sendStudentMessage, getStudentInvoices,
-  submitReport
+  submitReport,
+  getStudentClassStatus, payStudentClass, joinStudentClass
 } from "../../services/endpoints";
 import LogoutModal from "../../components/common/LogoutModal";
 import EmptyState from "../../components/common/EmptyState";
@@ -35,7 +36,7 @@ const NAV = [
   {
     label: "Academic",
     items: [
-      { key: "courses", label: "My Courses", icon: BookOpen },
+      { key: "courses", label: "My Class", icon: BookOpen },
       { key: "schedule", label: "Schedule", icon: CalendarDays },
       { key: "assignments", label: "Assignments", icon: ClipboardList },
       { key: "grades", label: "Grades", icon: GraduationCap },
@@ -83,6 +84,7 @@ export default function StudentDashboard() {
 
   const [profile, setProfile] = useState({});
   const [enrollments, setEnrollments] = useState([]);
+  const [myClass, setMyClass] = useState(null);
   const [grades, setGrades] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [schedule, setSchedule] = useState([]);
@@ -107,15 +109,91 @@ export default function StudentDashboard() {
 
   const { toast } = useToast();
 
-  const [enrollOpen, setEnrollOpen] = useState(false);
-  const [enrollCode, setEnrollCode] = useState("");
-  const [enrolling, setEnrolling] = useState(false);
-
   const [reportOpen, setReportOpen] = useState(false);
   const [reportTeacher, setReportTeacher] = useState("");
   const [reportCategory, setReportCategory] = useState("Academic");
   const [reportDescription, setReportDescription] = useState("");
   const [reportSubmitting, setReportSubmitting] = useState(false);
+
+  // --- Pay-for-class & join-by-id flow ---
+  const [classStatus, setClassStatus] = useState(null);
+  const [classLoading, setClassLoading] = useState(true);
+  const [payOpen, setPayOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+  const [joining, setJoining] = useState(false);
+  const [joinedClass, setJoinedClass] = useState(null);
+
+  const loadClassStatus = async (silent) => {
+    if (!silent) setClassLoading(true);
+    try {
+      const data = await getStudentClassStatus();
+      setClassStatus(data && typeof data === "object" ? data : null);
+    } catch {
+      setClassStatus(null);
+    } finally {
+      if (!silent) setClassLoading(false);
+    }
+  };
+
+  useEffect(() => { loadClassStatus(); }, []);
+
+  const confirmPay = async () => {
+    setPaying(true);
+    setError("");
+    try {
+      const res = await payStudentClass({});
+      const updated = res && typeof res === "object" ? { ...(classStatus || {}), ...res, paid: true } : { ...(classStatus || {}), paid: true };
+      setClassStatus(updated);
+      setPayOpen(false);
+      setNotice(t("Payment received. Your class join key has been unlocked."));
+      maybePersistPayments(updated.price);
+    } catch {
+      setError(t("Payment could not be processed. Make sure the backend server is running."));
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const maybePersistPayments = (amount) => {
+    try {
+      const existing = JSON.parse(localStorage.getItem("payments") || "[]");
+      existing.push({
+        studentId: profile.studentId || studentId,
+        amount: amount ? String(amount) : "",
+        date: new Date().toISOString().slice(0, 10),
+        type: "tuition",
+        timestamp: new Date().toISOString(),
+      });
+      localStorage.setItem("payments", JSON.stringify(existing));
+      setPayments(existing);
+    } catch {}
+  };
+
+  const handleJoinClass = async (e) => {
+    e.preventDefault();
+    const code = joinCodeInput.trim();
+    if (!code) return;
+    setJoining(true);
+    setError("");
+    setJoinedClass(null);
+    try {
+      const cls = await joinStudentClass(code);
+      if (cls && typeof cls === "object" && !cls.error) {
+        setJoinedClass(cls);
+        setJoinOpen(false);
+        setJoinCodeInput("");
+        reload();
+      } else {
+        setError(cls && cls.message ? t(cls.message) : t("No class found for that code."));
+      }
+    } catch {
+      setError(t("No class found for that code. Make sure you paid and the code is correct."));
+    } finally {
+      setJoining(false);
+    }
+  };
 
   const submitTeacherReport = async () => {
     if (!reportTeacher.trim() || !reportDescription.trim()) {
@@ -217,6 +295,7 @@ export default function StudentDashboard() {
           getStudentMessages().catch(() => []),
           getStudentInvoices().catch(() => []),
         ]);
+        getStudentClassInfo().then(d => setMyClass(d && typeof d === "object" ? d : null)).catch(() => {});
         setProfile(Array.isArray(p) ? p[0] || {} : p || {});
         setEnrollments(Array.isArray(e) ? e : []);
         setGrades(Array.isArray(g) ? g : []);
@@ -238,25 +317,9 @@ export default function StudentDashboard() {
 
   const reload = () => {
     getStudentEnrollments().then((e) => setEnrollments(Array.isArray(e) ? e : [])).catch(() => {});
+    getStudentClassInfo().then((d) => setMyClass(d && typeof d === "object" ? d : null)).catch(() => {});
     getStudentGrades().then((g) => setGrades(Array.isArray(g) ? g : [])).catch(() => {});
-  };
-
-  const handleEnroll = async (e) => {
-    e.preventDefault();
-    if (!enrollCode.trim()) return;
-    setEnrolling(true);
-    setError("");
-    try {
-      await enrollInCourse({ courseCode: enrollCode.trim() });
-      setNotice(`${t("Enrolled in course")} "${enrollCode.trim()}" ${t("successfully.")}`);
-      setEnrollOpen(false);
-      setEnrollCode("");
-      reload();
-    } catch {
-      setError(t("Failed to enroll. Make sure the course code is valid."));
-    } finally {
-      setEnrolling(false);
-    }
+    getStudentSchedule().then((sch) => setSchedule(Array.isArray(sch) ? sch : [])).catch(() => {});
   };
 
   const displayName = profile.username || profile.name || user.username || (user.email || "").split("@")[0] || t("Student");
@@ -447,6 +510,16 @@ export default function StudentDashboard() {
         .sp-card-value { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 700; color: #182644; }
         .sp-card-sub { font-size: 12px; color: #9A8F80; margin-top: 4px; }
         .panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
+        .prof-status { border: 1px solid #ECE6DC; border-radius: 12px; overflow: hidden; }
+        .prof-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 16px; border-bottom: 1px solid #F0EEE9; font-size: 13.5px; }
+        .prof-row:last-child { border-bottom: none; }
+        .prof-row > span { color: #9A8F80; }
+        .prof-row > strong { color: #182644; display: flex; align-items: center; gap: 8px; text-align: right; }
+        .lockbox { margin-top: 14px; background: #EAF7F0; border: 1px dashed #2E9E6C; border-radius: 12px; padding: 16px; text-align: center; }
+        .lockbox-label { font-size: 11.5px; color: #1E7A4E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .lockkey { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #1E7A4E; font-family: monospace; }
+        .lockbox-note { font-size: 12px; color: #4B9D7A; margin: 8px 0 0; }
+        .hint { margin-top: 14px; padding: 12px 16px; border-radius: 10px; background: #FFF7E6; color: #9A6B00; font-size: 13px; line-height: 1.6; border: 1px solid #F0DCB6; }
         .panel-title { font-family:'Poppins',sans-serif; font-weight: 600; color: #182644; margin-bottom: 16px; font-size: 15px; }
         .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
         .course-card { background: #FAF8F4; border: 1px solid #ECE6DC; border-radius: 14px; padding: 18px 20px; }
@@ -625,14 +698,21 @@ export default function StudentDashboard() {
                 <div className="panel-title">{t("Quick Actions")}</div>
                 <div className="course-grid">
                   <div className="course-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <div className="sp-flex" style={{ color: "#3E5EDB" }}><ClipboardList size={18} /> {t("Enroll in a course")}</div>
-                    <div className="course-desc">{t("Enroll using the course code provided by your faculty.")}</div>
-                    <button className="add-btn" onClick={() => setEnrollOpen(true)}><Plus size={15} /> {t("Enroll")}</button>
+                    <div className="sp-flex" style={{ color: "#3E5EDB" }}><BookOpen size={18} /> {t("Join your class")}</div>
+                    <div className="course-desc">{t("Use the class key you get after paying to join and see the class and teacher.")}</div>
+                    <button className="add-btn" style={{ background: "#182644", boxShadow: "0 6px 16px rgba(24,38,68,0.3)" }} onClick={() => setJoinOpen(true)}><BookOpen size={15} /> {t("Join Class by ID")}</button>
                   </div>
                   <div className="course-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <div className="sp-flex" style={{ color: "#D2483C" }}><AlertTriangle size={18} /> {t("Report a teacher")}</div>
                     <div className="course-desc">{t("Report an issue about a teacher to the administration.")}</div>
                     <button className="add-btn" style={{ background: "#D2483C", boxShadow: "0 6px 16px rgba(210,72,60,0.35)" }} onClick={() => setReportOpen(true)}><AlertTriangle size={15} /> {t("Report")}</button>
+                  </div>
+                  <div className="course-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div className="sp-flex" style={{ color: "#2E9E6C" }}><BookOpen size={18} /> {t("Collect your class key")}</div>
+                    <div className="course-desc">{t("Pay for your next class to unlock its join key, then join by ID to see the class and teacher.")}</div>
+                    <button className="add-btn" style={{ background: "#1E7A4E", boxShadow: "0 6px 16px rgba(30,122,78,0.35)" }} onClick={() => loadClassStatus().then(() => setPayOpen(true))}>
+                      <CreditCard size={15} /> {t("Pay & Get Key")}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -654,26 +734,66 @@ export default function StudentDashboard() {
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
-                <button className="add-btn" onClick={() => setEnrollOpen(true)}><Plus size={15} /> {t("Enroll in Course")}</button>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button className="add-btn" style={{ background: "#182644", boxShadow: "0 6px 16px rgba(24,38,68,0.3)" }} onClick={() => setJoinOpen(true)}>
+                    <BookOpen size={15} /> {t("Join Class by ID")}
+                  </button>
+                </div>
               </div>
-              {enrollments.length > 0 ? (
-                <div className="course-grid">
-                  {enrollments.map((c, i) => (
-                    <div className="course-card" key={c.id || i}>
-                      <span className="course-code">{c.code || c.courseCode || `CRS-${i + 1}`}</span>
-                      <div className="course-title">{c.title || c.courseName || c.name || t("Course")}</div>
-                      <div className="course-desc">{c.description || `${t("Enrolled course")} ${i + 1}.`}</div>
-                      <div className="course-foot">
-                        <span>{t("Instructor")}: {c.instructor || c.teacher || "—"}</span>
-                        <span>{c.credits || c.credit || 0} {t("credits")}</span>
+
+              {myClass && myClass.joined ? (
+                <>
+                  <div className="panel" style={{ marginBottom: 20 }}>
+                    <div className="panel-title sp-flex">
+                      <BookOpen size={16} /> {t("My Class")}
+                      <span className="course-code" style={{ marginLeft: 6 }}>{myClass.joinCode || myClass.group}</span>
+                    </div>
+                    <div className="prof-status">
+                      <div className="prof-row"><span>{t("Class")}</span><strong>{t(myClass.classLabel || `${myClass.year} ${myClass.semester}`) || "-"}</strong></div>
+                      <div className="prof-row"><span>{t("Course Name")}</span><strong>{t(myClass.course || "-")}</strong></div>
+                      <div className="prof-row"><span>{t("Major")}</span><strong>{myClass.major || profile.major || "-"}</strong></div>
+                      <div className="prof-row"><span>{t("Teacher")}</span><strong>{t(myClass.teacher || "-")}</strong></div>
+                      <div className="prof-row"><span>{t("Days")}</span><strong>{t(myClass.days || "-")}</strong></div>
+                      <div className="prof-row"><span>{t("Time")}</span><strong>{myClass.time || "-"}</strong></div>
+                      <div className="prof-row"><span>{t("Room")}</span><strong>{myClass.room || "-"}</strong></div>
+                    </div>
+                  </div>
+
+                  {(myClass.friends && myClass.friends.length > 0) && (
+                    <div className="panel" style={{ marginBottom: 20 }}>
+                      <div className="panel-title sp-flex"><UserCircle2 size={16} /> {t("Friends / Classmates")} <span className="course-code" style={{ marginLeft: 6 }}>{myClass.friends.length}</span></div>
+                      {myClass.friends.map(f => (
+                        <div key={f.id} className="prof-row">
+                          <span>{t("Classmate")}</span>
+                          <strong><UserCircle2 size={14} /> {f.name} <span className="course-code" style={{ marginLeft: 6 }}>{f.id}</span></strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {enrollments.length > 0 && (
+                    <div className="panel">
+                      <div className="panel-title">{t("Subjects in this class")} ({enrollments.length})</div>
+                      <div className="course-grid">
+                        {enrollments.map((c, i) => (
+                          <div className="course-card" key={c.id || i}>
+                            <span className="course-code">{c.code || c.courseCode || `CRS-${i + 1}`}</span>
+                            <div className="course-title">{c.title || c.courseName || c.name || t("Course")}</div>
+                            <div className="course-desc">{c.description || `${t("Enrolled course")} ${i + 1}.`}</div>
+                            <div className="course-foot">
+                              <span>{t("Instructor")}: {c.instructor || c.teacher || "—"}</span>
+                              <span>{c.credits || c.credit || 0} {t("credits")}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               ) : (
                 <div className="panel">
-                  <div className="panel-title">{t("My Courses")}</div>
-                  <div className="date-label">{t("You are not enrolled in any courses yet. Click \"Enroll in Course\" to get started.")}</div>
+                  <div className="panel-title">{t("My Class")}</div>
+                  <div className="date-label">{t("You have not joined a class yet. Use your class join key to join your class and see the teacher, course and classmates.")}</div>
                 </div>
               )}
             </>
@@ -682,6 +802,19 @@ export default function StudentDashboard() {
           {!loading && active === "announcements" && (
             <div className="panel">
               <div className="panel-title sp-flex"><Megaphone size={16} /> {t("Announcements")}</div>
+
+              {(classStatus?.paid || classStatus?.joined) && classStatus?.joinCode && (
+                <div style={{ borderLeft: "3px solid #2E9E6C", background: "#EAF7F0", borderRadius: "0 10px 10px 0", padding: "14px 18px", marginBottom: 14 }}>
+                  <div className="date-label" style={{ fontSize: 11.5 }}>{t("For paying students only")}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#182644", margin: "4px 0" }}>
+                    {t("You are enrolled in")} {t(classStatus.nextLabel || `${classStatus.year} ${classStatus.semester}`)}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "#1E7A4E", lineHeight: 1.6 }}>
+                    {t("Your class join key is")} <strong style={{ fontFamily: "monospace" }}>{classStatus.joinCode}</strong>. {t("Use it in Join Class by ID to view your schedule and teacher.")}
+                  </div>
+                </div>
+              )}
+
               {announcements.length ? announcements.map(a => (
                 <div key={a.id} style={{ borderLeft: "3px solid #3E5EDB", background: "#F7F6F2", borderRadius: "0 10px 10px 0", padding: "14px 18px", marginBottom: 12 }}>
                   <div className="date-label" style={{ fontSize: 11.5 }}>{a.date}</div>
@@ -701,7 +834,7 @@ export default function StudentDashboard() {
               {schedule.length ? (
                 <table className="sp-table">
                   <thead>
-                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Course")}</th><th>{t("Semester")}</th><th>{t("Time")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th><th>{t("Join Code")}</th></tr>
+                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Course")}</th><th>{t("Semester")}</th><th>{t("Time")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th></tr>
                   </thead>
                   <tbody>
                     {[...schedule].sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)).map((s, i) => (
@@ -714,9 +847,8 @@ export default function StudentDashboard() {
                         <td>{s.semester || "-"}</td>
                         <td>{s.time}</td>
                         <td>{s.room}</td>
-                        <td>{s.teacher || "-"}</td>
-                        <td>{s.joinCode ? <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#1E7A4E", background: "#EAF7F0", padding: "2px 8px", borderRadius: 6 }}>{s.joinCode}</span> : "-"}</td>
-                      </tr>
+<td>{s.teacher || "-"}</td>
+      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -909,9 +1041,78 @@ export default function StudentDashboard() {
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
-                <button className="add-btn" onClick={() => (window.location.href = "/student/payments")}><CreditCard size={15} /> {t("Make a Payment")}</button>
+                <button className="add-btn" onClick={() => setPayOpen(true)}><CreditCard size={15} /> {t("Pay for Your Class")}</button>
               </div>
-              {payments.length > 0 ? (
+
+              <div className="panel" style={{ marginBottom: 20 }}>
+                <div className="panel-title sp-flex"><CreditCard size={16} /> {t("Tuition & Class Enrollment")}</div>
+                {classLoading ? (
+                  <div className="sp-flex" style={{ padding: "24px 0", color: "#9A8F80" }}>
+                    <Loader2 size={18} className="sp-spin" /> {t("Checking your class status...")}
+                  </div>
+                ) : classStatus ? (
+                  <>
+                    <div className="prof-status">
+                      <div className="prof-row"><span>{t("Your Class")}</span><strong>{t(classStatus.classLabel || `${classStatus.year} ${classStatus.semester}`) || "-"}</strong></div>
+                      <div className="prof-row"><span>{t("Major / Course")}</span><strong>{classStatus.major || profile.major || "-"}</strong></div>
+                      <div className="prof-row">
+                        <span>{t("Exam Average")}</span>
+                        <strong>
+                          {classStatus.avgScore != null ? `${Number(classStatus.avgScore).toFixed(2)}% ` : ""}
+                          <span className="grade-pill" style={{ background: classStatus.passed ? "#2E9E6C" : "#D2483C" }}>
+                            {classStatus.passed ? t("PASS") : t("FAIL")}
+                          </span>
+                        </strong>
+                      </div>
+                      <div className="prof-row"><span>{t("Next Semester")}</span><strong>{t(classStatus.nextLabel || (classStatus.passed ? "Semester 2, Year 1" : `${classStatus.year || "Year 1"}, ${classStatus.semester || "Semester 1"}`))}</strong></div>
+                      <div className="prof-row"><span>{t("Tuition Fee")}</span><strong style={{ color: "#182644", fontSize: 15 }}>${Number(classStatus.price || classStatus.amount || 0).toFixed(2)}</strong></div>
+                    </div>
+
+                    {classStatus.joined || classStatus.paid ? (
+                      <div className="lockbox">
+                        <div className="lockbox-label">{t("Your class join key (unlocked)")}</div>
+                        <div className="lockkey">{classStatus.joinCode || classStatus.key || "-"}</div>
+                        <p className="lockbox-note">{t("Use this key in \"Join Class by ID\" to view your class and teacher.")}</p>
+                      </div>
+                    ) : (
+                      <div className="hint">
+                        {t("Pay the tuition above to unlock the join key for your next class. The schedule for this class must exist before you can join.")}
+                      </div>
+                    )}
+                    <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+                      <button className="add-btn" onClick={() => setPayOpen(true)}>
+                        <CreditCard size={15} /> {t("Pay Now")}
+                      </button>
+                      <button className="add-btn" style={{ background: "#182644", boxShadow: "0 6px 16px rgba(24,38,68,0.3)" }} onClick={() => setJoinOpen(true)}>
+                        <BookOpen size={15} /> {t("Join Class by ID")}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: "center", padding: "20px 0" }}>
+                    <div className="date-label" style={{ marginBottom: 14 }}>{t("Class status is not available yet.")}</div>
+                    <button className="add-btn" style={{ background: "#182644", boxShadow: "0 6px 16px rgba(24,38,68,0.3)" }} onClick={() => loadClassStatus()}>
+                      <RotateCcw size={15} /> {t("Retry")}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {joinedClass && (
+                <div className="panel" style={{ marginBottom: 20 }}>
+                  <div className="panel-title sp-flex"><BookOpen size={16} /> {t("Joined Class")} <span className="course-code" style={{ marginLeft: 4 }}>{joinedClass.code}</span></div>
+                  <div className="prof-status">
+                    <div className="prof-row"><span>{t("Class")}</span><strong>{t(joinedClass.classLabel || `${joinedClass.year} ${joinedClass.semester}`) || "-"}</strong></div>
+                    <div className="prof-row"><span>{t("Course / Major")}</span><strong>{joinedClass.course || joinedClass.major || "-"}</strong></div>
+                    <div className="prof-row"><span>{t("Teacher")}</span><strong>{joinedClass.teacher || "-"}</strong></div>
+                    <div className="prof-row"><span>{t("Days")}</span><strong>{joinedClass.days || joinedClass.startDay || "-"}</strong></div>
+                    <div className="prof-row"><span>{t("Time")}</span><strong>{joinedClass.time || "-"}</strong></div>
+                    <div className="prof-row"><span>{t("Room")}</span><strong>{joinedClass.room || "-"}</strong></div>
+                  </div>
+                </div>
+              )}
+
+              {payments.length > 0 && (
                 <div className="panel">
                   <div className="panel-title">{t("Payment History")} ({payments.length})</div>
                   <table className="sp-table">
@@ -945,11 +1146,6 @@ export default function StudentDashboard() {
                       ))}
                     </tbody>
                   </table>
-                </div>
-              ) : (
-                <div className="panel">
-                  <div className="panel-title">{t("Payment History")}</div>
-                  <div className="date-label">{t("No payments recorded yet. Click \"Make a Payment\" to get started.")}</div>
                 </div>
               )}
             </>
@@ -1061,29 +1257,67 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {enrollOpen && (
+      {payOpen && (
         <div className="sp-overlay">
           <div className="sp-modal">
             <div className="sp-modal-head">
-              <div className="sp-modal-title">{t("Enroll in a Course")}</div>
-              <button className="sp-close" onClick={() => setEnrollOpen(false)} aria-label={t("Close")}><X size={16} /></button>
+              <div className="sp-modal-title">{t("Pay for Your Class")}</div>
+              <button className="sp-close" onClick={() => setPayOpen(false)} aria-label={t("Close")}><X size={16} /></button>
             </div>
-            <form onSubmit={handleEnroll}>
+            {classStatus ? (
+              <>
+                <div className="prof-status">
+                  <div className="prof-row"><span>{t("Class")}</span><strong>{t(classStatus.classLabel || `${classStatus.year} ${classStatus.semester}`) || "-"}</strong></div>
+                  <div className="prof-row"><span>{t("Next Semester")}</span><strong>{t(classStatus.nextLabel || (classStatus.passed ? "Semester 2, Year 1" : `${classStatus.year || "Year 1"}, ${classStatus.semester || "Semester 1"}`))}</strong></div>
+                  <div className="prof-row"><span>{t("Exam Result")}</span><strong><span className="grade-pill" style={{ background: classStatus.passed ? "#2E9E6C" : "#D2483C" }}>{classStatus.passed ? t("PASS") : t("FAIL")}</span></strong></div>
+                  <div className="prof-row"><span>{t("Amount to Pay")}</span><strong style={{ color: "#182644" }}>${Number(classStatus.price || classStatus.amount || 0).toFixed(2)}</strong></div>
+                </div>
+                {!classStatus.joined && !classStatus.paid && (
+                  <p className="hint" style={{ marginTop: 12 }}>
+                    {t("After payment, your unique class join key for the next semester will be unlocked.")}
+                  </p>
+                )}
+                <div className="sp-modal-foot">
+                  <button type="button" className="sp-cancel" onClick={() => setPayOpen(false)}>{t("Cancel")}</button>
+                  <button type="button" className="sp-primary" disabled={paying || classStatus.joined || classStatus.paid} onClick={confirmPay}>
+                    {paying ? <Loader2 size={15} className="sp-spin" /> : <CreditCard size={15} />}
+                    {classStatus.joined || classStatus.paid ? t("Already Paid") : paying ? t("Processing...") : t("Confirm & Pay")}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="date-label">{t("Class status is not available. Try again later.")}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {joinOpen && (
+        <div className="sp-overlay">
+          <div className="sp-modal">
+            <div className="sp-modal-head">
+              <div className="sp-modal-title">{t("Join Class by ID")}</div>
+              <button className="sp-close" onClick={() => setJoinOpen(false)} aria-label={t("Close")}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleJoinClass}>
               <div className="sp-field">
-                <label className="sp-label">{t("Course code")}</label>
+                <label className="sp-label">{t("Class join key / ID")}</label>
                 <input
                   className="sp-input"
-                  value={enrollCode}
-                  onChange={(e) => setEnrollCode(e.target.value)}
-                  placeholder={t("e.g. CS101")}
+                  value={joinCodeInput}
+                  onChange={(e) => setJoinCodeInput(e.target.value)}
+                  placeholder={t("e.g. S2Y1-XXXX")}
                   required
                 />
+                <p style={{ fontSize: 12, color: "#9A8F80", marginTop: 6, lineHeight: 1.5 }}>
+                  {t("Enter the unique key you received after paying for your class to view its schedule and teacher.")}
+                </p>
               </div>
               <div className="sp-modal-foot">
-                <button type="button" className="sp-cancel" onClick={() => setEnrollOpen(false)}>{t("Cancel")}</button>
-                <button type="submit" className="sp-primary" disabled={enrolling}>
-                  {enrolling ? <Loader2 size={15} className="sp-spin" /> : <RotateCcw size={15} />}
-                  {enrolling ? t("Enrolling...") : t("Enroll")}
+                <button type="button" className="sp-cancel" onClick={() => setJoinOpen(false)}>{t("Cancel")}</button>
+                <button type="submit" className="sp-primary" disabled={joining}>
+                  {joining ? <Loader2 size={15} className="sp-spin" /> : <BookOpen size={15} />}
+                  {joining ? t("Joining...") : t("Join Class")}
                 </button>
               </div>
             </form>

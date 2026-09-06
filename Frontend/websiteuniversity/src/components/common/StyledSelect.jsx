@@ -19,7 +19,7 @@ export default function StyledSelect({ value, onChange, options, placeholder, di
     const spaceAbove = b.top - 8;
     const up = (spaceBelow < mh && spaceAbove > spaceBelow) || spaceBelow < 8;
     const left = Math.max(8, Math.min(b.left, window.innerWidth - menuW - 8));
-    const top = (up ? b.top - mh - 6 : b.bottom + 6) + scY;
+    const top = (up ? b.top - mh - 10 : b.bottom + 10) + scY;
     Object.assign(menu.style, {
       left: `${Math.round(left)}px`,
       top: `${Math.round(top)}px`,
@@ -110,10 +110,10 @@ export default function StyledSelect({ value, onChange, options, placeholder, di
         .ssel-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; padding: 9px 12px; font-size: 13px; font-weight: 500; color: var(--text-primary); background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; text-align: left; }
         .ssel-btn:hover { border-color: #3E5EDB; }
         .ssel-ph { color: var(--text-muted); }
-        .ssel-val { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ssel-menu { position: absolute; left: 0; top: 0; z-index: 1000; max-height: 260px; overflow: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; }
+        .ssel-val { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ssel-menu { position: absolute; left: 0; top: 0; z-index: 99999; max-height: 260px; overflow: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; }
         .ssel-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 9px 12px; font-size: 13px; color: var(--text-primary); background: none; border: none; border-radius: 7px; cursor: pointer; text-align: left; }
-        .ssel-item-txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ssel-item-txt { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ssel-item:hover { background: var(--hover-bg); color: #3E5EDB; }
         .ssel-sel { background: var(--hover-bg); color: #3E5EDB; font-weight: 600; }
         .ssel-sel:hover { background: var(--hover-bg); color: #3E5EDB; }

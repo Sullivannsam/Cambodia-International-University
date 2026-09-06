@@ -173,13 +173,19 @@ function ClassCard({ cls, schedule, allStudents }) {
           </tr>
         </thead>
         <tbody>
-          <tr style={{ borderBottom: "1px solid #F0EEE9" }}>
-            <td style={{ padding: "8px 12px", fontWeight: 600, color: "#182644", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{schedule?.subject || "—"}</td>
-            <td style={{ padding: "8px 12px" }}>{schedule?.startDay ? (schedule.startDay === schedule.endDay ? schedule.startDay : `${schedule.startDay} - ${schedule.endDay}`) : (schedule?.day || "—")}</td>
-            <td style={{ padding: "8px 12px" }}>{schedule?.time || "—"}</td>
-            <td style={{ padding: "8px 12px" }}>{schedule?.room || "—"}</td>
-            <td style={{ padding: "8px 12px" }}>{schedule?.instructor || schedule?.teacher || "—"}</td>
-          </tr>
+          {schedule ? (
+            <tr style={{ borderBottom: "1px solid #F0EEE9" }}>
+              <td style={{ padding: "8px 12px", fontWeight: 600, color: "#182644", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{schedule?.subject || "—"}</td>
+              <td style={{ padding: "8px 12px" }}>{schedule?.startDay ? (schedule.startDay === schedule.endDay ? schedule.startDay : `${schedule.startDay} - ${schedule.endDay}`) : (schedule?.day || "—")}</td>
+              <td style={{ padding: "8px 12px" }}>{schedule?.time || "—"}</td>
+              <td style={{ padding: "8px 12px" }}>{schedule?.room || "—"}</td>
+              <td style={{ padding: "8px 12px" }}>{schedule?.instructor || schedule?.teacher || "—"}</td>
+            </tr>
+          ) : (
+            <tr style={{ borderBottom: "1px solid #F0EEE9" }}>
+              <td colSpan={5} style={{ padding: "16px 12px", color: "#9AA3B2", fontStyle: "italic", textAlign: "center" }}>{t("No class is created for this join code. Add subjects in the Schedule to create it.")}</td>
+            </tr>
+          )}
         </tbody>
       </table>
       {showStudents && (
@@ -229,6 +235,7 @@ function GroupedClassCard({ title, items, allStudents }) {
   const classStudents = allStudents.filter((s) => s.classes?.id === classId);
   const filteredStudents = classStudents.filter((s) => (s.name || s.username || s.email || "").toLowerCase().includes(studentQuery.toLowerCase()));
   const sorted = [...items].sort((a, b) => getDayIndex(a.schedule?.startDay || a.schedule?.day) - getDayIndex(b.schedule?.startDay || b.schedule?.day));
+  const hasSchedule = items.some((item) => item.schedule);
   return (
     <div style={{ background: "#fff", border: "1px solid #E9EBF3", borderRadius: 12, marginBottom: 16, overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "linear-gradient(90deg,#F0F3FF,#FBFBFF)", borderBottom: "1px solid #E9EBF3" }}>
@@ -259,15 +266,21 @@ function GroupedClassCard({ title, items, allStudents }) {
           </tr>
         </thead>
         <tbody>
-          {sorted.map((item, i) => (
-            <tr key={item.cls.id || i} style={{ borderBottom: "1px solid #F0EEE9" }}>
-              <td style={{ padding: "8px 12px", fontWeight: 600, color: "#182644", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.schedule?.subject || "—"}</td>
-              <td style={{ padding: "8px 12px" }}>{item.schedule?.startDay ? (item.schedule.startDay === item.schedule.endDay ? item.schedule.startDay : `${item.schedule.startDay} - ${item.schedule.endDay}`) : (item.schedule?.day || "—")}</td>
-              <td style={{ padding: "8px 12px" }}>{item.schedule?.time || "—"}</td>
-              <td style={{ padding: "8px 12px" }}>{item.schedule?.room || "—"}</td>
-              <td style={{ padding: "8px 12px" }}>{item.schedule?.instructor || item.schedule?.teacher || "—"}</td>
+          {hasSchedule ? (
+            sorted.map((item, i) => (
+              <tr key={item.cls.id || i} style={{ borderBottom: "1px solid #F0EEE9" }}>
+                <td style={{ padding: "8px 12px", fontWeight: 600, color: "#182644", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.schedule?.subject || "—"}</td>
+                <td style={{ padding: "8px 12px" }}>{item.schedule?.startDay ? (item.schedule.startDay === item.schedule.endDay ? item.schedule.startDay : `${item.schedule.startDay} - ${item.schedule.endDay}`) : (item.schedule?.day || "—")}</td>
+                <td style={{ padding: "8px 12px" }}>{item.schedule?.time || "—"}</td>
+                <td style={{ padding: "8px 12px" }}>{item.schedule?.room || "—"}</td>
+                <td style={{ padding: "8px 12px" }}>{item.schedule?.instructor || item.schedule?.teacher || "—"}</td>
+              </tr>
+            ))
+          ) : (
+            <tr style={{ borderBottom: "1px solid #F0EEE9" }}>
+              <td colSpan={5} style={{ padding: "16px 12px", color: "#9AA3B2", fontStyle: "italic", textAlign: "center" }}>{t("No class is created for this join code. Add subjects in the Schedule to create it.")}</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
       {showStudents && (
@@ -565,10 +578,10 @@ export default function AdminDashboard() {
   }, [active, badges.notifications]);
 
   const filteredStudents = students.filter((s) =>
-    (s.name + s.id).toLowerCase().includes(studentQuery.toLowerCase())
+    (String(s.name ?? "") + String(s.id ?? "")).toLowerCase().includes(studentQuery.toLowerCase())
   );
   const filteredTeachers = teachers.filter((teacher) =>
-    (teacher.name + teacher.id).toLowerCase().includes(teacherQuery.toLowerCase())
+    (String(teacher.name ?? "") + String(teacher.id ?? "")).toLowerCase().includes(teacherQuery.toLowerCase())
   );
 
   const lastMonthA = earnings.length ? earnings[earnings.length - 1]?.a ?? 0 : 0;
@@ -1297,19 +1310,16 @@ export default function AdminDashboard() {
                   {(() => {
                     const groups = {};
                     for (const c of adminClasses) {
+                      const allScheds = adminSchedule.filter((s) => s.joinCode === c.code);
+                      if (allScheds.length === 0) continue;
                       const key = (c.title || "") + "|" + (c.schedule || "");
                       if (!groups[key]) groups[key] = { title: (c.title || t("Class")) + (c.schedule ? ` — ${c.schedule}` : ""), items: [] };
-                      const allScheds = adminSchedule.filter((s) => s.joinCode === c.code);
-                      if (allScheds.length) {
-                        allScheds.forEach((sched) => groups[key].items.push({ cls: c, schedule: sched }));
-                      } else {
-                        groups[key].items.push({ cls: c, schedule: null });
-                      }
+                      allScheds.forEach((sched) => groups[key].items.push({ cls: c, schedule: sched }));
                     }
                     return Object.values(groups).map((g) =>
                       g.items.length === 1
-                        ? <ClassCard key={g.items[0].cls.id + "-" + (g.items[0].schedule?.id || 0)} cls={g.items[0].cls} schedule={g.items[0].schedule} allStudents={students} />
-                        : <GroupedClassCard key={g.title} title={g.title} items={g.items} allStudents={students} />
+                        ? <ClassCard key={g.items[0].cls.id + "-" + (g.items[0].schedule?.id || 0)} cls={g.items[0].cls} schedule={g.items[0].schedule} allStudents={studentAccounts} />
+                        : <GroupedClassCard key={g.title} title={g.title} items={g.items} allStudents={studentAccounts} />
                     );
                   })()}
                 </div>

@@ -417,6 +417,13 @@ export const getStudentEnrollments = async () => {
     return parse(response);
 };
 
+export const getStudentClassInfo = async () => {
+    const response = await fetch(`${BASE_URL}/api/students/class-info`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 export const getStudentGrades = async () => {
     const response = await fetch(`${BASE_URL}/api/students/grades`, {
         headers: authHeaders(),
@@ -443,6 +450,13 @@ export const getTeacherClasses = async () => {
 
 export const getTeacherStudents = async () => {
     const response = await fetch(`${BASE_URL}/api/teachers/students`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const getTeacherClassStudents = async (code) => {
+    const response = await fetch(`${BASE_URL}/api/teachers/classes/${encodeURIComponent(code)}/students`, {
         headers: authHeaders(),
     });
     return parse(response);
@@ -843,6 +857,30 @@ export const joinStudentClass = async (code) => {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({ code }),
+    });
+    return parse(response);
+};
+
+// ---------- Student class / progression payment (frontend contract) ----------
+export const getStudentClassStatus = async () => {
+    const response = await fetch(`${BASE_URL}/api/students/my-class`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+export const payStudentClass = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/students/pay-and-join`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data || {}),
+    });
+    return parse(response);
+};
+
+export const getStudentClassByCode = async (code) => {
+    const response = await fetch(`${BASE_URL}/api/students/class/${encodeURIComponent(code)}`, {
+        headers: authHeaders(),
     });
     return parse(response);
 };
