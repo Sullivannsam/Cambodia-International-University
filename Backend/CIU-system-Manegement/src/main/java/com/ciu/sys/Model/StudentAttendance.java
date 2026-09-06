@@ -25,6 +25,12 @@ public class StudentAttendance {
   @Column(name = "present")
   private boolean isPresent;
 
+  @Column(name = "class_code")
+  private String classCode;
+
+  @Column(name = "att_date")
+  private String attDate;
+
   @ManyToOne
   private StudentAccount students;
 

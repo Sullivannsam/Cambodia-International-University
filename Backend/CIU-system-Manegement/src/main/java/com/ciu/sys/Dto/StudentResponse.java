@@ -1,6 +1,7 @@
 package com.ciu.sys.Dto;
 
 import java.sql.Date;
+import java.util.Map;
 
 public record StudentResponse(
     Long id,
@@ -13,6 +14,7 @@ public record StudentResponse(
     String major,
     String address,
     String cardCode,
-    String photoUrl) {
+    String photoUrl,
+    Map<String, Object> classes) {
 
 }

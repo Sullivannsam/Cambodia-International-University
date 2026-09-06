@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.ciu.sys.Model.StudentAccount;
 import com.ciu.sys.Repository.StudentRepository;
 import com.ciu.sys.Repository.NotificationRepository;
@@ -110,6 +112,14 @@ public class StudentPortalController {
     return ResponseEntity.ok(service.getEnrollments(me.get()));
   }
 
+  @GetMapping("/class-info")
+  public ResponseEntity<?> classInfo(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.myClass(me.get()));
+  }
+
   @GetMapping("/grades")
   public ResponseEntity<?> grades(Authentication auth) {
     Optional<StudentAccount> me = repository.findByEmail(auth.getName());
@@ -205,6 +215,42 @@ public class StudentPortalController {
     }
 
     return ResponseEntity.ok(paymentService.payTuition(students.get()));
-
   }
+
+  @GetMapping("/my-class")
+  public ResponseEntity<?> myClasses(Authentication auth) {
+
+    Optional<StudentAccount> students = repository.findByEmail(auth.getName());
+    if (students.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(service.classStatus(students.get()));
+  }
+
+  @PostMapping("/pay-and-join")
+  public ResponseEntity<?> payAndJoin(Authentication auth) {
+
+    Optional<StudentAccount> students = repository.findByEmail(auth.getName());
+    if (students.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(service.payAndJoin(students.get()));
+  }
+
+  @GetMapping("/class/{code}")
+  public ResponseEntity<?> getClassCode(@PathVariable String code) {
+
+    return ResponseEntity.ok(service.classByCode(code));
+  }
+
+  @PostMapping("/join")
+  public ResponseEntity<?> join(Authentication auth, @RequestBody Map<String, String> body) {
+
+    Optional<StudentAccount> students = repository.findByEmail(auth.getName());
+    if (students.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(service.join(students.get(), body.get("code")));
+  }
+
 }

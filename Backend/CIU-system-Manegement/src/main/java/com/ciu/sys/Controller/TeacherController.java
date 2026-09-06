@@ -154,11 +154,12 @@ public class TeacherController {
     if (teacher.isEmpty()) {
       return ResponseEntity.noContent().build();
     }
-    String error = service.joinClass(teacher.get(), body.getOrDefault("code", ""));
-    if (error != null) {
-      return ResponseEntity.badRequest().body(Map.of("error", error));
-    }
-    return ResponseEntity.ok(Map.of("joined", body.getOrDefault("code", "")));
+    return ResponseEntity.ok(service.joinClass(teacher.get(), body.getOrDefault("code", "")));
+  }
+
+  @GetMapping("/classes/{code}/students")
+  public ResponseEntity<?> getStudentsByClassCode(@PathVariable String code) {
+    return ResponseEntity.ok(service.getStudentsByClassCode(code));
   }
 
 }

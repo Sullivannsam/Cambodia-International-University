@@ -71,7 +71,7 @@ public class PaymentService {
     Optional<Schedule> sched = scheduleRepository.findActive().stream()
         .filter(s -> Objects.equals(s.getLevel(), level))
         .filter(s -> Objects.equals(s.getSemester(), sem))
-        .filter(s -> s.getMajor() != null && major != null && s.getMajor().contains(major))
+        .filter(s -> TuitionService.sameProgram(s.getMajor(), major))
         .filter(s -> s.getJoinCode() != null && !s.getJoinCode().isBlank())
         .findFirst();
     if (sched.isEmpty())

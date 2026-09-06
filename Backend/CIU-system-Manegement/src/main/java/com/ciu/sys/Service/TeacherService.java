@@ -122,16 +122,39 @@ public class TeacherService {
       if (s.getClasses() == null || !classIds.contains(s.getClasses().getId())) {
         continue;
       }
-      List<StudentAttendance> att = s.getAttendance() == null ? List.of() : s.getAttendance();
-      long present = att.stream().filter(StudentAttendance::isPresent).count();
-      int pct = att.isEmpty() ? 0 : (int) Math.round(present * 100.0 / att.size());
-      result.add(Map.of(
-          "id", s.getId(),
-          "name", s.getUsername() == null ? s.getEmail() : s.getUsername(),
-          "major", s.getMajor() == null ? "" : s.getMajor(),
-          "att", pct));
+      result.add(studentRow(s, null));
     }
     return result;
+  }
+
+  // ---------- Students of one class (by join code / group) ----------
+
+  public List<Map<String, Object>> getStudentsByClassCode(String code) {
+    String c = code == null ? "" : code.trim();
+    List<Long> classIds = studentClassRepository.findByGroup(c).stream()
+        .map(StudentClass::getId)
+        .collect(Collectors.toList());
+    List<Map<String, Object>> result = new ArrayList<>();
+    for (StudentAccount s : studentRepository.findAll()) {
+      if (s.getClasses() == null || s.getClasses().getId() == null || !classIds.contains(s.getClasses().getId())) {
+        continue;
+      }
+      result.add(studentRow(s, c));
+    }
+    return result;
+  }
+
+  private Map<String, Object> studentRow(StudentAccount s, String classCode) {
+    List<StudentAttendance> att = classCode == null || classCode.isBlank()
+        ? (s.getAttendance() == null ? List.of() : s.getAttendance())
+        : studentAttendanceRepository.findByStudentsIdAndClassCode(s.getId(), classCode);
+    long present = att.stream().filter(StudentAttendance::isPresent).count();
+    int pct = att.isEmpty() ? 0 : (int) Math.round(present * 100.0 / att.size());
+    return Map.of(
+        "id", s.getId(),
+        "name", s.getUsername() == null ? s.getEmail() : s.getUsername(),
+        "major", s.getMajor() == null ? "" : s.getMajor(),
+        "att", pct);
   }
 
   // ---------- Announcements ----------
@@ -193,10 +216,13 @@ public class TeacherService {
         att.setStudents(st.get());
         att.setPresent(!"absent".equalsIgnoreCase(String.valueOf(e.getOrDefault("status", "present"))));
         att.setAttendance(1L);
+        att.setClassCode(String.valueOf(e.getOrDefault("classCode", "")));
+        att.setAttDate(String.valueOf(e.getOrDefault("date", "")));
         try {
           studentAttendanceRepository.save(att);
           saved++;
         } catch (Exception ex) {
+          // skip a single failing row
         }
       }
     }
@@ -335,48 +361,44 @@ public class TeacherService {
 
   // ---------- Join class ----------
 
-  public String joinClass(Teacher teacher, String code) {
+  public Map<String, Object> joinClass(Teacher teacher, String code) {
+
     String c = code == null ? "" : code.trim();
     if (c.isBlank()) {
-      return "Class not found";
+      return Map.of("message", "Enter a class code.", "joined", false);
     }
-    // New flow: codes generated on the schedule (JoinCode column).
-    Optional<Schedule> bySchedule = scheduleRepository.findByJoinCode(c);
-    if (bySchedule.isPresent()) {
-      Schedule s = bySchedule.get();
-      if (s.getTeacher() == null || !s.getTeacher().equalsIgnoreCase(teacher.getEmail())) {
-        return "This join code is assigned to another teacher.";
-      }
-      String subject = (s.getSubject() == null || s.getSubject().isBlank())
-          ? (s.getCourse() == null ? c : s.getCourse())
-          : s.getSubject();
-      StudentClass existing = studentClassRepository.findByGroup(c).stream().findFirst().orElse(null);
-      if (existing != null) {
-        existing.setTeacher(teacher);
-        existing.setMajor(s.getMajor());
-        existing.setYear(s.getLevel());
-        existing.setShift(s.getSemester());
-        studentClassRepository.save(existing);
-      } else {
-        StudentClass clss = new StudentClass();
-        clss.setGroup(c);
-        clss.setMajor(s.getMajor());
-        clss.setYear(s.getLevel());
-        clss.setShift(s.getSemester());
-        clss.setTeacher(teacher);
-        studentClassRepository.save(clss);
-      }
-      return null;
+
+    StudentClass cls = studentClassRepository.findByGroup(c).stream().findFirst().orElse(null);
+    if (cls != null) {
+      cls.setTeacher(teacher);
+      studentClassRepository.save(cls);
+      return Map.of("message", "Class joined successfully.", "joined", true);
     }
-    // Legacy flow: code is a StudentClass group name.
-    List<StudentClass> matches = studentClassRepository.findByGroup(c);
-    if (matches.isEmpty()) {
-      return "Class not found";
+
+    List<Schedule> rows = scheduleRepository.findActive().stream()
+        .filter(s -> c.equals(s.getJoinCode()))
+        .collect(Collectors.toList());
+    if (rows.isEmpty()) {
+      return Map.of("message", "No class found for that code.", "joined", false);
     }
-    for (StudentClass k : matches) {
-      k.setTeacher(teacher);
-      studentClassRepository.save(k);
+
+    boolean owned = rows.stream().anyMatch(s -> teacherOwns(s, teacher));
+    if (!owned) {
+      return Map.of("message", "This class is assigned to another teacher.", "joined", false);
     }
-    return null; // null means success
+
+    Schedule s = rows.stream().filter(row -> teacherOwns(row, teacher)).findFirst().orElse(rows.get(0));
+    StudentClass newCls = new StudentClass();
+    newCls.setGroup(c);
+    newCls.setMajor(s.getMajor());
+    newCls.setYear(s.getLevel());
+    newCls.setTeacher(teacher);
+    studentClassRepository.save(newCls);
+    return Map.of("message", "Class joined successfully.", "joined", true);
+  }
+
+  private boolean teacherOwns(Schedule s, Teacher teacher) {
+    String t = s.getTeacher() == null || s.getTeacher().isBlank() ? s.getInstructor() : s.getTeacher();
+    return t != null && !t.isBlank() && t.equalsIgnoreCase(teacher.getEmail());
   }
 }

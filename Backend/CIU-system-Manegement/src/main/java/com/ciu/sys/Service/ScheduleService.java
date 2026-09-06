@@ -2,7 +2,6 @@ package com.ciu.sys.Service;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -138,7 +137,8 @@ public class ScheduleService {
 
     List<Schedule> toSave = new ArrayList<>();
     List<Schedule> added = new ArrayList<>();
-    // One join code per class block (year+semester), shared by all its subject rows.
+    // One join code per class block (year+semester), shared by all its subject
+    // rows.
     for (Schedule e : entries) {
       if (e.getId() != null) {
         Schedule found = existing.stream()
@@ -169,7 +169,8 @@ public class ScheduleService {
     for (Schedule s : saved) {
       if (added.contains(s) && !isBlank(s.getTeacher()) && !isBlank(s.getJoinCode())) {
         String alertKey = s.getTeacher() + "|" + s.getJoinCode();
-        if (alerted.add(alertKey)) alertTeacher(s);
+        if (alerted.add(alertKey))
+          alertTeacher(s);
       }
     }
     return saved;
@@ -294,7 +295,8 @@ public class ScheduleService {
       }
     }
 
-    // Soft-delete orphaned classes whose code no longer maps to any active schedule.
+    // Soft-delete orphaned classes whose code no longer maps to any active
+    // schedule.
     for (StudentClass c : classRepo.findByActiveTrue()) {
       if (!activeCodes.contains(c.getGroup())) {
         c.setActive(false);

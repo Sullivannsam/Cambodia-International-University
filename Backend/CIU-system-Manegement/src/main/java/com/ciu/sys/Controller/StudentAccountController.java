@@ -114,7 +114,8 @@ public class StudentAccountController {
             s.getMajor(),
             s.getAddress(),
             s.getCardCode(),
-            s.getPhotoUrl()))
+            s.getPhotoUrl(),
+            toClassMap(s)))
         .toList();
 
     return ResponseEntity.ok(dto);
@@ -136,7 +137,20 @@ public class StudentAccountController {
         student.getMajor(),
         student.getAddress(),
         student.getCardCode(),
-        student.getPhotoUrl());
+        student.getPhotoUrl(),
+        toClassMap(student));
+  }
+
+  private Map<String, Object> toClassMap(StudentAccount s) {
+    if (s.getClasses() == null) {
+      return null;
+    }
+    com.ciu.sys.Model.StudentClass c = s.getClasses();
+    return Map.of(
+        "id", c.getId(),
+        "code", c.getGroup() == null ? "" : c.getGroup(),
+        "title", (c.getMajor() == null ? "" : c.getMajor())
+            + " " + (c.getYear() == null ? "" : c.getYear()));
   }
 
 }
