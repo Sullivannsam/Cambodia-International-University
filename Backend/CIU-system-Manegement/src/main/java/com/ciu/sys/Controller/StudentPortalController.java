@@ -149,6 +149,14 @@ public class StudentPortalController {
     return ResponseEntity.ok(service.getAttendance(me.get()));
   }
 
+  @GetMapping("/history")
+  public ResponseEntity<?> history(Authentication auth) {
+    Optional<StudentAccount> me = repository.findByEmail(auth.getName());
+    if (me.isEmpty())
+      return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(service.getHistory(me.get()));
+  }
+
   @GetMapping("/assignments")
   public ResponseEntity<?> assignments(Authentication auth) {
     Optional<StudentAccount> me = repository.findByEmail(auth.getName());

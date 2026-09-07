@@ -111,16 +111,28 @@ public class StudentPortalService {
   public List<Map<String, Object>> getGrades(StudentAccount student) {
     List<Map<String, Object>> result = new ArrayList<>();
     for (ExamResult g : examResultRepository.findByStudentEmail(student.getEmail())) {
+      String code = nz(g.getCode());
+      Optional<Schedule> s = code.isBlank() ? Optional.empty() : scheduleRepository.findByJoinCode(code);
       Map<String, Object> m = new java.util.HashMap<>();
       m.put("id", g.getId());
-      m.put("title", nz(g.getCourseName()));
-      m.put("code", nz(g.getCode()));
-      m.put("instructor", nz(g.getTeacherEmail()));
+      m.put("code", code);
+      m.put("day", s.isPresent() ? nz(s.get().getStartDay()).isBlank() ? nz(s.get().getDay()) : nz(s.get().getStartDay()) : "");
+      m.put("subject", s.isPresent() ? nz(s.get().getSubject()).isBlank() ? nz(s.get().getCourse()) : nz(s.get().getSubject()) : nz(g.getCourseName()));
+      m.put("time", s.isPresent() ? nz(s.get().getTime()) : "");
+      m.put("teacher", s.isPresent() ? nz(s.get().getTeacher()).isBlank() ? nz(s.get().getInstructor()) : nz(s.get().getTeacher()) : nz(g.getTeacherEmail()));
       m.put("score", g.getScore() > 0 ? g.getScore() : g.getMark());
       m.put("grade", nz(g.getLetter()).isEmpty() ? nz(g.getGrade()) : nz(g.getLetter()));
+      m.put("createdAt", g.getCreatedAt());
+      m.put("semester", s.isPresent() ? nz(s.get().getSemester()) : nz(g.getSemester()));
       result.add(m);
     }
     return result;
+  }
+
+  // ---------- History (per-session study record) ----------
+
+  public List<Map<String, Object>> getHistory(StudentAccount student) {
+    return getAttendance(student);
   }
 
   // ---------- Announcements ----------
@@ -169,17 +181,20 @@ public class StudentPortalService {
 
   public List<Map<String, Object>> getAttendance(StudentAccount student) {
     List<Map<String, Object>> result = new ArrayList<>();
-    List<StudentAttendance> att = studentAttendanceRepository.findByStudentsId(student.getId());
-    long present = att.stream().filter(StudentAttendance::isPresent).count();
-    int total = att.size();
-    int pct = total == 0 ? 0 : (int) Math.round(present * 100.0 / total);
-    Map<String, Object> m = new java.util.HashMap<>();
-    m.put("title", "Attendance");
-    m.put("code", "");
-    m.put("present", present);
-    m.put("total", total);
-    m.put("percent", pct);
-    result.add(m);
+    for (StudentAttendance a : studentAttendanceRepository.findByStudentsId(student.getId())) {
+      String code = a.getClassCode() == null ? "" : a.getClassCode();
+      Optional<Schedule> s = scheduleRepository.findByJoinCode(code);
+      if (s.isEmpty() || !s.get().isActive())
+        continue; // class no longer exists -> don't show its attendance
+      Map<String, Object> m = new java.util.HashMap<>();
+      m.put("id", a.getId());
+      m.put("date", a.getAttDate());
+      m.put("time", nz(s.get().getTime()));
+      m.put("subject", nz(s.get().getSubject()).isBlank() ? nz(s.get().getCourse()) : nz(s.get().getSubject()));
+      m.put("teacher", nz(s.get().getTeacher()).isBlank() ? nz(s.get().getInstructor()) : nz(s.get().getTeacher()));
+      m.put("status", a.isPresent() ? "present" : "absent");
+      result.add(m);
+    }
     return result;
   }
 
