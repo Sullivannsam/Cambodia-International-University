@@ -511,11 +511,29 @@ export const getEnrollment = async (id) => {
     return parse(response);
 };
 
-export const updateEnrollmentStatus = async (id, status) => {
+export const updateEnrollmentStatus = async (id, status, comment) => {
     const response = await fetch(`${BASE_URL}/api/auth/admin/enrollments/${id}`, {
         method: "PUT",
         headers: authHeaders(),
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(comment !== undefined ? { status, comment } : { status }),
+    });
+    return parse(response);
+};
+
+// ---------- Public enrollment application (first-time, no account yet) ----------
+export const submitEnrollment = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/v1/auth/enroll`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    return parse(response);
+};
+
+export const payEnrollmentFee = async (enrollId) => {
+    const response = await fetch(`${BASE_URL}/api/v1/auth/enroll/${enrollId}/pay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
     });
     return parse(response);
 };

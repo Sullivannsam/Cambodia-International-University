@@ -13,6 +13,9 @@ export default function EnrollmentManagement({ onPendingChange }) {
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [rejectComment, setRejectComment] = useState("");
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -33,18 +36,61 @@ export default function EnrollmentManagement({ onPendingChange }) {
 
   useEffect(() => { load(); }, []);
 
-  const setStatus = async (item, status) => {
+  const setStatus = async (item, status, comment) => {
+    if (status === "REJECTED" && comment === undefined) {
+      // Open the comment modal instead of calling the API immediately.
+      setRejectTarget(item);
+      setRejectComment("");
+      return;
+    }
     setNotice("");
     setError("");
     try {
-      await updateEnrollmentStatus(item.id, status);
-    } catch {}
-    const next = list.map(e => e.id === item.id ? { ...e, status } : e);
+      const res = await updateEnrollmentStatus(item.id, status, status === "REJECTED" ? comment : undefined);
+      if (res && res.error) {
+        setError(res.message || t("Could not update this application."));
+        return;
+      }
+    } catch (err) {
+      setError(err?.message || t("Could not update this application."));
+      return;
+    }
+    const next = list.map(e => e.id === item.id ? { ...e, status, rejectComment: status === "REJECTED" ? comment : e.rejectComment } : e);
     setList(next);
     setSelected(s => s && s.id === item.id ? { ...s, status } : s);
     onPendingChange?.(next.filter(e => e.status === "PENDING").length);
     setNotice(`${t("Enrollment for")} ${item.name} ${status === "APPROVED" ? t("approved") : t("rejected")}${t(".")}`);
     setSelected(null);
+  };
+
+  const batchSetStatus = async (status, comment) => {
+    setError("");
+    setNotice("");
+    const pending = list.filter(e => e.status === "PENDING");
+    if (!pending.length) return;
+    if (status === "REJECTED" && comment === undefined) {
+      setRejectTarget({ batch: true, items: pending });
+      setRejectComment("");
+      return;
+    }
+    await Promise.all(pending.map(e => updateEnrollmentStatus(e.id, status, status === "REJECTED" ? comment : undefined).catch(() => {})));
+    const next = list.map(e => e.status === "PENDING" ? { ...e, status, rejectComment: status === "REJECTED" ? comment : e.rejectComment } : e);
+    setList(next);
+    onPendingChange?.(next.filter(e => e.status === "PENDING").length);
+    setNotice(`${t("Batch")} ${status === "APPROVED" ? t("approved") : t("rejected")} ${pending.length} ${t("pending enrollment(s).")}`);
+  };
+
+  const confirmReject = async () => {
+    if (!rejectTarget || !rejectComment.trim()) return;
+    setRejectSubmitting(true);
+    if (rejectTarget.batch) {
+      await batchSetStatus("REJECTED", rejectComment.trim());
+    } else {
+      await setStatus(rejectTarget, "REJECTED", rejectComment.trim());
+    }
+    setRejectSubmitting(false);
+    setRejectTarget(null);
+    setRejectComment("");
   };
 
   const openDetail = async (row) => {
@@ -68,18 +114,6 @@ export default function EnrollmentManagement({ onPendingChange }) {
   };
 
   const pendingCount = list.filter(e => e.status === "PENDING").length;
-
-  const batchSetStatus = async (status) => {
-    setError("");
-    setNotice("");
-    const pending = list.filter(e => e.status === "PENDING");
-    if (!pending.length) return;
-    await Promise.all(pending.map(e => updateEnrollmentStatus(e.id, status).catch(() => {})));
-    const next = list.map(e => e.status === "PENDING" ? { ...e, status } : e);
-    setList(next);
-    onPendingChange?.(next.filter(e => e.status === "PENDING").length);
-    setNotice(`${t("Batch")} ${status === "APPROVED" ? t("approved") : t("rejected")} ${pending.length} ${t("pending enrollment(s).")}`);
-  };
 
   return (
     <div className="em-wrap">
@@ -272,6 +306,14 @@ export default function EnrollmentManagement({ onPendingChange }) {
                 <button className="em-modal-close" onClick={() => setSelected(null)}>×</button>
               </div>
               <div className="em-body">
+                {selected.status === "REJECTED" && selected.rejectComment && (
+                  <div className="em-section">
+                    <div className="em-section-title">{t("Rejection Reason")}</div>
+                    <div style={{ background: "#FBE3E0", border: "1px solid rgba(210,72,60,0.3)", color: "#9A2E24", borderRadius: 12, padding: "12px 14px", fontSize: 13.5, lineHeight: 1.6 }}>
+                      {selected.rejectComment}
+                    </div>
+                  </div>
+                )}
                 {section("Personal Information", personal)}
                 {section("Contact", contact)}
                 {section("Study Program", program)}
@@ -292,7 +334,53 @@ export default function EnrollmentManagement({ onPendingChange }) {
         );
       })()}
 
-      <style>{`@keyframes emspin { from { transform: rotate(0); } to { transform: rotate(360deg); } }`}</style>
+      {rejectTarget && (
+        <div className="em-modal-backdrop" onClick={() => !rejectSubmitting && setRejectTarget(null)}>
+          <div className="em-reject-modal" onClick={(ev) => ev.stopPropagation()}>
+            <div className="em-reject-title">
+              <XCircle size={18} style={{ color: "#D2483C" }} />
+              {rejectTarget.batch
+                ? `${t("Reject")} ${rejectTarget.items.length} ${t("pending enrollment(s)")}`
+                : `${t("Reject application for")} ${rejectTarget.name}`}
+            </div>
+            <p className="em-reject-sub">
+              {t("Please explain what's missing or wrong so the applicant knows what to fix. This will be emailed to them, and they won't need to pay again when they resubmit.")}
+            </p>
+            <textarea
+              className="em-reject-textarea"
+              rows={4}
+              placeholder={t("e.g. You are missing the photo, please provide us a photo and try fill the enrollment form again.")}
+              value={rejectComment}
+              onChange={(e) => setRejectComment(e.target.value)}
+              disabled={rejectSubmitting}
+              autoFocus
+            />
+            <div className="em-reject-actions">
+              <button className="em-reject-cancel" disabled={rejectSubmitting} onClick={() => setRejectTarget(null)}>
+                {t("Cancel")}
+              </button>
+              <button className="em-reject-confirm" disabled={rejectSubmitting || !rejectComment.trim()} onClick={confirmReject}>
+                {rejectSubmitting ? <Loader2 size={15} className="em-reject-spin" /> : <XCircle size={15} />}
+                {rejectSubmitting ? t("Rejecting...") : t("Reject & Notify Applicant")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes emspin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+        .em-reject-modal { background: #fff; border-radius: 18px; max-width: 480px; width: 100%; padding: 24px; box-shadow: 0 25px 70px rgba(15,23,42,0.4); }
+        .em-reject-title { display: flex; align-items: center; gap: 8px; font-size: 15.5px; font-weight: 800; color: #182644; margin-bottom: 8px; }
+        .em-reject-sub { font-size: 12.5px; color: #6B7280; line-height: 1.6; margin: 0 0 14px; }
+        .em-reject-textarea { width: 100%; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px 14px; font-size: 13.5px; font-family: inherit; resize: vertical; outline: none; color: #1F2430; }
+        .em-reject-textarea:focus { border-color: #D2483C; }
+        .em-reject-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+        .em-reject-cancel { border: 1px solid #E5E7EB; background: #fff; color: #6B7280; border-radius: 10px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .em-reject-confirm { display: inline-flex; align-items: center; gap: 6px; border: none; background: #D2483C; color: #fff; border-radius: 10px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .em-reject-confirm:disabled, .em-reject-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+        .em-reject-spin { animation: emspin 1s linear infinite; }
+      `}</style>
     </div>
   );
 }

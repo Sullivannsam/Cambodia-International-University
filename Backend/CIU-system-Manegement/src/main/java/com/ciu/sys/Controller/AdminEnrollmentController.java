@@ -18,6 +18,7 @@ import com.ciu.sys.Model.Enroll;
 import com.ciu.sys.Model.StudentEnrollment;
 import com.ciu.sys.Repository.EnrollRepository;
 import com.ciu.sys.Repository.StudentEnrollmentRepository;
+import com.ciu.sys.Service.EnrollService;
 
 @RestController
 @RequestMapping("/api/auth/admin/enrollments")
@@ -28,6 +29,9 @@ public class AdminEnrollmentController {
 
   @Autowired
   private EnrollRepository enrollRepository;
+
+  @Autowired
+  private EnrollService enrollService;
 
   @GetMapping
   public List<Map<String, Object>> list() {
@@ -52,6 +56,8 @@ public class AdminEnrollmentController {
       row.put("courseCode", trimToNull(e.getDegree()));
       row.put("date", trimToNull(e.getStartDate()));
       row.put("status", e.getStatus() != null ? e.getStatus() : "PENDING");
+      row.put("paid", e.isPaid());
+      row.put("rejectComment", e.getRejectComment() != null ? e.getRejectComment() : "");
       row.put("firstNameEN", trimToNull(e.getFirstNameEN()));
       row.put("lastNameEN", trimToNull(e.getLastNameEN()));
       row.put("firstNameKH", trimToNull(e.getFirstNameKH()));
@@ -89,6 +95,8 @@ public class AdminEnrollmentController {
       row.put("courseCode", trimToNull(e.getDegree()));
       row.put("date", trimToNull(e.getStartDate()));
       row.put("status", e.getStatus() != null ? e.getStatus() : "PENDING");
+      row.put("paid", e.isPaid());
+      row.put("rejectComment", e.getRejectComment() != null ? e.getRejectComment() : "");
       row.put("firstNameEN", trimToNull(e.getFirstNameEN()));
       row.put("lastNameEN", trimToNull(e.getLastNameEN()));
       row.put("firstNameKH", trimToNull(e.getFirstNameKH()));
@@ -128,6 +136,7 @@ public class AdminEnrollmentController {
   @PutMapping("/{id}")
   public ResponseEntity<?> setStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
     String status = body.get("status");
+    String comment = body.get("comment");
 
     if (!List.of("APPROVED", "PENDING", "REJECTED").contains(status)) {
       return ResponseEntity.badRequest().body(Map.of("message", "Invalid Status"));
@@ -138,6 +147,23 @@ public class AdminEnrollmentController {
       if (enroll == null) {
         return ResponseEntity.noContent().build();
       }
+
+      if ("APPROVED".equals(status)) {
+        Map<String, Object> result = enrollService.approve(enroll);
+        if (Boolean.TRUE.equals(result.get("error"))) {
+          return ResponseEntity.badRequest().body(result);
+        }
+        return ResponseEntity.ok(result);
+      }
+
+      if ("REJECTED".equals(status)) {
+        Map<String, Object> result = enrollService.reject(enroll, comment);
+        if (Boolean.TRUE.equals(result.get("error"))) {
+          return ResponseEntity.badRequest().body(result);
+        }
+        return ResponseEntity.ok(result);
+      }
+
       enroll.setStatus(status);
       enrollRepository.save(enroll);
       return ResponseEntity.ok(Map.of("message", "Status Update"));

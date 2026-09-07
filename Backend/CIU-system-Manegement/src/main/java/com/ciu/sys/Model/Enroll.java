@@ -70,6 +70,15 @@ public class Enroll {
   @Column(name = "status")
   private String status = "PENDING";
 
+  @Column(name = "paid")
+  private boolean paid = false;
+
+  @Column(name = "reject_comment", length = 1000)
+  private String rejectComment;
+
+  @Column(name = "student_account_id")
+  private Long studentAccountId;
+
   @Column(name = "khmer_national_id_file", columnDefinition = "LONGTEXT")
   private String khmerNationalIdFile;
 

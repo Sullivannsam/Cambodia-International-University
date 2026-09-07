@@ -156,7 +156,7 @@ public class PaymentService {
     return q;
   }
 
-  private StudentClass matchClass(String major, String degree, String field, int year, int semester) {
+  public StudentClass matchClass(String major, String degree, String field, int year, int semester) {
 
     String level = "Year " + year;
     String sem = "Semester " + semester;

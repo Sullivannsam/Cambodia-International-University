@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileCheck2 } from "lucide-react";
+import { Upload, FileCheck2, Landmark, CreditCard, Loader2, AlertCircle } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import StyledSelect from "../common/StyledSelect";
+import { submitEnrollment, payEnrollmentFee } from "../../services/endpoints";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "https://cambodia-international-university.onrender.com";
+const ENROLLMENT_FEE = 50;
 
 const majors = [
   { code: "CS", label: "Computer Science" },
@@ -21,13 +22,18 @@ const years = ["Year 1", "Year 2", "Year 3", "Year 4"];
 const startDates = ["September 2026", "January 2027", "March 2027", "June 2027"];
 const nationalities = ["Cambodian", "Vietnamese", "Chinese", "Korean", "American", "French", "Other"];
 
-const steps = ["Application", "Confirmation", "Success"];
+const steps = ["Application", "Confirmation", "Payment", "Success"];
 
 export default function Enrollment() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [page, setPage] = useState("form");
   const [errors, setErrors] = useState({});
+  const [enrollId, setEnrollId] = useState(null);
+  const [alreadyPaid, setAlreadyPaid] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState("");
   const [form, setForm] = useState({
     firstNameEN: "", lastNameEN: "", firstNameKH: "", lastNameKH: "",
     age: "", birthDate: "", placeOfBirth: "", sex: "",
@@ -73,39 +79,56 @@ export default function Enrollment() {
   };
 
   const handleSubmit = async () => {
+    setSubmitting(true);
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/auth/enroll`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstNameEN: form.firstNameEN,
-          lastNameEN: form.lastNameEN,
-          firstNameKH: form.firstNameKH,
-          lastNameKH: form.lastNameKH,
-          age: parseInt(form.age),
-          birthDate: form.birthDate,
-          palceOfBirth: form.placeOfBirth,
-          sex: form.sex,
-          national: form.nationality,
-          phoneNumber: form.phone,
-          email: form.email,
-          startDate: form.startDate,
-          major: form.major,
-          field: form.field,
-          year: form.year,
-          degree: form.degree,
-          khmerNationalIdFile: form.khmerNationalIdFile,
-          photoFile: form.photoFile,
-          bacIIPhotoFile: form.bacIIPhotoFile,
-        }),
+      const res = await submitEnrollment({
+        firstNameEN: form.firstNameEN,
+        lastNameEN: form.lastNameEN,
+        firstNameKH: form.firstNameKH,
+        lastNameKH: form.lastNameKH,
+        age: parseInt(form.age),
+        birthDate: form.birthDate,
+        palceOfBirth: form.placeOfBirth,
+        sex: form.sex,
+        national: form.nationality,
+        phoneNumber: form.phone,
+        email: form.email,
+        startDate: form.startDate,
+        major: form.major,
+        field: form.field,
+        year: form.year,
+        degree: form.degree,
+        khmerNationalIdFile: form.khmerNationalIdFile,
+        photoFile: form.photoFile,
+        bacIIPhotoFile: form.bacIIPhotoFile,
       });
-      if (res.ok) {
+      setEnrollId(res.id);
+      if (res.paid) {
+        // Resubmission after a rejection — payment is already on file.
+        setAlreadyPaid(true);
         setPage("success");
       } else {
-        alert(t("Submission failed. Please try again."));
+        setAlreadyPaid(false);
+        setPage("payment");
       }
     } catch {
-      alert(t("Server not reachable. Make sure the backend is running."));
+      alert(t("Submission failed. Please try again."));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePay = async () => {
+    if (!enrollId) return;
+    setPaying(true);
+    setPayError("");
+    try {
+      await payEnrollmentFee(enrollId);
+      setPage("success");
+    } catch (err) {
+      setPayError(err?.message || t("Payment could not be processed. Please try again."));
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -169,7 +192,7 @@ export default function Enrollment() {
         <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
           <div className="step-bar">
             {steps.map((s, i) => {
-              const pageIdx = page === "form" ? 0 : page === "review" ? 1 : 2;
+              const pageIdx = page === "form" ? 0 : page === "review" ? 1 : page === "payment" ? 2 : 3;
               const done = i < pageIdx || page === "success";
               const active = page !== "success" && i === pageIdx;
               return (
@@ -397,9 +420,58 @@ export default function Enrollment() {
                   style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
                   {t("← Back to Edit")}
                 </button>
-                <button onClick={handleSubmit}
-                  style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.4)", transition: "all 0.2s" }}>
-                  {t("Submit Application →")}
+                <button onClick={handleSubmit} disabled={submitting}
+                  style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 14, fontWeight: 700, cursor: submitting ? "default" : "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.4)", transition: "all 0.2s", opacity: submitting ? 0.7 : 1 }}>
+                  {submitting ? t("Submitting...") : t("Submit Application →")}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {page === "payment" && (
+            <div className="enr-body" style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+              <div className="section-header">{t("Enrollment Fee Payment")}</div>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20, lineHeight: 1.6 }}>
+                {t("A one-time enrollment fee is required to submit your application for admin review. Once paid, we will not ask you to pay it again — even if you need to resubmit corrected information later.")}
+              </p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+                <div style={{ background: "linear-gradient(160deg,#3b82f6,#2563eb)", borderRadius: 16, padding: 24, color: "#fff", display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div style={{ fontSize: 13, opacity: 0.85 }}>{t("Scan & Pay")}</div>
+                  <div style={{ background: "#fff", borderRadius: 12, padding: 12, alignSelf: "center" }}>
+                    <img src="/img/photo_2026-07-29_23-06-42.jpg" alt={t("Payment QR Code")} style={{ width: 150, height: 150, display: "block", borderRadius: 8 }} />
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 12, padding: "12px 14px", fontSize: 13, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Landmark size={16} /> ACLEDA Bank — Cambodia Int'l University</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}><CreditCard size={16} /> 0000-0000-0000-0000</div>
+                  </div>
+                </div>
+
+                <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 6 }}>{t("Enrollment Fee")}</div>
+                    <div style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)" }}>${ENROLLMENT_FEE.toFixed(2)}</div>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
+                    {t("After sending the transfer, click the button below to confirm your payment and submit your application for review.")}
+                  </p>
+                  {payError && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#D2483C", fontSize: 13 }}>
+                      <AlertCircle size={15} /> {payError}
+                    </div>
+                  )}
+                  <button onClick={handlePay} disabled={paying}
+                    style={{ padding: "13px 20px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "white", fontSize: 14, fontWeight: 700, cursor: paying ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: paying ? 0.75 : 1 }}>
+                    {paying ? <Loader2 size={16} className="animate-spin" /> : null}
+                    {paying ? t("Confirming payment...") : t("I've Paid — Confirm & Submit")}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-start", marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
+                <button onClick={() => setPage("review")} disabled={paying}
+                  style={{ padding: "10px 24px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                  {t("← Back to Review")}
                 </button>
               </div>
             </div>
@@ -410,7 +482,11 @@ export default function Enrollment() {
               <div style={{ width: 72, height: 72, background: "linear-gradient(135deg,#22c55e,#16a34a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 32, boxShadow: "0 8px 25px rgba(34,197,94,0.35)" }}>✓</div>
               <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, color: "var(--text-primary)", marginBottom: 12 }}>{t("Submit Successful")}</h2>
               <p style={{ fontSize: 16, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 420, margin: "0 auto 16px" }}>
-                {t("Your application has been submitted successfully.")}<br />
+                {alreadyPaid ? (
+                  <>{t("Your corrected application has been resubmitted. Since your enrollment fee is already on file, you don't need to pay again.")}</>
+                ) : (
+                  <>{t("Your application and payment have been received successfully.")}</>
+                )}<br />
                 {t("You will receive our confirmation email within")} <strong>24 hours</strong>.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 32, alignItems: "center", marginBottom: 8 }}>
@@ -418,7 +494,7 @@ export default function Enrollment() {
                   <span style={{ fontSize: 13, color: "var(--accent,#15803d)", fontWeight: 600 }}>📧 {t("Confirmation sent to:")} {form.email || t("your email")}</span>
                 </div>
 
-                <button onClick={() => { setPage("form"); setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"",khmerNationalIdFile:"",photoFile:"",bacIIPhotoFile:"" }); navigate("/"); }}
+                <button onClick={() => { setPage("form"); setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"",khmerNationalIdFile:"",photoFile:"",bacIIPhotoFile:"" }); setEnrollId(null); setAlreadyPaid(false); navigate("/"); }}
                   style={{ padding: "14px 40px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px rgba(59,130,246,0.35)" }}>
                   {t("← Back to Home")}
                 </button>
