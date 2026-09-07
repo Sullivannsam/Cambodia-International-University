@@ -6,8 +6,17 @@ import StyledSelect from "../common/StyledSelect";
 
 const BASE_URL = process.env.REACT_APP_API_URL || "https://cambodia-international-university.onrender.com";
 
-const majors = ["Computer Science", "Business Administration", "Engineering", "Medicine", "Law", "Architecture", "Education", "Arts & Design"];
-const degrees = ["Bachelor's Degree", "Master's Degree", "PhD", "Associate Degree", "Diploma"];
+const majors = [
+  { code: "CS", label: "Computer Science" },
+  { code: "ELC", label: "Electric" },
+  { code: "BBA", label: "Business Administration" },
+];
+const majorFields = {
+  CS: ["Information Technology", "Software Development", "Cyber Security", "Network Engineering", "Data Analytics"],
+  ELC: ["Electrical", "Power Systems", "Renewable", "Electronics"],
+  BBA: ["Marketing", "Finance", "Accounting", "Business Management"],
+};
+const degrees = ["Bachelor", "Associate", "Diploma", "Master"];
 const years = ["Year 1", "Year 2", "Year 3", "Year 4"];
 const startDates = ["September 2026", "January 2027", "March 2027", "June 2027"];
 const nationalities = ["Cambodian", "Vietnamese", "Chinese", "Korean", "American", "French", "Other"];
@@ -23,13 +32,22 @@ export default function Enrollment() {
     firstNameEN: "", lastNameEN: "", firstNameKH: "", lastNameKH: "",
     age: "", birthDate: "", placeOfBirth: "", sex: "",
     nationality: "", phone: "", email: "",
-    startDate: "", major: "", year: "", degree: "",
+    startDate: "", major: "", field: "", year: "", degree: "",
     khmerNationalIdFile: "", photoFile: "", bacIIPhotoFile: "",
   });
 
   const update = (field, val) => {
     setForm(f => ({ ...f, [field]: val }));
     setErrors(e => ({ ...e, [field]: undefined }));
+  };
+
+  const handleMajorChange = (code) => {
+    setForm((prev) => {
+      const next = { ...prev, major: code };
+      if (!majorFields[code]?.includes(prev.field)) next.field = "";
+      return next;
+    });
+    setErrors((e) => ({ ...e, major: undefined }));
   };
 
   const handleFile = (field, file) => {
@@ -73,6 +91,7 @@ export default function Enrollment() {
           email: form.email,
           startDate: form.startDate,
           major: form.major,
+          field: form.field,
           year: form.year,
           degree: form.degree,
           khmerNationalIdFile: form.khmerNationalIdFile,
@@ -258,17 +277,18 @@ export default function Enrollment() {
               <div className="section-header">{t("Class Information")}</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
                 {[
-                  { label: t("Start Date *"), field: "startDate", options: startDates, placeholder: t("Select start date") },
-                  { label: t("Major *"), field: "major", options: majors, placeholder: t("Select major") },
-                  { label: t("Year *"), field: "year", options: years, placeholder: t("Select year") },
-                  { label: t("Degree *"), field: "degree", options: degrees, placeholder: t("Select degree") },
+                  { label: t("Start Date *"), field: "startDate", options: startDates.map((o) => ({ value: o, label: t(o) })), placeholder: t("Select start date") },
+                  { label: t("Degree *"), field: "degree", options: degrees.map((o) => ({ value: o, label: t(o) })), placeholder: t("Select degree") },
+                  { label: t("Major *"), field: "major", options: majors.map((m) => ({ value: m.code, label: `${m.code} - ${t(m.label)}` })), placeholder: t("Select major") },
+                  { label: t("Field / Specialization"), field: "field", options: (majorFields[form.major] || []).map((f) => ({ value: f, label: t(f) })), placeholder: t("Select field") },
+                  { label: t("Year *"), field: "year", options: years.map((o) => ({ value: o, label: t(o) })), placeholder: t("Select year") },
                 ].map(({ label, field, options, placeholder }) => (
                   <div key={field}>
                     <div className="field-label">{label}</div>
-                    <StyledSelect value={form[field]} onChange={(v) => update(field, v)}
-                      width="100%" placeholder={placeholder}
+                    <StyledSelect value={form[field]} onChange={field === "major" ? handleMajorChange : (v) => update(field, v)}
+                      width="100%" placeholder={placeholder} disabled={field === "field" && !form.major}
                       buttonStyle={{ padding: "10px 14px", borderRadius: 10, border: getBorder(field) }}
-                      options={options.map(o => ({ value: o, label: t(o) }))} />
+                      options={options} />
                     {errors[field] && <div className="error-msg">{errors[field]}</div>}
                   </div>
                 ))}
@@ -306,7 +326,7 @@ export default function Enrollment() {
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
-                <button onClick={() => setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",year:"",degree:"",khmerNationalIdFile:"",photoFile:"",bacIIPhotoFile:"" })}
+                <button onClick={() => setForm({ firstNameEN:"",lastNameEN:"",firstNameKH:"",lastNameKH:"",age:"",birthDate:"",placeOfBirth:"",sex:"",nationality:"",phone:"",email:"",startDate:"",major:"",field:"",year:"",degree:"",khmerNationalIdFile:"",photoFile:"",bacIIPhotoFile:"" })}
                   style={{ padding: "12px 28px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
                   {t("Cancel")}
                 </button>
@@ -340,7 +360,7 @@ export default function Enrollment() {
                 },
                 {
                   title: t("Study Program"),
-                  items: [[t("Start Date"), form.startDate], [t("Major"), form.major], [t("Year"), form.year], [t("Degree"), form.degree]],
+                  items: [[t("Start Date"), form.startDate], [t("Degree"), form.degree], [t("Major"), form.major], [t("Field / Specialization"), form.field], [t("Year"), form.year]],
                 },
               ].map(({ title, items }) => (
                 <div key={title} style={{ marginBottom: 24 }}>

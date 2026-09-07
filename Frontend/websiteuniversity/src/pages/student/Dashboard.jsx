@@ -1163,10 +1163,16 @@ export default function StudentDashboard() {
                       <div className="prof-row">
                         <span>{t("Exam Average")}</span>
                         <strong>
-                          {classStatus.avgScore != null ? `${Number(classStatus.avgScore).toFixed(2)}% ` : ""}
-                          <span className="grade-pill" style={{ background: classStatus.passed ? "#2E9E6C" : "#D2483C" }}>
-                            {classStatus.passed ? t("PASS") : t("FAIL")}
-                          </span>
+                          {classStatus.hasResults && classStatus.avgScore != null ? `${Number(classStatus.avgScore).toFixed(2)}% ` : ""}
+                          {classStatus.hasResults ? (
+                            <span className="grade-pill" style={{ background: classStatus.passed ? "#2E9E6C" : "#D2483C" }}>
+                              {classStatus.passed ? t("PASS") : t("FAIL")}
+                            </span>
+                          ) : (
+                            <span className="grade-pill" style={{ background: "#8A94A6" }}>
+                              {t("Not Graded")}
+                            </span>
+                          )}
                         </strong>
                       </div>
                       <div className="prof-row"><span>{t("Next Semester")}</span><strong>{t(classStatus.nextLabel || (classStatus.passed ? "Semester 2, Year 1" : `${classStatus.year || "Year 1"}, ${classStatus.semester || "Semester 1"}`))}</strong></div>
@@ -1378,7 +1384,13 @@ export default function StudentDashboard() {
                 <div className="prof-status">
                   <div className="prof-row"><span>{t("Class")}</span><strong>{t(classStatus.classLabel || `${classStatus.year} ${classStatus.semester}`) || "-"}</strong></div>
                   <div className="prof-row"><span>{t("Next Semester")}</span><strong>{t(classStatus.nextLabel || (classStatus.passed ? "Semester 2, Year 1" : `${classStatus.year || "Year 1"}, ${classStatus.semester || "Semester 1"}`))}</strong></div>
-                  <div className="prof-row"><span>{t("Exam Result")}</span><strong><span className="grade-pill" style={{ background: classStatus.passed ? "#2E9E6C" : "#D2483C" }}>{classStatus.passed ? t("PASS") : t("FAIL")}</span></strong></div>
+                  <div className="prof-row"><span>{t("Exam Result")}</span><strong>
+                    {classStatus.hasResults ? (
+                      <span className="grade-pill" style={{ background: classStatus.passed ? "#2E9E6C" : "#D2483C" }}>{classStatus.passed ? t("PASS") : t("FAIL")}</span>
+                    ) : (
+                      <span className="grade-pill" style={{ background: "#8A94A6" }}>{t("Not Graded")}</span>
+                    )}
+                  </strong></div>
                   <div className="prof-row"><span>{t("Amount to Pay")}</span><strong style={{ color: "#182644" }}>${Number(classStatus.price || classStatus.amount || 0).toFixed(2)}</strong></div>
                 </div>
                 {!classStatus.joined && !classStatus.paid && (

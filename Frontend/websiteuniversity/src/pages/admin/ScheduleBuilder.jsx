@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { Loader2, CalendarDays, Save, Plus, Trash2, Sparkles, Blocks, Copy, ChevronDown, KeyRound, Check } from "lucide-react";
 import { getAdminSchedule, saveAdminSchedule, deleteAdminScheduleRow, deleteAdminScheduleBlock, getTeacherAccounts } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
@@ -7,21 +8,20 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4"];
 const SEMESTERS = ["Semester 1", "Semester 2"];
+const DEGREES = ["Bachelor", "Associate", "Diploma", "Master"];
 const TIME_SLOTS = ["08:00-09:30", "09:40-11:10", "11:20-12:50", "14:00-15:30", "15:40-17:10", "17:20-18:50"];
 const ROOM_SUGGESTIONS = ["Ak-101", "Ak-102", "Ak-201", "Lab-1001", "Lab-1002"];
 
 const MAJORS = [
-  { code: "IT", label: "Information Technology" },
   { code: "CS", label: "Computer Science" },
+  { code: "ELC", label: "Electric" },
   { code: "BBA", label: "Business Administration" },
-  { code: "ENG", label: "Engineering" },
 ];
 
 const FIELDS = {
-  IT: ["Software Development", "Cyber Security", "Cyber Engineer", "Network Engineering", "Data Analytics"],
-  CS: ["Software Engineering", "Artificial Intelligence", "Data Science"],
+  CS: ["Information Technology", "Software Development", "Cyber Security", "Network Engineering", "Data Analytics"],
+  ELC: ["Electrical", "Power Systems", "Renewable", "Electronics"],
   BBA: ["Marketing", "Finance", "Accounting", "Business Management"],
-  ENG: ["Civil Engineering", "Mechanical Engineering", "Electrical Engineering", "Software Engineering"],
 };
 
 // Suggested curriculum per field: [yearIndex][semIndex] = [subject names]
@@ -125,10 +125,11 @@ const baseCurriculumFor = (field) => CURRICULUM[field] || [
   [["Capstone Project I", "Internship", "Portfolio Development", "Seminar"], ["Capstone Project II", "Professional Ethics", "Graduation Lab", "Career Readiness"]],
 ];
 
-const emptyEntry = (major, field, level, semester) => ({
+const emptyEntry = (major, field, level, semester, degree = "Bachelor") => ({
   id: Date.now() + Math.random(),
   major,
   field,
+  degree,
   level,
   semester,
   subject: "",
@@ -145,28 +146,73 @@ const suggestedDay = (index) => DAYS[index % 5];
 
 const StyledSelect = ({ value, onChange, options, placeholder, disabled, openWidth }) => {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const onClick = (ev) => {
-      if (ref.current && !ref.current.contains(ev.target)) setOpen(false);
+      if (btnRef.current && !btnRef.current.contains(ev.target)
+        && menuRef.current && !menuRef.current.contains(ev.target)) setOpen(false);
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  const place = (menu) => {
+    const btn = btnRef.current;
+    if (!btn || !menu) return;
+    const b = btn.getBoundingClientRect();
+    const scY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    const mh = menu.offsetHeight || 0;
+    const menuW = Math.min(Math.max(b.width, 140), window.innerWidth - 32);
+    const spaceBelow = window.innerHeight - b.bottom - 8;
+    const spaceAbove = b.top - 8;
+    const up = (spaceBelow < mh && spaceAbove > spaceBelow) || spaceBelow < 8;
+    const left = Math.max(8, Math.min(b.left, window.innerWidth - menuW - 8));
+    const top = (up ? b.top - mh - 10 : b.bottom + 10) + scY;
+    Object.assign(menu.style, {
+      left: `${Math.round(left)}px`,
+      top: `${Math.round(top)}px`,
+      width: `${Math.round(menuW)}px`,
+      minWidth: "0",
+      visibility: "visible",
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (open && menuRef.current) {
+      menuRef.current.style.visibility = "hidden";
+      place(menuRef.current);
+    }
+  }, [open, value]);
+
+  useEffect(() => {
+    if (!open) return;
+    const move = () => place(menuRef.current);
+    move();
+    const onScroll = () => move();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [open]);
+
   const selected = options.find((o) => o.value === value);
 
   return (
-    <div className="sb-dd" ref={ref} style={openWidth ? { minWidth: openWidth } : undefined}>
-      <button type="button" className={`sb-dd-btn${selected ? "" : " sb-dd-ph"}`}
-        disabled={disabled} onClick={() => setOpen((o) => !o)}
-        style={openWidth ? { minWidth: openWidth } : undefined}>
-        <span className="sb-dd-val">{selected ? selected.label : (placeholder || "Select...")}</span>
-        <ChevronDown size={14} style={{ transition: "transform .2s", transform: open ? "rotate(180deg)" : "none" }} />
-      </button>
-      {open && (
-        <div className="sb-dd-menu">
+    <>
+      <div className="sb-dd" ref={btnRef} style={openWidth ? { minWidth: openWidth } : undefined}>
+        <button type="button" className={`sb-dd-btn${selected ? "" : " sb-dd-ph"}`}
+          disabled={disabled} onClick={() => setOpen((o) => !o)}
+          style={openWidth ? { minWidth: openWidth } : undefined}>
+          <span className="sb-dd-val">{selected ? selected.label : (placeholder || "Select...")}</span>
+          <ChevronDown size={14} style={{ transition: "transform .2s", transform: open ? "rotate(180deg)" : "none" }} />
+        </button>
+      </div>
+      {open && typeof document !== "undefined" && createPortal(
+        <div ref={menuRef} className="sb-dd-menu" style={{ position: "absolute", top: "0", left: "0", visibility: "hidden", minWidth: "0", zIndex: 99999 }}>
           {options.length ? options.map((o) => (
             <button type="button" key={o.value} className={`sb-dd-item${o.value === value ? " sb-dd-sel" : ""}`}
               onClick={() => { onChange(o.value); setOpen(false); }}>
@@ -176,16 +222,18 @@ const StyledSelect = ({ value, onChange, options, placeholder, disabled, openWid
           )) : (
             <div className="sb-dd-empty">{placeholder || "No options"}</div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
 export default function ScheduleBuilder() {
   const { t } = useLanguage();
-  const [major, setMajor] = useState(() => localStorage.getItem("sb-major") || "IT");
-  const [field, setField] = useState(() => localStorage.getItem("sb-field") || "Software Development");
+  const [major, setMajor] = useState(() => localStorage.getItem("sb-major") || "CS");
+  const [field, setField] = useState(() => localStorage.getItem("sb-field") || "Information Technology");
+  const [degree, setDegree] = useState(() => localStorage.getItem("sb-degree") || "Bachelor");
   const [entries, setEntries] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,7 +252,7 @@ export default function ScheduleBuilder() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const fields = FIELDS[major] || FIELDS.IT;
+  const fields = FIELDS[major] || FIELDS.CS;
 
   const load = async () => {
     setLoading(true);
@@ -219,8 +267,9 @@ export default function ScheduleBuilder() {
       setTeachers(teacherList);
       const normalized = arr.map((e, i) => ({
         id: e.id ?? i,
-        major: e.major || "IT",
-        field: e.field || "Software Development",
+        major: e.major || "CS",
+        field: e.field || "Information Technology",
+        degree: e.degree || "Bachelor",
         level: e.level || "Year 1",
         semester: e.semester || "Semester 1",
         subject: e.subject || e.course || "",
@@ -251,12 +300,13 @@ export default function ScheduleBuilder() {
   useEffect(() => {
     localStorage.setItem("sb-major", major);
     localStorage.setItem("sb-field", field);
-  }, [major, field]);
+    localStorage.setItem("sb-degree", degree);
+  }, [major, field, degree]);
 
-  // Visible entries = the selected major+field only
+  // Visible entries = the selected degree+major+field only
   const visible = useMemo(
-    () => entries.filter((e) => e.major === major && e.field === field),
-    [entries, major, field]
+    () => entries.filter((e) => e.degree === degree && e.major === major && e.field === field),
+    [entries, degree, major, field]
   );
 
   const visibleFor = (level, semester) =>
@@ -267,7 +317,7 @@ export default function ScheduleBuilder() {
   };
 
   const addRow = (level, semester) => {
-    setEntries((prev) => [...prev, emptyEntry(major, field, level, semester)]);
+    setEntries((prev) => [...prev, emptyEntry(major, field, level, semester, degree)]);
   };
 
   const removeRow = (id) => {
@@ -295,7 +345,7 @@ export default function ScheduleBuilder() {
         }
         const saved = await saveAdminSchedule({
           schedule: toPayload(rows),
-          major, field, level: confirm.level, semester: confirm.semester,
+          major, field, degree, level: confirm.level, semester: confirm.semester,
         });
         applySaved(saved);
         setNotice(t("Saved") + ` ${t(confirm.level) || confirm.level}, ${t(confirm.semester) || confirm.semester} ${t("join codes generated and sent to the teachers.")}`);
@@ -311,7 +361,7 @@ export default function ScheduleBuilder() {
           setConfirm(null);
           return;
         }
-        const saved = await saveAdminSchedule({ schedule: toPayload(visible) });
+        const saved = await saveAdminSchedule({ schedule: toPayload(visible), major, field, degree });
         applySaved(saved);
         setNotice(t("Schedule table saved successfully. Join codes generated and sent."));
       } else if (confirm.type === "remove-row") {
@@ -333,7 +383,7 @@ export default function ScheduleBuilder() {
   const generateCurriculum = () => {
     const plan = baseCurriculumFor(field);
     setEntries((prev) => {
-      const keep = prev.filter((e) => e.major !== major || e.field !== field);
+      const keep = prev.filter((e) => e.major !== major || e.field !== field || e.degree !== degree);
       const rows = [];
       plan.forEach((sems, yi) => {
         sems.forEach((subjects, si) => {
@@ -348,6 +398,7 @@ export default function ScheduleBuilder() {
               id: Date.now() + Math.random(),
               major,
               field,
+              degree,
               level,
               semester,
               subject,
@@ -370,6 +421,7 @@ export default function ScheduleBuilder() {
       id: e.id,
       major: e.major,
       field: e.field,
+      degree: e.degree,
       level: e.level,
       semester: e.semester,
       subject: e.subject.trim(),
@@ -444,11 +496,11 @@ export default function ScheduleBuilder() {
   };
 
   const exportCSV = () => {
-    const header = `${t("Major")},${t("Field")},${t("Year")},${t("Semester")},${t("Subject")},${t("Day")},${t("Time")},${t("Room")},${t("Teacher")}`;
+    const header = `${t("Degree")},${t("Major")},${t("Field")},${t("Year")},${t("Semester")},${t("Subject")},${t("Day")},${t("Time")},${t("Room")},${t("Teacher")}`;
     const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const rows = visible.map((e) => {
       const teacherName = teachers.find((tt) => tt.email === e.teacher)?.username || e.teacher || "";
-      return [q(major), q(field), q(e.level), q(e.semester), q(e.subject), q(e.startDay === e.endDay ? e.startDay : `${e.startDay}-${e.endDay}`), q(e.time), q(e.room), q(teacherName)].join(",");
+      return [q(degree), q(major), q(field), q(e.level), q(e.semester), q(e.subject), q(e.startDay === e.endDay ? e.startDay : `${e.startDay}-${e.endDay}`), q(e.time), q(e.room), q(teacherName)].join(",");
     }).join("\n");
     const blob = new Blob([`${header}\n${rows}`], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -484,13 +536,18 @@ export default function ScheduleBuilder() {
         .sb .sb-dd .sb-dd-val { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sb .sb-dd-btn:hover { border-color: #B9CBF8; }
         .sb .sb-dd-ph { color: #9AA3B2; }
-        .sb .sb-dd-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 60; min-width: 100%; max-height: 300px; overflow: auto; background: #fff; border: 1px solid #E9EBF3; border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; animation: sbPop .14s ease; }
-        .sb .sb-dd-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 9px 12px; font-size: 13px; color: #1F2430; background: none; border: none; border-radius: 7px; cursor: pointer; text-align: left; }
-        .sb .sb-dd-item:hover { background: #F0F3FF; color: #3E5EDB; }
-        .sb .sb-dd-sel { background: #F0F3FF; color: #3E5EDB; font-weight: 600; }
-        .sb .sb-dd-item.sb-dd-sel:hover { background: #E6EDFF; color: #2E4FC4; }
-        .sb .sb-dd-empty { padding: 10px 12px; font-size: 13px; color: #9AA3B2; }
+        .sb .sb-dd-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 60; min-width: 100%; max-width: min(340px, calc(100vw - 32px)); max-height: 300px; overflow: auto; background: #fff; border: 1px solid #E9EBF3; border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; animation: sbPop .14s ease; }
+        .sb .sb-dd-item, body .sb-dd-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-width: 0; padding: 9px 12px; font-size: 13px; color: #1F2430; background: none; border: none; border-radius: 7px; cursor: pointer; text-align: left; }
+        .sb .sb-dd-item span, body .sb-dd-item span { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sb .sb-dd-item:hover, body .sb-dd-item:hover { background: #F0F3FF; color: #3E5EDB; }
+        .sb .sb-dd-sel, body .sb-dd-sel { background: #F0F3FF; color: #3E5EDB; font-weight: 600; }
+        .sb .sb-dd-item.sb-dd-sel:hover, body .sb-dd-item.sb-dd-sel:hover { background: #E6EDFF; color: #2E4FC4; }
+        .sb .sb-dd-empty, body .sb-dd-empty { padding: 10px 12px; font-size: 13px; color: #9AA3B2; }
         .sb .sb-dd-btn:disabled { opacity: .55; cursor: not-allowed; }
+        body .sb-dd-menu { position: absolute; top: 0; left: 0; min-width: 0; max-width: min(340px, calc(100vw - 32px)); max-height: 300px; overflow: auto; background: #fff; border: 1px solid #E9EBF3; border-radius: 10px; box-shadow: 0 12px 32px rgba(24,38,68,0.16); padding: 6px; animation: sbPop .14s ease; }
+        body .sb-dd-item { color: #1F2430; }
+        body .sb-dd-sel { background: #F0F3FF; color: #3E5EDB; font-weight: 600; }
+        body .sb-dd-empty { color: #9AA3B2; }
         .sb .sb-note { flex: 1 1 100%; font-size: 12.5px; color: #6B7280; background: #EEF1FB; border-radius: 8px; padding: 10px 12px; margin-top: 4px; }
         .sb .sb-note b { color: #3E5EDB; }
         .sb .sb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -619,6 +676,11 @@ export default function ScheduleBuilder() {
         <div className="sb-panel">
           <div className="sb-filters">
             <div className="sb-filter">
+              <label>{t("Degree")}</label>
+              <StyledSelect value={degree} onChange={setDegree}
+                  options={DEGREES.map((d) => ({ value: d, label: t(d) }))} />
+            </div>
+            <div className="sb-filter">
               <label>{t("Major")}</label>
               <StyledSelect value={major} onChange={setMajor}
                   options={MAJORS.map((m) => ({ value: m.code, label: `${m.code} ${t(m.label)}` }))} />
@@ -630,7 +692,7 @@ export default function ScheduleBuilder() {
             </div>
             <div className="sb-note">
               <Blocks size={14} style={{ verticalAlign: "-2px", marginRight: 6, color: "#3E5EDB" }} />
-              <b>{field}</b> ({major}) {t("Program covers")} <b>{t("Year 1, Semester 1")}</b> {t("through")} <b>{t("Year 4, Semester 2")}</b>. {t("Pick a subject, assign the day(s) it is taught, and the teacher (by email).")}
+              <b>{degree}</b> {t("Degree")} · <b>{field}</b> ({major}) {t("Program covers")} <b>{t("Year 1, Semester 1")}</b> {t("through")} <b>{t("Year 4, Semester 2")}</b>. {t("Pick a subject, assign the day(s) it is taught, and the teacher (by email).")}
             </div>
           </div>
 

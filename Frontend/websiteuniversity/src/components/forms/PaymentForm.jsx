@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  CreditCard, Calendar, Receipt, ShieldCheck,
-  AlertCircle, Loader2, ArrowRight, Landmark, Smartphone, User
+  CreditCard, Receipt, ShieldCheck,
+  AlertCircle, Loader2, ArrowRight, Landmark, Smartphone, User, CheckCircle2, X
 } from 'lucide-react';
 import Spinner from '../common/Spinner.jsx';
 import StyledSelect from '../common/StyledSelect';
 import { useLanguage } from "../../context/LanguageContext";
+import { lookupStudentForPayment, submitStudentPayment } from "../../services/endpoints";
 
 const paymentTypes = ["tuition", "registration", "library fee", "lab fee", "other"];
 
@@ -40,24 +41,57 @@ export default function PaymentForm() {
   const { t } = useLanguage();
   const userEmail = sessionStorage.getItem('email') || '';
 
-  const [form, setForm] = useState({ studentId: '', amount: '', date: '', type: '' });
+  const [form, setForm] = useState({ studentId: '', amount: '', type: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [errors, setErrors] = useState({});
   const [focused, setFocused] = useState({});
+  const [studentInfo, setStudentInfo] = useState(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const [successCode, setSuccessCode] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: '' });
     setError('');
+    if (e.target.name === 'studentId') {
+      setStudentInfo(null);
+      setLookupError('');
+    }
+  };
+
+  const handleLookup = async () => {
+    const cardCode = form.studentId.trim();
+    if (!cardCode) return;
+    setLookupLoading(true);
+    setLookupError('');
+    setStudentInfo(null);
+    try {
+      const info = await lookupStudentForPayment(cardCode);
+      setStudentInfo(info);
+      setForm(prev => ({ ...prev, amount: String(info.price || 0), type: prev.type || "tuition" }));
+    } catch (err) {
+      setLookupError(err.message || t('Student not found'));
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  const clearStudent = () => {
+    setStudentInfo(null);
+    setForm(prev => ({ ...prev, studentId: '', amount: '' }));
+    setLookupError('');
   };
 
   const validate = () => {
     const errs = {};
     if (!form.studentId.trim()) errs.studentId = t('Please fill the Student ID');
+    if (!studentInfo) errs.studentId = t('Please look up a student first');
     if (!form.amount) errs.amount = t('Please fill the Amount');
-    if (!form.date) errs.date = t('Please select a Date');
     if (!form.type) errs.type = t('Please select a Payment Type');
+    if (form.type === 'tuition' && studentInfo && !studentInfo.scheduleReady)
+      errs.type = t('The class has not been created yet. Payment cannot be accepted.');
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -69,32 +103,26 @@ export default function PaymentForm() {
     setError('');
     const delay = new Promise(r => setTimeout(r, 2000));
     try {
-      const [, res] = await Promise.all([
-        delay,
-        fetch(`${process.env.REACT_APP_API_URL}/api/auth/student/payment-fee`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            studentId: form.studentId,
-            amount: parseFloat(form.amount),
-            date: form.date,
-            type: form.type,
-          }),
+      const [data] = await Promise.all([
+        submitStudentPayment({
+          studentId: studentInfo.studentId,
+          amount: parseFloat(form.amount),
+          type: form.type,
         }),
+        delay,
       ]);
-      if (res.ok) {
-        try {
-          const existing = JSON.parse(localStorage.getItem("payments") || "[]");
-          existing.push({ studentId: form.studentId, amount: form.amount, date: form.date, type: form.type, timestamp: new Date().toISOString() });
-          localStorage.setItem("payments", JSON.stringify(existing));
-        } catch {}
-        navigate('/', { state: { paymentSuccess: true } });
+      try {
+        const existing = JSON.parse(localStorage.getItem("payments") || "[]");
+        existing.push({ studentId: form.studentId, amount: form.amount, type: form.type, timestamp: new Date().toISOString() });
+        localStorage.setItem("payments", JSON.stringify(existing));
+      } catch {}
+      if (data.joinCode) {
+        setSuccessCode(data.joinCode);
       } else {
-        const data = await res.json();
-        setError(data.message || t('Failed to record payment'));
+        navigate('/', { state: { paymentSuccess: true } });
       }
-    } catch {
-      setError(t('Server not reachable'));
+    } catch (err) {
+      setError(err?.message || t('Server not reachable'));
     } finally {
       setLoading(false);
     }
@@ -175,6 +203,7 @@ export default function PaymentForm() {
           font-size: 13px; font-weight: 600; margin-bottom: 18px;
         }
         .pf-alert-error { background: rgba(210,72,60,0.1); border: 1px solid rgba(210,72,60,0.35); color: #D2483C; }
+        .pf-alert-info { background: rgba(62,94,219,0.08); border: 1px solid rgba(62,94,219,0.2); color: #3E5EDB; }
         .pf-submit {
           width: 100%; padding: 14px 0; border: none; border-radius: 12px; margin-top: 6px;
           background: linear-gradient(135deg,#3E5EDB,#7A5CDB); color: #fff; font-size: 15px; font-weight: 700;
@@ -185,6 +214,30 @@ export default function PaymentForm() {
         .pf-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(62,94,219,0.45); }
         .pf-submit:disabled { opacity: 0.6; cursor: not-allowed; }
         .pf-note { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 16px; font-size: 12px; color: var(--text-muted); }
+        .pf-info {
+          background: var(--hover-bg); border: 1px solid var(--border); border-radius: 14px;
+          padding: 16px 18px; margin-bottom: 18px; animation: pfPop 0.3s ease;
+        }
+        .pf-info-head {
+          display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+        }
+        .pf-info-title { font-size: 13px; font-weight: 700; color: #2E9E6C; display: flex; align-items: center; gap: 6px; }
+        .pf-info-close {
+          background: none; border: none; cursor: pointer; padding: 4px; border-radius: 6px;
+          color: var(--text-muted); display: flex; align-items: center; transition: background 0.15s;
+        }
+        .pf-info-close:hover { background: rgba(0,0,0,0.06); }
+        .pf-info-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 6px 0; font-size: 13px; color: var(--text-secondary);
+        }
+        .pf-info-row strong { color: var(--text-primary); font-weight: 600; }
+        .pf-info-row + .pf-info-row { border-top: 1px solid var(--border); }
+        .pf-info-price {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 10px 0 2px; font-size: 14px; font-weight: 700;
+        }
+        .pf-info-price span:last-child { color: #182644; font-size: 18px; }
         @keyframes pfPop {
           from { opacity: 0; transform: translateY(18px) scale(0.98); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -261,6 +314,22 @@ export default function PaymentForm() {
               <div className="pf-alert pf-alert-error"><AlertCircle size={16} /> {error}</div>
             )}
 
+            {successCode && (
+              <div className="pf-info" style={{ border: '1px solid rgba(46,158,108,0.4)', background: 'rgba(46,158,108,0.08)' }}>
+                <div className="pf-info-head">
+                  <div className="pf-info-title"><CheckCircle2 size={15} /> {t("Payment Successful")}</div>
+                  <button type="button" className="pf-info-close" onClick={() => { setSuccessCode(''); setStudentInfo(null); setForm({ studentId: '', amount: '', type: '' }); }}><X size={15} /></button>
+                </div>
+                <div className="pf-info-row">
+                  <span>{t("Your class join key")}</span>
+                  <strong style={{ fontSize: 16, letterSpacing: 1, color: '#182644' }}>{successCode}</strong>
+                </div>
+                <p className="pf-note" style={{ marginTop: 10, justifyContent: 'flex-start', textAlign: 'left', lineHeight: 1.6 }}>
+                  {t("Use this key in \"Join Class by ID\" to view your class and teacher.")}
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} noValidate>
               <div className="pf-field">
                 <label style={labelClass}>{t("Student ID")}</label>
@@ -271,13 +340,42 @@ export default function PaymentForm() {
                     value={form.studentId}
                     onChange={handleChange}
                     onFocus={() => setFocused({ ...focused, studentId: true })}
-                    onBlur={() => setFocused({ ...focused, studentId: false })}
+                    onBlur={(e) => { setFocused({ ...focused, studentId: false }); if (e.target.value.trim()) handleLookup(); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleLookup(); } }}
                     placeholder={t("e.g. CS-2024-001")}
-                    style={{ ...inputClass, ...focusStyle('studentId'), borderColor: errors.studentId ? '#D2483C' : 'var(--border)' }}
+                    disabled={!!studentInfo}
+                    style={{
+                      ...inputClass, ...focusStyle('studentId'),
+                      borderColor: errors.studentId || lookupError ? '#D2483C' : studentInfo ? '#2E9E6C' : 'var(--border)',
+                      opacity: studentInfo ? 0.7 : 1,
+                    }}
                   />
                 </div>
                 {errors.studentId && <p className="pf-err"><AlertCircle size={13} /> {errors.studentId}</p>}
+                {lookupError && !studentInfo && <p className="pf-err"><AlertCircle size={13} /> {lookupError}</p>}
+                {lookupLoading && <p className="pf-err" style={{ color: '#3E5EDB' }}><Loader2 size={13} className="animate-spin" /> {t("Looking up student...")}</p>}
               </div>
+
+              {studentInfo && (
+                <div className="pf-info">
+                  <div className="pf-info-head">
+                    <div className="pf-info-title"><CheckCircle2 size={15} /> {t("Student Found")}</div>
+                    <button type="button" className="pf-info-close" onClick={clearStudent}><X size={15} /></button>
+                  </div>
+                  <div className="pf-info-row"><span>{t("Name")}</span><strong>{studentInfo.username}</strong></div>
+                  <div className="pf-info-row"><span>{t("Degree")}</span><strong>{studentInfo.degree || "-"}</strong></div>
+                  <div className="pf-info-row"><span>{t("Major")}</span><strong>{studentInfo.major || "-"}</strong></div>
+                  <div className="pf-info-row"><span>{t("Field / Specialization")}</span><strong>{studentInfo.field || "-"}</strong></div>
+                  <div className="pf-info-row"><span>{t("Current Class")}</span><strong>{studentInfo.classLabel}</strong></div>
+                  <div className="pf-info-row"><span>{t("Next Class")}</span><strong>{studentInfo.nextLabel}</strong></div>
+                  <div className="pf-info-price"><span>{t("Tuition Fee")}</span><span>${Number(studentInfo.price || 0).toFixed(2)}</span></div>
+                  {studentInfo.scheduleReady === false && (
+                    <p className="pf-err" style={{ marginTop: 10 }}>
+                      <AlertCircle size={13} /> {t("Your next class has not been created yet. Payment cannot be accepted until the schedule is published.")}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="pf-field">
                 <label style={labelClass}>{t("Amount (US$)")}</label>
@@ -293,27 +391,15 @@ export default function PaymentForm() {
                     onFocus={() => setFocused({ ...focused, amount: true })}
                     onBlur={() => setFocused({ ...focused, amount: false })}
                     placeholder="0.00"
-                    style={{ ...inputClass, ...focusStyle('amount'), borderColor: errors.amount ? '#D2483C' : 'var(--border)' }}
+                    readOnly={!!studentInfo}
+                    style={{
+                      ...inputClass, ...focusStyle('amount'),
+                      borderColor: errors.amount ? '#D2483C' : studentInfo ? '#2E9E6C' : 'var(--border)',
+                      background: studentInfo ? 'var(--hover-bg)' : 'var(--input-bg)',
+                    }}
                   />
                 </div>
                 {errors.amount && <p className="pf-err"><AlertCircle size={13} /> {errors.amount}</p>}
-              </div>
-
-              <div className="pf-field">
-                <label style={labelClass}>{t("Date")}</label>
-                <div className="pf-input-wrap">
-                  <Calendar size={17} />
-                  <input
-                    name="date"
-                    type="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    onFocus={() => setFocused({ ...focused, date: true })}
-                    onBlur={() => setFocused({ ...focused, date: false })}
-                    style={{ ...inputClass, ...focusStyle('date'), borderColor: errors.date ? '#D2483C' : 'var(--border)' }}
-                  />
-                </div>
-                {errors.date && <p className="pf-err"><AlertCircle size={13} /> {errors.date}</p>}
               </div>
 
               <div className="pf-field">
@@ -332,7 +418,11 @@ export default function PaymentForm() {
                 {errors.type && <p className="pf-err"><AlertCircle size={13} /> {errors.type}</p>}
               </div>
 
-              <button type="submit" disabled={loading} className="pf-submit">
+              <button
+              type="submit"
+              disabled={loading || !studentInfo || (form.type === 'tuition' && studentInfo.scheduleReady === false) || !!successCode}
+              className="pf-submit"
+            >
                 {loading ? <Loader2 size={17} className="animate-spin" /> : <ArrowRight size={17} />}
                 {loading ? t('Processing...') : t('Submit Payment')}
               </button>

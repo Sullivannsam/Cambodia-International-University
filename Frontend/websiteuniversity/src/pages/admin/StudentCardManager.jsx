@@ -4,6 +4,8 @@ import { getStudentAccounts, updateStudentCard, uploadStudentPhoto } from "../..
 import StudentIdCard from "../../components/common/StudentIdCard";
 import { useLanguage } from "../../context/LanguageContext";
 
+const CARD_DEGREES = ["Bachelor", "Associate", "Diploma", "Master"];
+
 export default function StudentCardManager() {
   const { t } = useLanguage();
   const [students, setStudents] = useState([]);
@@ -45,6 +47,8 @@ export default function StudentCardManager() {
     setForm({
       fullName: s.fullName || s.username || "",
       major: s.major || "",
+      field: s.field || "",
+      degree: s.degree || "",
       phone: s.phone || s.phone_number || "",
       address: s.address || "",
       cardCode: s.cardCode || s.card_code || "",
@@ -87,6 +91,8 @@ export default function StudentCardManager() {
     username: form.fullName,
     email: editing.email,
     major: form.major,
+    field: form.field,
+    degree: form.degree,
     yearNumber: editing.year,
     phone: form.phone,
     address: form.address,
@@ -190,10 +196,24 @@ export default function StudentCardManager() {
                   <label className="scm-label">{t("Full name")}</label>
                   <input className="scm-input" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
                 </div>
-                <div className="scm-inline-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="scm-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label className="scm-label">{t("Degree")}</label>
+                    <select className="scm-input" value={form.degree || ""}
+                      onChange={(e) => setForm({ ...form, degree: e.target.value })}>
+                      <option value="">{t("Select degree")}</option>
+                      {CARD_DEGREES.map((d) => (
+                        <option key={d} value={d}>{t(d)}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div>
                     <label className="scm-label">{t("Major")}</label>
-                    <input className="scm-input" value={form.major} onChange={(e) => setForm({ ...form, major: e.target.value })} placeholder={t("e.g. Computer Science")} />
+                    <input className="scm-input" value={form.major} onChange={(e) => setForm({ ...form, major: e.target.value })} placeholder={t("e.g. CS, ELC, BBA")} />
+                  </div>
+                  <div>
+                    <label className="scm-label">{t("Field / Specialization")}</label>
+                    <input className="scm-input" value={form.field} onChange={(e) => setForm({ ...form, field: e.target.value })} placeholder={t("e.g. Cyber Security")} />
                   </div>
                   <div>
                     <label className="scm-label">{t("Phone")}</label>

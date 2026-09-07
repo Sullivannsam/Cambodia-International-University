@@ -789,8 +789,8 @@ export const deleteAdminScheduleRow = async (id) => {
     return parse(response);
 };
 
-export const deleteAdminScheduleBlock = async ({ major, field, level, semester }) => {
-    const query = new URLSearchParams({ major, field, level, semester });
+export const deleteAdminScheduleBlock = async ({ degree = "", major, field, level, semester }) => {
+    const query = new URLSearchParams({ degree, major, field, level, semester });
     const response = await fetch(`${BASE_URL}/api/admin/schedule?${query}`, {
         method: "DELETE",
         headers: authHeaders(),
@@ -888,6 +888,25 @@ export const payStudentClass = async (data) => {
 export const getStudentClassByCode = async (code) => {
     const response = await fetch(`${BASE_URL}/api/students/class/${encodeURIComponent(code)}`, {
         headers: authHeaders(),
+    });
+    return parse(response);
+};
+
+// ---------- Payment lookup ----------
+export const lookupStudentForPayment = async (cardCode) => {
+    const response = await fetch(`${BASE_URL}/api/auth/student/payment/lookup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardCode }),
+    });
+    return parse(response);
+};
+
+export const submitStudentPayment = async (data) => {
+    const response = await fetch(`${BASE_URL}/api/auth/student/payment-fee`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
     });
     return parse(response);
 };
