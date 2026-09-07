@@ -20,6 +20,9 @@ public class Schedule {
   @Column(name = "Major")
   private String major;
 
+  @Column(name = "Degree")
+  private String degree;
+
   @Column(name = "FieldName")
   private String field;
 

@@ -391,6 +391,8 @@ public class TeacherService {
     StudentClass newCls = new StudentClass();
     newCls.setGroup(c);
     newCls.setMajor(s.getMajor());
+    newCls.setDegree(s.getDegree());
+    newCls.setField(s.getField());
     newCls.setYear(s.getLevel());
     newCls.setTeacher(teacher);
     studentClassRepository.save(newCls);

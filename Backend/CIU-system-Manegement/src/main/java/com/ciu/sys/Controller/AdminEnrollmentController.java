@@ -64,6 +64,7 @@ public class AdminEnrollmentController {
       row.put("phone", trimToNull(e.getPhoneNumber()));
       row.put("email", trimToNull(e.getEmail()));
       row.put("major", trimToNull(e.getMajor()));
+      row.put("field", trimToNull(e.getField()));
       row.put("year", trimToNull(e.getYear()));
       row.put("degree", trimToNull(e.getDegree()));
       row.put("startDate", trimToNull(e.getStartDate()));
@@ -100,6 +101,7 @@ public class AdminEnrollmentController {
       row.put("phone", trimToNull(e.getPhoneNumber()));
       row.put("email", trimToNull(e.getEmail()));
       row.put("major", trimToNull(e.getMajor()));
+      row.put("field", trimToNull(e.getField()));
       row.put("year", trimToNull(e.getYear()));
       row.put("degree", trimToNull(e.getDegree()));
       row.put("startDate", trimToNull(e.getStartDate()));

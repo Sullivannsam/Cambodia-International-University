@@ -58,6 +58,9 @@ public class Enroll {
   @Column(nullable = false)
   private String major;
 
+  @Column(name = "field_name")
+  private String field;
+
   @Column(nullable = false)
   private String year;
 

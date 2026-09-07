@@ -44,7 +44,7 @@ public class ScheduleService {
   }
 
   public List<Schedule> saveSchedule(List<Schedule> entries) {
-    return saveSchedule(entries, null, null, null, null);
+    return saveSchedule(entries, null, null, null, null, null);
   }
 
   // Soft-deletes one schedule row (keeps it in the DB with active = false).
@@ -58,10 +58,10 @@ public class ScheduleService {
     syncClasses(repo.findActive());
   }
 
-  // Soft-deletes a whole block (year/semester of a major/field).
-  public void softDeleteBlock(String major, String field, String level, String semester) {
+  // Soft-deletes a whole block (year/semester of a degree/major/field).
+  public void softDeleteBlock(String major, String field, String level, String semester, String degree) {
     for (Schedule s : repo.findActive()) {
-      if (sameBlock(s, major, field, level, semester)) {
+      if (sameBlock(s, major, field, level, semester, degree)) {
         s.setActive(false);
         repo.save(s);
       }
@@ -73,7 +73,7 @@ public class ScheduleService {
   // Generates a unique join code for rows that need one and alerts the assigned
   // teacher (by email) with the code, so students can join that class.
   public List<Schedule> saveSchedule(List<Schedule> entries, String major, String field, String level,
-      String semester) {
+      String semester, String degree) {
     List<Schedule> existing = repo.findActive();
     Set<Long> incomingIds = new HashSet<>();
     for (Schedule e : entries) {
@@ -82,7 +82,7 @@ public class ScheduleService {
       }
     }
     for (Schedule s : existing) {
-      if (sameBlock(s, major, field, level, semester) && !incomingIds.contains(s.getId())) {
+      if (sameBlock(s, major, field, level, semester, degree) && !incomingIds.contains(s.getId())) {
         s.setActive(false);
         repo.save(s);
       }
@@ -121,12 +121,13 @@ public class ScheduleService {
           // re-saving the same block never regenerates a join code.
           .filter(s -> !isBlank(s.getJoinCode()))
           .filter(s -> incomingIds.contains(s.getId()))
-          .filter(s -> sameBlock(s, sample.getMajor(), sample.getField(), sample.getLevel(), sample.getSemester()))
+          .filter(s -> sameBlock(s, sample.getMajor(), sample.getField(), sample.getLevel(), sample.getSemester(),
+              sample.getDegree()))
           .map(Schedule::getJoinCode)
           .findFirst()
           .orElseGet(() -> existing.stream()
               .filter(s -> sameBlock(s, sample.getMajor(), sample.getField(), sample.getLevel(),
-                  sample.getSemester()))
+                  sample.getSemester(), sample.getDegree()))
               .filter(s -> !isBlank(s.getJoinCode()))
               .map(Schedule::getJoinCode)
               .findFirst()
@@ -177,7 +178,7 @@ public class ScheduleService {
   }
 
   private String blockKey(Schedule s) {
-    return nz(s.getMajor()) + "\u0000" + nz(s.getField()) + "\u0000"
+    return nz(s.getDegree()) + "\u0000" + nz(s.getMajor()) + "\u0000" + nz(s.getField()) + "\u0000"
         + nz(s.getLevel()) + "\u0000" + nz(s.getSemester());
   }
 
@@ -185,11 +186,12 @@ public class ScheduleService {
     return v == null ? "" : v;
   }
 
-  private boolean sameBlock(Schedule s, String major, String field, String level, String semester) {
+  private boolean sameBlock(Schedule s, String major, String field, String level, String semester,
+      String degree) {
     return eq(s.getMajor(), major) && eq(s.getField(), field)
-        && eq(s.getLevel(), level) && eq(s.getSemester(), semester);
+        && eq(s.getLevel(), level) && eq(s.getSemester(), semester)
+        && eq(s.getDegree(), degree);
   }
-
   private boolean eq(String a, String b) {
     return Objects.equals(a, b);
   }
@@ -227,7 +229,8 @@ public class ScheduleService {
     String title = "Class Join Code - " + subject;
     String message = "Hello " + name + ",\n\n"
         + "You have been assigned to teach \"" + subject + "\""
-        + (isBlank(s.getMajor()) ? "" : " (" + s.getMajor() + (isBlank(s.getField()) ? "" : " - " + s.getField()) + ")")
+        + (isBlank(s.getDegree()) ? "" : " (" + s.getDegree() + ")")
+        + (isBlank(s.getMajor()) ? "" : " " + s.getMajor() + (isBlank(s.getField()) ? "" : " - " + s.getField()))
         + " for " + (isBlank(s.getLevel()) ? "" : s.getLevel() + ", ")
         + (isBlank(s.getSemester()) ? "" : s.getSemester()) + ".\n"
         + "Your class join code is: " + s.getJoinCode() + "\n"
@@ -248,6 +251,7 @@ public class ScheduleService {
   private void copy(Schedule to, Schedule from) {
 
     to.setMajor(from.getMajor());
+    to.setDegree(from.getDegree());
     to.setField(from.getField());
     to.setLevel(from.getLevel());
     to.setSemester(from.getSemester());
@@ -282,6 +286,8 @@ public class ScheduleService {
       }
       cls.setTeacher(t);
       cls.setMajor(s.getMajor());
+      cls.setDegree(s.getDegree());
+      cls.setField(s.getField());
       cls.setYear(s.getLevel()); // "Year 1"
       cls.setShift(s.getSemester()); // "Semester 1"
       classRepo.save(cls);

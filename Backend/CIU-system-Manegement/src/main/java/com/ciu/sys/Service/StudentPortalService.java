@@ -285,24 +285,25 @@ public class StudentPortalService {
     int nextYear = (int) q.get("nextYear");
     int nextSemester = (int) q.get("nextSemester");
 
-    double avg = examResultRepository.findByStudentEmail(student.getEmail()).stream()
-        .mapToDouble(ExamResult::getMark)
-        .average()
-        .orElse(0);
+    List<ExamResult> results = examResultRepository.findByStudentEmail(student.getEmail());
+    double avg = results.stream().mapToDouble(ExamResult::getMark).average().orElse(0);
 
     boolean paid = paymentRepository.findAll().stream()
         .filter(p -> p.getStudentId() != null && p.getStudentId().equals(student.getId()))
         .filter(p -> "TUITION".equalsIgnoreCase(p.getType()))
         .count() > 0;
 
-    Schedule nextRow = scheduleFor(student.getMajor(), nextYear, nextSemester);
+    Schedule nextRow = scheduleFor(student.getMajor(), student.getDegree(), student.getField(), nextYear, nextSemester);
 
     Map<String, Object> out = new java.util.HashMap<>();
-    out.put("classLabel", "Year " + student.getYear() + " Semester " + student.getSemester());
+    out.put("classLabel", classTitle(student));
     out.put("year", student.getYear());
     out.put("semester", student.getSemester());
     out.put("major", student.getMajor());
+    out.put("degree", student.getDegree() == null ? "" : student.getDegree());
+    out.put("field", student.getField() == null ? "" : student.getField());
     out.put("avgScore", Math.round(avg * 100.0) / 100.0);
+    out.put("hasResults", !results.isEmpty());
     out.put("passed", passed);
     out.put("nextLabel", "Year " + nextYear + " Semester " + nextSemester);
     out.put("price", ((Number) q.get("total")).doubleValue());
@@ -378,11 +379,15 @@ public class StudentPortalService {
       cls = new StudentClass();
       cls.setGroup(code);
       cls.setMajor(s.getMajor());
+      cls.setDegree(s.getDegree());
+      cls.setField(s.getField());
       cls.setYear(s.getLevel());
       cls.setShift(s.getSemester());
       cls = studentClassRepository.save(cls);
     }
     student.setClasses(cls);
+    student.setDegree(s.getDegree());
+    student.setField(s.getField());
     studentRepository.save(student);
   }
 
@@ -415,6 +420,8 @@ public class StudentPortalService {
     out.put("year", nz(s.getLevel()));
     out.put("course", nz(s.getSubject()).isBlank() ? nz(s.getCourse()) : nz(s.getSubject()));
     out.put("major", nz(s.getMajor()));
+    out.put("degree", nz(s.getDegree()));
+    out.put("field", nz(s.getField()));
     out.put("teacher", nz(s.getTeacher()).isBlank() ? nz(s.getInstructor()) : nz(s.getTeacher()));
     out.put("days", nz(s.getStartDay()).isBlank() ? nz(s.getDay()) : nz(s.getStartDay()));
     out.put("time", nz(s.getTime()));
@@ -450,20 +457,48 @@ public class StudentPortalService {
         .collect(Collectors.toList());
   }
 
-  private Schedule scheduleFor(String major, int year, int semester) {
+  private Schedule scheduleFor(String major, String degree, String field, int year, int semester) {
     String level = "Year " + year;
     String sem = "Semester " + semester;
-    return scheduleRepository.findActive().stream()
+    List<Schedule> candidates = scheduleRepository.findActive().stream()
         .filter(s -> nz(s.getLevel()).equals(level))
         .filter(s -> nz(s.getSemester()).equals(sem))
         .filter(s -> TuitionService.sameProgram(s.getMajor(), major))
-        .findFirst().orElse(null);
+        .filter(s -> matchesDegree(s.getDegree(), degree))
+        .filter(s -> matchesField(s.getField(), field))
+        .toList();
+    if (candidates.isEmpty())
+      return null;
+    return candidates.stream()
+        .filter(s -> !nz(s.getField()).isBlank())
+        .findFirst()
+        .orElse(candidates.get(0));
+  }
+
+  private boolean matchesDegree(String scheduleDegree, String studentDegree) {
+    boolean hasSchedule = scheduleDegree != null && !scheduleDegree.isBlank();
+    boolean hasStudent = studentDegree != null && !studentDegree.isBlank();
+    if (!hasSchedule)
+      return true;
+    if (!hasStudent)
+      return true;
+    return scheduleDegree.trim().equalsIgnoreCase(studentDegree.trim());
+  }
+
+  private boolean matchesField(String scheduleField, String studentField) {
+    boolean hasSchedule = scheduleField != null && !scheduleField.isBlank();
+    boolean hasStudent = studentField != null && !studentField.isBlank();
+    if (!hasSchedule)
+      return true;
+    if (!hasStudent)
+      return true;
+    return scheduleField.trim().equalsIgnoreCase(studentField.trim());
   }
 
   private String joinCodeFor(StudentAccount student) {
     if (student.getClasses() != null && !nz(student.getClasses().getGroup()).isBlank())
       return student.getClasses().getGroup();
-    Schedule row = scheduleFor(student.getMajor(), student.getYear(), student.getSemester());
+    Schedule row = scheduleFor(student.getMajor(), student.getDegree(), student.getField(), student.getYear(), student.getSemester());
     if (row == null || nz(row.getJoinCode()).isBlank())
       return null;
     return row.getJoinCode();
@@ -479,5 +514,15 @@ public class StudentPortalService {
 
   private static String nz(String v) {
     return v == null ? "" : v;
+  }
+
+  private String classTitle(StudentAccount student) {
+    String degree = nz(student.getDegree());
+    String field = nz(student.getField());
+    String name = !degree.isBlank() && !field.isBlank() ? degree + " " + field
+        : !field.isBlank() ? field
+        : !degree.isBlank() ? degree
+        : nz(student.getMajor());
+    return name + " Year " + student.getYear() + " Semester " + student.getSemester();
   }
 }

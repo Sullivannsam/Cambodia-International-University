@@ -25,6 +25,12 @@ public class StudentClass {
   @Column(name = "major")
   private String major;
 
+  @Column(name = "degree")
+  private String degree;
+
+  @Column(name = "field_name")
+  private String field;
+
   @Column(name = "year")
   private String year;
 

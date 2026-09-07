@@ -60,6 +60,12 @@ public class StudentAccount {
   @Column(name = "Major")
   private String major;
 
+  @Column(name = "FieldName")
+  private String field;
+
+  @Column(name = "Degree")
+  private String degree;
+
   @Column(name = "Address")
   private String address;
 

@@ -34,7 +34,8 @@ public class ScheduleController {
         request.major(),
         request.field(),
         request.level(),
-        request.semester());
+        request.semester(),
+        request.degree());
   }
 
   @DeleteMapping("/{id}")
@@ -47,8 +48,9 @@ public class ScheduleController {
       @RequestParam String major,
       @RequestParam String field,
       @RequestParam String level,
-      @RequestParam String semester) {
-    service.softDeleteBlock(major, field, level, semester);
+      @RequestParam String semester,
+      @RequestParam(required = false) String degree) {
+    service.softDeleteBlock(major, field, level, semester, degree);
   }
 
   public record SaveScheduleRequest(
@@ -56,6 +58,7 @@ public class ScheduleController {
       String major,
       String field,
       String level,
-      String semester) {
+      String semester,
+      String degree) {
   }
 }

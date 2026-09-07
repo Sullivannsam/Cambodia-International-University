@@ -53,6 +53,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/report/submit").hasAnyRole("TEACHER", "STUDENT")
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/enroll").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/student/payment/**").permitAll()
 
             // Role-protected
             .requestMatchers("/api/admin/**").hasRole("ADMIN")

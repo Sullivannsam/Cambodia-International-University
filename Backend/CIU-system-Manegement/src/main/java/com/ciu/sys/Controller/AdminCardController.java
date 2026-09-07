@@ -84,6 +84,14 @@ public class AdminCardController {
     if (!major.isEmpty())
       s.setMajor(major);
 
+    String degree = body.getOrDefault("degree", "").trim();
+    if (!degree.isEmpty())
+      s.setDegree(degree);
+
+    String field = body.getOrDefault("field", "").trim();
+    if (!field.isEmpty())
+      s.setField(field);
+
     String phone = body.getOrDefault("phone", "").trim();
     if (!phone.isEmpty())
       s.setPhone(phone);
@@ -105,6 +113,8 @@ public class AdminCardController {
         "id", s.getId(),
         "username", nz(s.getUsername()),
         "major", nz(s.getMajor()),
+        "degree", nz(s.getDegree()),
+        "field", nz(s.getField()),
         "phone", nz(s.getPhone()),
         "address", nz(s.getAddress()),
         "cardCode", s.getCardCode() == null ? String.format("%06d", s.getId()) : s.getCardCode(),
