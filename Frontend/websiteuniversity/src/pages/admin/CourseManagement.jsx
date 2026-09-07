@@ -181,7 +181,8 @@ export default function CourseManagement() {
           border-radius: 10px; padding: 12px 18px; font-size: 13px; margin-bottom: 20px;
         }
         .um .course-panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
-        .um .course-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .um .course-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .um .course-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
         .um .course-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; }
         .um .course-table td { padding: 10px 12px; border-bottom: 1px solid #F0EEE9; }
         .um .btn-edit, .um .btn-remove {
@@ -289,6 +290,7 @@ export default function CourseManagement() {
             </span>
           </div>
           {filtered.length > 0 ? (
+            <div className="course-table-wrap">
             <table className="course-table">
               <thead>
                 <tr>
@@ -333,6 +335,7 @@ export default function CourseManagement() {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <div style={{ color: "#6B7280", fontSize: 13.5, padding: "20px 0" }}>
               {q ? `${t("No courses match")} "${query}".` : t("No courses found. Click \"Add Course\" to create one.")}

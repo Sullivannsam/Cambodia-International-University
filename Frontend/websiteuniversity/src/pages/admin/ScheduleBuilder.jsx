@@ -493,6 +493,7 @@ export default function ScheduleBuilder() {
         .sb .sb-dd-btn:disabled { opacity: .55; cursor: not-allowed; }
         .sb .sb-note { flex: 1 1 100%; font-size: 12.5px; color: #6B7280; background: #EEF1FB; border-radius: 8px; padding: 10px 12px; margin-top: 4px; }
         .sb .sb-note b { color: #3E5EDB; }
+        .sb .sb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .sb .sb-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 860px; }
         .sb .sb-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; white-space: nowrap; font-size: 12px; }
         .sb .sb-table td { padding: 8px 12px; border-bottom: 1px solid #F0EEE9; }
@@ -674,6 +675,7 @@ export default function ScheduleBuilder() {
                     </span>
                   </div>
                   {rows.length ? (
+                      <div className="sb-table-wrap">
                       <table className="sb-table">
                         <thead>
                           <tr>
@@ -725,6 +727,7 @@ export default function ScheduleBuilder() {
                           ))}
                         </tbody>
                       </table>
+                      </div>
                     ) : (
                       <div className="sb-empty">{t("No subjects yet. Click")} "{t("Add Subject")}" {t("or")} "{t("Generate Curriculum")}".</div>
                     )}

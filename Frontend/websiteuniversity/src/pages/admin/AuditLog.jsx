@@ -127,7 +127,12 @@ export default function AuditLog() {
           border-radius: 10px; padding: 12px 18px; font-size: 13px; margin-bottom: 20px;
         }
         .al .log-panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
-        .al .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .al .log-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .al .log-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+        @media (max-width: 640px) {
+          .al .content-row { flex-direction: column; align-items: stretch; }
+          .al .search-box { width: 100%; }
+        }
         .al .log-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; }
         .al .log-table td { padding: 10px 12px; border-bottom: 1px solid #F0EEE9; vertical-align: top; }
         .al .action-pill { color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-block; }
@@ -193,34 +198,36 @@ export default function AuditLog() {
           </div>
 
           {filtered.length > 0 ? (
-            <table className="log-table">
-              <thead>
-                <tr>
-                  <th>{t("Timestamp")}</th>
-                  <th>{t("Actor")}</th>
-                  <th>{t("Action")}</th>
-                  <th>{t("Target")}</th>
-                  <th>{t("Details")}</th>
-                  <th>{t("IP")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((l) => {
-                  const action = (l.action || "UNKNOWN").toUpperCase();
-                  const color = ACTION_COLORS[action] || "#6B7280";
-                  return (
-                    <tr key={l.id || `${l.timestamp}-${l.actor}-${l.action}`}>
-                      <td style={{ whiteSpace: "nowrap", color: "#6B7280" }}>{formatTime(l.timestamp || l.createdAt || l.date)}</td>
-                      <td className="actor-name">{l.actor || l.username || l.email || "-"}</td>
-                      <td><span className="action-pill" style={{ background: color }}>{action}</span></td>
-                      <td>{l.target || "-"}</td>
-                      <td style={{ color: "#6B7280" }}>{l.details || l.message || "-"}</td>
-                      <td style={{ color: "#6B7280" }}>{l.ip || "-"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="log-table-wrap">
+              <table className="log-table">
+                <thead>
+                  <tr>
+                    <th>{t("Timestamp")}</th>
+                    <th>{t("Actor")}</th>
+                    <th>{t("Action")}</th>
+                    <th>{t("Target")}</th>
+                    <th>{t("Details")}</th>
+                    <th>{t("IP")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((l) => {
+                    const action = (l.action || "UNKNOWN").toUpperCase();
+                    const color = ACTION_COLORS[action] || "#6B7280";
+                    return (
+                      <tr key={l.id || `${l.timestamp}-${l.actor}-${l.action}`}>
+                        <td style={{ whiteSpace: "nowrap", color: "#6B7280" }}>{formatTime(l.timestamp || l.createdAt || l.date)}</td>
+                        <td className="actor-name">{l.actor || l.username || l.email || "-"}</td>
+                        <td><span className="action-pill" style={{ background: color }}>{action}</span></td>
+                        <td>{l.target || "-"}</td>
+                        <td style={{ color: "#6B7280" }}>{l.details || l.message || "-"}</td>
+                        <td style={{ color: "#6B7280" }}>{l.ip || "-"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div style={{ color: "#6B7280", fontSize: 13.5, padding: "20px 0", display: "flex", alignItems: "center", gap: 10 }}>
               <ShieldCheck size={18} style={{ color: "#3E5EDB" }} />

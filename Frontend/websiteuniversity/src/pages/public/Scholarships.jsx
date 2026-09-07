@@ -143,7 +143,7 @@ export default function Scholarships() {
         )}
 
         <form onSubmit={handleSubmit} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 22, boxShadow: "0 6px 20px rgba(0,0,0,0.05)" }}>
-          <div className="sch-grid2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="sch-grid2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
             <div>
               <label className="sch-label">{t("Full name")}</label>
               <input className="sch-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("e.g. Sokha Ly")} required />

@@ -81,3 +81,51 @@ input:focus, select:focus, textarea:focus {
   animation: spin 1s linear infinite;
 }
 
+/* ==========================================================================
+   Global responsive helpers
+   Used across admin/student/teacher/public pages to make fixed-width,
+   inline-styled layouts (tables, grids, cards) adapt to small screens.
+   ========================================================================== */
+
+/* Wrap any <table> that would otherwise overflow the viewport on mobile */
+.rtable-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.rtable-wrap table {
+  min-width: 640px;
+}
+
+/* Generic responsive grid: collapses any inline-styled multi-column grid
+   down to fewer columns as the viewport shrinks. Apply alongside an
+   inline `display:grid` style — this only overrides gridTemplateColumns. */
+@media (max-width: 1024px) {
+  .rgrid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .rgrid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 640px) {
+  .rgrid-4, .rgrid-3, .rgrid-2 { grid-template-columns: 1fr !important; }
+}
+
+/* Generic responsive flex row: stacks a horizontal inline-styled flex
+   container into a column on small screens. */
+@media (max-width: 768px) {
+  .rflex-stack { flex-direction: column !important; align-items: stretch !important; }
+  .rflex-stack > * { width: 100% !important; }
+}
+
+/* Fixed-width containers/cards/modals that use inline px widths should
+   pair the width with this class so they shrink on narrow viewports. */
+@media (max-width: 640px) {
+  .rwidth-fluid { width: 94vw !important; max-width: 94vw !important; }
+}
+
+/* Prevent horizontal page overflow caused by any stray fixed-width element */
+html, body {
+  overflow-x: hidden;
+}
+img, svg {
+  max-width: 100%;
+}
+

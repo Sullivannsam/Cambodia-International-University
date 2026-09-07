@@ -411,7 +411,7 @@ export default function TeacherDashboard() {
         .td-stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
         .td-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 20px; }
         .td-panel-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .td-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .td-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
         .td-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid var(--border); padding: 10px 12px; }
         .td-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
         .td-search { display: flex; align-items: center; gap: 8px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; color: var(--text-muted); flex: 1; min-width: 200px; max-width: 340px; }
@@ -571,7 +571,8 @@ export default function TeacherDashboard() {
               </div>
             </div>
             <div className="td-table-wrap">
-              <table className="td-table">
+              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="td-table">
                 <thead><tr><th>{t("Code")}</th><th>{t("Title")}</th><th>{t("Schedule")}</th><th>{t("Students")}</th><th>{t("Credits")}</th></tr></thead>
                 <tbody>
                   {classes.map(c => (
@@ -585,6 +586,7 @@ export default function TeacherDashboard() {
                   ))}
                 </tbody>
               </table>
+</div>
             </div>
           </>
         )}
@@ -600,7 +602,8 @@ export default function TeacherDashboard() {
                 <button className="td-btn" onClick={exportRosterCSV} style={{ padding: "8px 14px", fontSize: 12 }}><FileDown size={14} /> {t("Export CSV")}</button>
               </div>
             </div>
-            <table className="td-table">
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="td-table">
               <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Major")}</th><th>{t("Attendance")}</th><th>{t("Actions")}</th></tr></thead>
               <tbody>
                 {rosterLoading ? (
@@ -631,6 +634,7 @@ export default function TeacherDashboard() {
                 )) : <tr><td colSpan="5" className="td-empty">{t("No students in this class yet. Students appear here after they pay and join the class.")}</td></tr>}
               </tbody>
             </table>
+</div>
           </>
         )}
 
@@ -647,7 +651,8 @@ export default function TeacherDashboard() {
                 <button className="td-btn" onClick={saveAttendance} disabled={savingAtt}>{savingAtt ? t("Saving...") : (<><CheckCircle2 size={15} /> {t("Save Attendance")}</>)}</button>
               </div>
             </div>
-            <table className="td-table">
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="td-table">
               <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Status")}</th><th>{t("Mark")}</th></tr></thead>
               <tbody>
                 {rosterLoading ? (
@@ -685,6 +690,7 @@ export default function TeacherDashboard() {
                 )}
               </tbody>
             </table>
+</div>
           </>
         )}
 
@@ -697,7 +703,8 @@ export default function TeacherDashboard() {
                 <button className="td-btn" onClick={submitGrades} disabled={submitting}>{submitting ? t("Submitting...") : (<><GraduationCap size={15} /> {t("Submit Grades")}</>)}</button>
               </div>
             </div>
-            <table className="td-table">
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="td-table">
               <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Class")}</th><th>{t("Score")}</th></tr></thead>
               <tbody>
                 {students.slice(0, 4).map(s => (
@@ -710,6 +717,7 @@ export default function TeacherDashboard() {
                 ))}
               </tbody>
             </table>
+</div>
           </>
         )}
 
@@ -733,7 +741,8 @@ export default function TeacherDashboard() {
         {active === "assignments" && (
           <>
             <div className="td-row"><div className="td-panel-title" style={{ margin: 0 }}>{t("Assignments")}</div><button className="td-btn" onClick={() => setAssignOpen(true)}><Plus size={15} /> {t("New Assignment")}</button></div>
-            <table className="td-table">
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="td-table">
               <thead><tr><th>{t("Code")}</th><th>{t("Assignment")}</th><th>{t("Due")}</th><th>{t("Submissions")}</th><th></th></tr></thead>
               <tbody>
                 {assignments.length ? assignments.map(a => (
@@ -749,6 +758,7 @@ export default function TeacherDashboard() {
                 )) : <tr><td colSpan="5" className="td-empty">{t("No assignments yet")}</td></tr>}
               </tbody>
             </table>
+</div>
           </>
         )}
 

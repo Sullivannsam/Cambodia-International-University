@@ -133,9 +133,13 @@ export default function Enrollment() {
         .confirm-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
         .confirm-key { color: var(--text-muted); font-weight: 500; }
         .confirm-val { color: var(--text-primary); font-weight: 600; }
+        @media (max-width: 640px) {
+          .enr-header { padding: 24px 20px !important; }
+          .enr-body { padding: 20px !important; }
+        }
       `}</style>
 
-      <div style={{ background: "linear-gradient(90deg,#2563eb,#3b82f6)", padding: "32px 40px", textAlign: "center" }}>
+      <div className="enr-header" style={{ background: "linear-gradient(90deg,#2563eb,#3b82f6)", padding: "32px 40px", textAlign: "center" }}>
         <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontWeight: 700, color: "white", marginBottom: 6 }}>
           {t("Application for Enroll Class")}
         </h1>
@@ -176,9 +180,9 @@ export default function Enrollment() {
           </div>
 
           {page === "form" && (
-            <div style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+            <div className="enr-body" style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
               <div className="section-header">{t("Student Information")}</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 24 }}>
                 {[
                   { label: t("First Name (EN) *"), field: "firstNameEN", placeholder: t("e.g. Sophea") },
                   { label: t("Last Name (EN) *"), field: "lastNameEN", placeholder: t("e.g. Chan") },
@@ -194,7 +198,7 @@ export default function Enrollment() {
                 ))}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 24 }}>
                 <div>
                   <div className="field-label">{t("Age *")}</div>
                   <input placeholder={t("e.g. 20")} type="number" min="15" max="60" value={form.age} onChange={e => update("age", e.target.value)}
@@ -228,7 +232,7 @@ export default function Enrollment() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 36 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 36 }}>
                 <div>
                   <div className="field-label">{t("Nationality *")}</div>
                   <StyledSelect value={form.nationality} onChange={(v) => update("nationality", v)}
@@ -252,7 +256,7 @@ export default function Enrollment() {
               </div>
 
               <div className="section-header">{t("Class Information")}</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 32 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
                 {[
                   { label: t("Start Date *"), field: "startDate", options: startDates, placeholder: t("Select start date") },
                   { label: t("Major *"), field: "major", options: majors, placeholder: t("Select major") },
@@ -271,7 +275,7 @@ export default function Enrollment() {
               </div>
 
               <div className="section-header">{t("Documents (required)")}</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 36 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 20, marginBottom: 36 }}>
                 {[
                   { label: t("Khmer National ID *"), field: "khmerNationalIdFile", hint: t("ID card / Passport") },
                   { label: t("Photo *"), field: "photoFile", hint: t("2x3 portrait photo") },
@@ -315,7 +319,7 @@ export default function Enrollment() {
           )}
 
           {page === "review" && (
-            <div style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+            <div className="enr-body" style={{ padding: "32px", background: "#f9fafb", borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
               <div className="section-header">{t("Confirmation")}</div>
               <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24, lineHeight: 1.6 }}>
                 {t("Please review all the information below before submitting your application.")}
@@ -341,7 +345,7 @@ export default function Enrollment() {
               ].map(({ title, items }) => (
                 <div key={title} style={{ marginBottom: 24 }}>
                   <div className="section-header" style={{ marginBottom: 4 }}>{title}</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0 24px" }}>
                     {items.map(([k, v]) => (
                       <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid var(--border)", fontSize: 14 }}>
                         <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>{k}</span>
@@ -354,7 +358,7 @@ export default function Enrollment() {
 
               <div style={{ marginBottom: 28 }}>
                 <div className="section-header" style={{ marginBottom: 12 }}>{t("Documents")}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16 }}>
                   {[
                     [t("Khmer National ID"), "khmerNationalIdFile"],
                     [t("Photo"), "photoFile"],

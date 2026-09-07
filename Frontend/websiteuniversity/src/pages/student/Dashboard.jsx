@@ -565,7 +565,7 @@ export default function StudentDashboard() {
           justify-content: center; gap: 8px; box-shadow: 0 6px 16px rgba(62,94,219,0.35);
         }
         .sp-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .sp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .sp-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
         .sp-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; }
         .sp-table td { padding: 10px 12px; border-bottom: 1px solid #F0EEE9; }
         .grade-pill { color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
@@ -838,7 +838,8 @@ export default function StudentDashboard() {
                 <button className="add-btn" onClick={downloadRosterCSV} style={{ padding: "8px 14px", fontSize: 12 }}><FileDown size={14} /> {t("Export CSV")}</button>
               </div>
               {schedule.length ? (
-                <table className="sp-table">
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                   <thead>
                     <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Subject")}</th><th>{t("Semester")}</th><th>{t("Time")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th></tr>
                   </thead>
@@ -858,6 +859,7 @@ export default function StudentDashboard() {
                     ))}
                   </tbody>
                 </table>
+</div>
               ) : <EmptyState title={t("No schedule available yet")} />}
             </div>
           )}
@@ -866,7 +868,8 @@ export default function StudentDashboard() {
             <div className="panel">
               <div className="panel-title sp-flex"><ClipboardList size={16} /> {t("Assignments")}</div>
               {assignments.length ? (
-                <table className="sp-table">
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                   <thead>
                     <tr><th>{t("Course")}</th><th>{t("Assignment")}</th><th>{t("Due")}</th><th>{t("Status")}</th><th></th></tr>
                   </thead>
@@ -894,6 +897,7 @@ export default function StudentDashboard() {
                     ))}
                   </tbody>
                 </table>
+</div>
               ) : <EmptyState title={t("No assignments yet")} />}
             </div>
           )}
@@ -902,7 +906,8 @@ export default function StudentDashboard() {
             <div className="panel">
               <div className="panel-title sp-flex"><ClipboardCheck size={16} /> {t("My Attendance")}</div>
               {attendanceRecords.length ? (
-                <table className="sp-table">
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                   <thead>
                     <tr><th>{t("Date")}</th><th>{t("Hour")}</th><th>{t("Subject")}</th><th>{t("Teacher")}</th><th>{t("Status")}</th></tr>
                   </thead>
@@ -934,6 +939,7 @@ export default function StudentDashboard() {
                     })}
                   </tbody>
                 </table>
+</div>
               ) : <EmptyState title={t("No attendance data yet")} />}
             </div>
           )}
@@ -946,7 +952,8 @@ export default function StudentDashboard() {
               <div className="panel">
                 <div className="panel-title">{t("Grades")}</div>
                 {grades.length > 0 ? (
-                  <table className="sp-table">
+                  <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                     <thead>
                       <tr>
                         <th>{t("Day")}</th>
@@ -976,6 +983,7 @@ export default function StudentDashboard() {
                       })}
                     </tbody>
                   </table>
+</div>
                 ) : (
                   <div className="date-label">{t("No grades available yet.")}</div>
                 )}
@@ -992,7 +1000,8 @@ export default function StudentDashboard() {
               <div className="panel">
                 <div className="panel-title"><CalendarDays size={16} /> {t("Weekly Schedule")}</div>
                 {schedule.length ? (
-                  <table className="sp-table">
+                  <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                     <thead>
                       <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Subject")}</th><th>{t("Hour")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th><th>{t("Score")}</th></tr>
                     </thead>
@@ -1015,13 +1024,15 @@ export default function StudentDashboard() {
                       })}
                     </tbody>
                   </table>
+</div>
                 ) : <EmptyState title={t("No schedule available yet")} />}
               </div>
 
               <div className="panel">
                 <div className="panel-title"><ClipboardCheck size={16} /> {t("Attendance")}</div>
                 {history.length || attendanceRecords.length ? (
-                  <table className="sp-table">
+                  <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                     <thead>
                       <tr><th>{t("Date")}</th><th>{t("Hour")}</th><th>{t("Subject")}</th><th>{t("Teacher")}</th><th>{t("Status")}</th></tr>
                     </thead>
@@ -1040,6 +1051,7 @@ export default function StudentDashboard() {
                       })}
                     </tbody>
                   </table>
+</div>
                 ) : <EmptyState title={t("No attendance records yet")} />}
               </div>
 
@@ -1073,7 +1085,8 @@ export default function StudentDashboard() {
                 <div className="panel-title">{t("Academic Transcript")}</div>
                 {grades.length > 0 ? (
                   <>
-                    <table className="sp-table">
+                    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                       <thead>
                         <tr>
                           <th>{t("Date")}</th>
@@ -1106,6 +1119,7 @@ export default function StudentDashboard() {
                         })}
                       </tbody>
                     </table>
+</div>
                     <div style={{ display: "flex", gap: 16, marginTop: 20, flexWrap: "wrap" }}>
                       <div className="sp-card" style={{ padding: "14px 20px" }}>
                         <div className="sp-card-title">{t("Cumulative GPA")}</div>
@@ -1206,6 +1220,7 @@ export default function StudentDashboard() {
               {payments.length > 0 && (
                 <div className="panel">
                   <div className="panel-title">{t("Payment History")} ({payments.length})</div>
+                  <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                   <table className="sp-table">
                     <thead>
                       <tr>
@@ -1237,6 +1252,7 @@ export default function StudentDashboard() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
             </>
@@ -1267,7 +1283,8 @@ export default function StudentDashboard() {
               {invoices.length ? (
                 <div className="panel">
                   <div className="panel-title">{t("Invoices")}</div>
-                  <table className="sp-table">
+                  <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="sp-table">
                     <thead>
                       <tr><th>{t("Invoice")}</th><th>{t("Description")}</th><th>{t("Due")}</th><th>{t("Amount")}</th><th>{t("Status")}</th></tr>
                     </thead>
@@ -1287,6 +1304,7 @@ export default function StudentDashboard() {
                       ))}
                     </tbody>
                   </table>
+</div>
                 </div>
               ) : <EmptyState title={t("No invoices yet")} />}
             </>

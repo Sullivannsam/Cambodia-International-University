@@ -171,6 +171,7 @@ export default function StudentCardManager() {
           <form className="scm-modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
             <style>{`
               @media (max-width: 800px) { .scm-grid { grid-template-columns: 1fr !important; } }
+              @media (max-width: 420px) { .scm-inline-2 { grid-template-columns: 1fr !important; } }
             `}</style>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h3 style={{ margin: 0 }}>{t("Edit Student Card")}</h3>
@@ -189,7 +190,7 @@ export default function StudentCardManager() {
                   <label className="scm-label">{t("Full name")}</label>
                   <input className="scm-input" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="scm-inline-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div>
                     <label className="scm-label">{t("Major")}</label>
                     <input className="scm-input" value={form.major} onChange={(e) => setForm({ ...form, major: e.target.value })} placeholder={t("e.g. Computer Science")} />

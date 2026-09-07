@@ -93,7 +93,7 @@ export default function EnrollmentManagement({ onPendingChange }) {
         .em-stat { background: #fff; border: 1px solid #ECE6DC; border-radius: 12px; padding: 12px 20px; box-shadow: 0 2px 10px rgba(24,38,68,0.05); }
         .em-stat-value { font-size: 22px; font-weight: 800; color: #182644; }
         .em-stat-label { font-size: 12px; color: #9A8F80; }
-        .em-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(24,38,68,0.06); font-size: 13px; }
+        .em-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(24,38,68,0.06); font-size: 13px; min-width: 640px; }
         .em-table th { text-align: left; background: #F6F4EF; color: #3E5EDB; padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
         .em-table td { padding: 12px 16px; border-top: 1px solid #F0EEE9; }
         .em-badge { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 12px; border-radius: 999px; }
@@ -168,7 +168,8 @@ export default function EnrollmentManagement({ onPendingChange }) {
       {loading ? (
         <div style={{ textAlign: "center", padding: 40 }}><Loader2 size={28} className="sp-spin" style={{ color: "#3E5EDB", animation: "emspin 1s linear infinite" }} /></div>
       ) : filtered.length ? (
-        <table className="em-table">
+        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="em-table">
           <thead>
             <tr><th>{t("Student")}</th><th>{t("Course")}</th><th>{t("Degree")}</th><th>{t("Start")}</th><th>{t("Status")}</th><th>{t("Actions")}</th></tr>
           </thead>
@@ -197,6 +198,7 @@ export default function EnrollmentManagement({ onPendingChange }) {
             })}
           </tbody>
         </table>
+</div>
       ) : (
         <div className="em-empty">{query ? `${t("No enrollments match your search.")} \"${query}\"` : t("No enrollments match your search.")}</div>
       )}

@@ -186,7 +186,8 @@ export default function NewsManagement() {
           border-radius: 10px; padding: 12px 18px; font-size: 13px; margin-bottom: 20px;
         }
         .nm .news-panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
-        .nm .news-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .nm .news-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .nm .news-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
         .nm .news-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; }
         .nm .news-table td { padding: 10px 12px; border-bottom: 1px solid #F0EEE9; vertical-align: top; }
         .nm .btn-edit, .nm .btn-remove {
@@ -291,6 +292,7 @@ export default function NewsManagement() {
             </span>
           </div>
           {filtered.length > 0 ? (
+            <div className="news-table-wrap">
             <table className="news-table">
               <thead>
                 <tr>
@@ -327,6 +329,7 @@ export default function NewsManagement() {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <div style={{ color: "#6B7280", fontSize: 13.5, padding: "20px 0" }}>
               {q ? `${t('No news match "')}${query}${t('".')}` : t('No news yet. Click "Post News" to publish the first article.')}

@@ -368,6 +368,10 @@ export default function UserManagement() {
         }
         @media (max-width: 980px) {
           .um table { font-size: 12px; }
+          .um-role-stats { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 480px) {
+          .um-role-stats { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -391,7 +395,7 @@ export default function UserManagement() {
       {error && <div className="um-banner um-error">{error}</div>}
       {notice && <div className="um-banner um-success">{notice}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 14, marginBottom: 18 }}>
+      <div className="um-role-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 14, marginBottom: 18 }}>
         {[
           { role: "ADMIN", label: t("Admin"), color: "#3E5EDB" },
           { role: "TEACHER", label: t("Teacher"), color: "#2E9E6C" },

@@ -121,7 +121,7 @@ export default function ReportPage() {
         .rp .rp-stat-value { font-size: 24px; font-weight: 800; color: #182644; }
         .rp .rp-stat-label { font-size: 12px; color: #9A8F80; margin-top: 2px; }
         .rp .rp-panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
-        .rp .rp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .rp .rp-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
         .rp .rp-table th { text-align: left; color: #3E5EDB; border-bottom: 2px solid #E5E7EB; padding: 10px 12px; white-space: nowrap; }
         .rp .rp-table td { padding: 10px 12px; border-bottom: 1px solid #F0EEE9; vertical-align: top; }
         .rp .type-pill { color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-block; }
@@ -174,7 +174,8 @@ export default function ReportPage() {
             </div>
 
             {filtered.length > 0 ? (
-              <table className="rp-table">
+              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+<table className="rp-table">
                 <thead>
                   <tr>
                     <th>{t("Reporter")}</th>
@@ -220,6 +221,7 @@ export default function ReportPage() {
                   ))}
                 </tbody>
               </table>
+</div>
             ) : (
               <div style={{ color: "#6B7280", fontSize: 13.5, padding: "20px 0" }}>
                 {q ? `${t("No reports match your search.")} \"${q}\"` : statusFilter !== "ALL" ? t("No reports match your filters.") : t("No reports submitted yet.")}

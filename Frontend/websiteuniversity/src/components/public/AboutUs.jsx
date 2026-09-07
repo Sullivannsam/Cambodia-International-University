@@ -5,14 +5,14 @@ export default function AboutUs() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", background: "var(--bg-secondary)" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 24px" }}>
-        <h1 style={{ fontSize: 36, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12, textAlign: "center" }}>
+        <h1 style={{ fontSize: "clamp(26px, 5vw, 36px)", fontWeight: 700, color: "var(--text-primary)", marginBottom: 12, textAlign: "center" }}>
           {t("About Cambodia International University")}
         </h1>
         <p style={{ fontSize: 16, color: "var(--text-secondary)", textAlign: "center", marginBottom: 48, lineHeight: 1.7 }}>
           {t("Empowering the next generation of leaders through quality education and innovation since 2005.")}
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 48 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, marginBottom: 48 }}>
           <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 28, boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
             <h3 style={{ fontSize: 18, fontWeight: 600, color: "#2563eb", marginBottom: 12 }}>{t("Our Mission")}</h3>
             <p style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7 }}>
@@ -29,7 +29,7 @@ export default function AboutUs() {
 
         <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 32, boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
           <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", marginBottom: 16 }}>{t("Why Choose CIU?")}</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
             {[
               ["🎓", t("Experienced Faculty"), t("Learn from industry experts and experienced professors.")],
               ["🌍", t("Global Network"), t("Connect with students and partners worldwide.")],
