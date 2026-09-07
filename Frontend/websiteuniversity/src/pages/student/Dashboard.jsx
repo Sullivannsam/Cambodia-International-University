@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
-} from "recharts";
-import {
-  LayoutGrid, BookOpen, GraduationCap, UserCircle2, LogOut,
+  LayoutGrid, BookOpen, UserCircle2, LogOut, GraduationCap,
   Loader2, ClipboardList, X, RotateCcw, CreditCard,
   FileText, Megaphone, Save, Printer, Bell, CalendarDays,
   ClipboardCheck, MessageSquare, FileDown, Send, Upload, AlertTriangle
@@ -15,7 +12,8 @@ import {
   getStudentNotifications, markStudentNotificationsRead,
   getStudentMessages, sendStudentMessage, getStudentInvoices,
   submitReport,
-  getStudentClassStatus, payStudentClass, joinStudentClass
+  getStudentClassStatus, payStudentClass, joinStudentClass,
+  getStudentHistory
 } from "../../services/endpoints";
 import LogoutModal from "../../components/common/LogoutModal";
 import EmptyState from "../../components/common/EmptyState";
@@ -40,6 +38,7 @@ const NAV = [
       { key: "schedule", label: "Schedule", icon: CalendarDays },
       { key: "assignments", label: "Assignments", icon: ClipboardList },
       { key: "grades", label: "Grades", icon: GraduationCap },
+      { key: "history", label: "History", icon: FileText },
       { key: "transcript", label: "Transcript", icon: FileText },
       { key: "attendance", label: "Attendance", icon: ClipboardCheck },
     ],
@@ -86,6 +85,7 @@ export default function StudentDashboard() {
   const [enrollments, setEnrollments] = useState([]);
   const [myClass, setMyClass] = useState(null);
   const [grades, setGrades] = useState([]);
+  const [history, setHistory] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -283,7 +283,7 @@ export default function StudentDashboard() {
       setLoading(true);
       setError("");
       try {
-        const [p, e, g, ann, sch, att, asg, notif, msg, inv] = await Promise.all([
+        const [p, e, g, ann, sch, att, asg, notif, msg, inv, hist] = await Promise.all([
           getStudentProfile().catch(() => ({})),
           getStudentEnrollments().catch(() => []),
           getStudentGrades().catch(() => []),
@@ -294,11 +294,13 @@ export default function StudentDashboard() {
           getStudentNotifications().catch(() => []),
           getStudentMessages().catch(() => []),
           getStudentInvoices().catch(() => []),
+          getStudentHistory().catch(() => []),
         ]);
         getStudentClassInfo().then(d => setMyClass(d && typeof d === "object" ? d : null)).catch(() => {});
         setProfile(Array.isArray(p) ? p[0] || {} : p || {});
         setEnrollments(Array.isArray(e) ? e : []);
         setGrades(Array.isArray(g) ? g : []);
+        setHistory(Array.isArray(hist) ? hist : []);
         setAnnouncements(Array.isArray(ann) ? ann : []);
         setSchedule(Array.isArray(sch) ? sch : []);
         setAttendanceRecords(Array.isArray(att) ? att : []);
@@ -320,6 +322,7 @@ export default function StudentDashboard() {
     getStudentClassInfo().then((d) => setMyClass(d && typeof d === "object" ? d : null)).catch(() => {});
     getStudentGrades().then((g) => setGrades(Array.isArray(g) ? g : [])).catch(() => {});
     getStudentSchedule().then((sch) => setSchedule(Array.isArray(sch) ? sch : [])).catch(() => {});
+    getStudentHistory().then((h) => setHistory(Array.isArray(h) ? h : [])).catch(() => {});
   };
 
   const displayName = profile.username || profile.name || user.username || (user.email || "").split("@")[0] || t("Student");
@@ -389,9 +392,12 @@ export default function StudentDashboard() {
     const rows = grades.map((g, i) => {
       const score = Number(g.score ?? g.mark ?? 0);
       const lg = letterGrade(score);
-      return `<tr><td>${g.title || g.courseName || g.name || "-"}</td><td>${g.code || g.courseCode || "-"}</td><td>${score}%</td><td>${lg.letter}</td><td>${lg.pts.toFixed(1)}</td></tr>`;
+      const dateStr = g.createdAt
+        ? new Date(g.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+        : g.date || "-";
+      return `<tr><td>${dateStr}</td><td>${g.title || g.courseName || g.name || "-"}</td><td>${g.teacher || g.instructor || "-"}</td><td>${score}%</td><td>${lg.letter}</td><td>${lg.pts.toFixed(1)}</td><td>${g.semester || "-"}</td></tr>`;
     }).join("");
-    w.document.write(`<!doctype html><html><head><title>${t("Academic Transcript")}</title><style>body{font-family:Arial,sans-serif;padding:40px}table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:10px;border:1px solid #ddd;text-align:left}h1{color:#3E5EDB}</style></head><body><h1>${t("Cambodia International University")}</h1><p>${t("Academic Transcript")} — ${displayName} (${studentId})</p><table><thead><tr><th>${t("Course")}</th><th>${t("Code")}</th><th>${t("Score")}</th><th>${t("Grade")}</th><th>${t("Grade Points")}</th></tr></thead><tbody>${rows}</tbody></table><p><strong>${t("Cumulative GPA")}:</strong> ${gpa} &nbsp; <strong>${t("Credits Earned")}:</strong> ${totalCredits}</p></body></html>`);
+    w.document.write(`<!doctype html><html><head><title>${t("Academic Transcript")}</title><style>body{font-family:Arial,sans-serif;padding:40px}table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:10px;border:1px solid #ddd;text-align:left}h1{color:#3E5EDB}</style></head><body><h1>${t("Cambodia International University")}</h1><p>${t("Academic Transcript")} — ${displayName} (${studentId})</p><table><thead><tr><th>${t("Date")}</th><th>${t("Course")}</th><th>${t("Teacher")}</th><th>${t("Score")}</th><th>${t("Grade")}</th><th>${t("Grade Points")}</th><th>${t("Semester")}</th></tr></thead><tbody>${rows}</tbody></table><p><strong>${t("Cumulative GPA")}:</strong> ${gpa} &nbsp; <strong>${t("Credits Earned")}:</strong> ${totalCredits}</p></body></html>`);
     w.document.close();
     w.print();
   };
@@ -509,7 +515,7 @@ export default function StudentDashboard() {
         .sp-card-title { font-size: 12.5px; font-weight: 600; color: #3E5EDB; margin-bottom: 8px; }
         .sp-card-value { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 700; color: #182644; }
         .sp-card-sub { font-size: 12px; color: #9A8F80; margin-top: 4px; }
-        .panel { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
+        .panel { background: #fff; border-radius: 14px; padding: 22px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(24,38,68,0.06); }
         .prof-status { border: 1px solid #ECE6DC; border-radius: 12px; overflow: hidden; }
         .prof-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 16px; border-bottom: 1px solid #F0EEE9; font-size: 13.5px; }
         .prof-row:last-child { border-bottom: none; }
@@ -834,7 +840,7 @@ export default function StudentDashboard() {
               {schedule.length ? (
                 <table className="sp-table">
                   <thead>
-                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Course")}</th><th>{t("Semester")}</th><th>{t("Time")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th></tr>
+                    <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Subject")}</th><th>{t("Semester")}</th><th>{t("Time")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th></tr>
                   </thead>
                   <tbody>
                     {[...schedule].sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)).map((s, i) => (
@@ -898,14 +904,28 @@ export default function StudentDashboard() {
               {attendanceRecords.length ? (
                 <table className="sp-table">
                   <thead>
-                    <tr><th>{t("Course")}</th><th>{t("Present")}</th><th>{t("Total")}</th><th>{t("Rate")}</th></tr>
+                    <tr><th>{t("Date")}</th><th>{t("Hour")}</th><th>{t("Subject")}</th><th>{t("Teacher")}</th><th>{t("Status")}</th></tr>
                   </thead>
                   <tbody>
                     {attendanceRecords.map((a, i) => {
-                      const pct = a.percent ?? (a.total ? Math.round((a.present / a.total) * 100) : 0);
+                      const present = a.status === "present" || a.present === true || a.present === 1;
+                      const pct = a.percent;
+                      const showSession = (a.date || a.attDate || a.time || a.hour);
+                      if (showSession) {
+                        const statusName = present ? t("Present") : t("Absent");
+                        return (
+                          <tr key={a.id || i}>
+                            <td>{a.date || a.attDate || "-"}</td>
+                            <td>{a.time || a.hour || "-"}</td>
+                            <td style={{ fontWeight: 600, color: "#182644" }}>{a.subject || a.title || a.code || "-"}</td>
+                            <td>{a.teacher || "-"}</td>
+                            <td><span className="grade-pill" style={{ background: present ? "#2E9E6C" : "#D2483C" }}>{statusName}</span></td>
+                          </tr>
+                        );
+                      }
                       return (
                         <tr key={i}>
-                          <td style={{ fontWeight: 600, color: "#182644" }}>{t(a.title)} <span className="course-code" style={{ marginLeft: 6 }}>{a.code}</span></td>
+                          <td style={{ fontWeight: 600, color: "#182644", whiteSpace: "nowrap" }}>{t(a.title)} <span className="course-code" style={{ marginLeft: 6 }}>{a.code}</span></td>
                           <td>{a.present}</td>
                           <td>{a.total}</td>
                           <td><span className="grade-pill" style={{ background: pct >= 90 ? "#2E9E6C" : pct >= 70 ? "#D69A1E" : "#D2483C" }}>{pct}%</span></td>
@@ -924,30 +944,15 @@ export default function StudentDashboard() {
                 <div className="date-label">{today}</div>
               </div>
               <div className="panel">
-                <div className="panel-title">{t("Grades")} ({grades.length})</div>
+                <div className="panel-title">{t("Grades")}</div>
                 {grades.length > 0 ? (
-                  <>
-                    <div style={{ marginBottom: 18, height: 160 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={grades.map(g => ({ name: g.code || g.courseCode || "-", score: Number(g.score ?? g.mark ?? 0) }))}>
-                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                          <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                          <Tooltip />
-                          <Bar dataKey="score" radius={[4, 4, 0, 0]}>
-                            {grades.map((g, i) => {
-                              const score = Number(g.score ?? g.mark ?? 0);
-                              return <Cell key={i} fill={score >= 90 ? "#2E9E6C" : score >= 70 ? "#D69A1E" : "#D2483C"} />;
-                            })}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <table className="sp-table">
+                  <table className="sp-table">
                     <thead>
                       <tr>
-                        <th>{t("Course")}</th>
-                        <th>{t("Code")}</th>
-                        <th>{t("Instructor")}</th>
+                        <th>{t("Day")}</th>
+                        <th>{t("Subject")}</th>
+                        <th>{t("Hour")}</th>
+                        <th>{t("Teacher")}</th>
                         <th>{t("Score")}</th>
                         <th>{t("Grade")}</th>
                       </tr>
@@ -955,26 +960,105 @@ export default function StudentDashboard() {
                     <tbody>
                       {grades.map((g, i) => {
                         const score = Number(g.score ?? g.mark ?? 0);
-                        const pct = g.percent !== undefined ? Number(g.percent) : score;
-                        const color = pct >= 90 ? "#2E9E6C" : pct >= 70 ? "#D69A1E" : "#D2483C";
+                        const hasScore = (g.score !== undefined && g.score !== null) || (g.mark !== undefined && g.mark !== null);
+                        const lg = letterGrade(score);
+                        const color = hasScore ? (score >= 90 ? "#2E9E6C" : score >= 80 ? "#3E5EDB" : score >= 70 ? "#D69A1E" : "#D2483C") : "#9AA3B2";
                         return (
                           <tr key={g.id || i}>
-                            <td style={{ fontWeight: 600, color: "#182644" }}>{g.title || g.courseName || g.name || t("Course")}</td>
-                            <td>{g.code || g.courseCode || "-"}</td>
-                            <td>{g.instructor || g.teacher || "-"}</td>
-                            <td>{g.score !== undefined ? g.score : (g.grade || "-")}</td>
-                            <td>
-                              <span className="grade-pill" style={{ background: color }}>{g.grade || g.letter || score + "%"}</span>
-                            </td>
+                            <td style={{ fontSize: 12 }}>{t(g.day) || "-"}</td>
+                            <td style={{ fontWeight: 600, color: "#182644" }}>{g.subject || g.title || g.courseName || g.name || g.code || "-"}</td>
+                            <td>{g.time || g.hour || "-"}</td>
+                            <td>{g.teacher || g.instructor || "-"}</td>
+                            <td>{hasScore ? `${score}%` : "—"}</td>
+                            <td>{hasScore ? <span className="grade-pill" style={{ background: color }}>{lg.letter}</span> : <span className="grade-pill" style={{ background: "#E5E7EB", color: "#6B7280" }}>{t("Not graded")}</span>}</td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
-                </>
                 ) : (
                   <div className="date-label">{t("No grades available yet.")}</div>
                 )}
+              </div>
+            </>
+          )}
+
+          {!loading && active === "history" && (
+            <>
+              <div className="content-row">
+                <div className="date-label">{t("Study History")}</div>
+              </div>
+
+              <div className="panel">
+                <div className="panel-title"><CalendarDays size={16} /> {t("Weekly Schedule")}</div>
+                {schedule.length ? (
+                  <table className="sp-table">
+                    <thead>
+                      <tr><th>{t("Day")}</th><th>{t("Code")}</th><th>{t("Subject")}</th><th>{t("Hour")}</th><th>{t("Room")}</th><th>{t("Teacher")}</th><th>{t("Score")}</th></tr>
+                    </thead>
+                    <tbody>
+                      {[...schedule].sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)).map((s, i) => {
+                        const g = grades.find(gx => (gx.code || gx.courseCode) && (gx.code === s.code || gx.courseCode === s.code));
+                        const score = g ? Number(g.score ?? g.mark ?? 0) : null;
+                        const lg = score != null ? letterGrade(score) : null;
+                        return (
+                          <tr key={i}>
+                            <td style={{ fontWeight: 600, color: "#182644" }}>{t(s.day)}{s.endDay && s.endDay !== s.day ? ` - ${t(s.endDay)}` : ""}</td>
+                            <td><span className="course-code">{s.code}</span></td>
+                            <td>{t(s.title)}</td>
+                            <td>{s.time}</td>
+                            <td>{s.room}</td>
+                            <td>{s.teacher || "-"}</td>
+                            <td>{score != null ? (<><span className="grade-pill" style={{ background: score >= 90 ? "#2E9E6C" : score >= 80 ? "#3E5EDB" : score >= 70 ? "#D69A1E" : "#D2483C" }}>{lg.letter}</span> {score}%</>) : <span style={{ color: "#9AA3B2" }}>—</span>}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : <EmptyState title={t("No schedule available yet")} />}
+              </div>
+
+              <div className="panel">
+                <div className="panel-title"><ClipboardCheck size={16} /> {t("Attendance")}</div>
+                {history.length || attendanceRecords.length ? (
+                  <table className="sp-table">
+                    <thead>
+                      <tr><th>{t("Date")}</th><th>{t("Hour")}</th><th>{t("Subject")}</th><th>{t("Teacher")}</th><th>{t("Status")}</th></tr>
+                    </thead>
+                    <tbody>
+                      {(history.length ? history : attendanceRecords).map((a, i) => {
+                        const present = a.status === "present" || a.present === true || a.present === 1;
+                        return (
+                          <tr key={a.id || i}>
+                            <td>{a.date || a.attDate || "-"}</td>
+                            <td>{a.time || a.hour || "-"}</td>
+                            <td style={{ fontWeight: 600, color: "#182644" }}>{a.subject || a.code || a.title || "-"}</td>
+                            <td>{a.teacher || "-"}</td>
+                            <td><span className="grade-pill" style={{ background: present ? "#2E9E6C" : "#D2483C" }}>{present ? t("Present") : t("Absent")}</span></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : <EmptyState title={t("No attendance records yet")} />}
+              </div>
+
+              <div className="panel">
+                <div className="panel-title"><GraduationCap size={16} /> {t("Grade Summary")}</div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  <div className="sp-card" style={{ padding: "14px 20px" }}>
+                    <div className="sp-card-title">{t("GPA")}</div>
+                    <div className="sp-card-value">{gpa}</div>
+                  </div>
+                  <div className="sp-card" style={{ padding: "14px 20px" }}>
+                    <div className="sp-card-title">{t("Credits")}</div>
+                    <div className="sp-card-value">{totalCredits}</div>
+                  </div>
+                  <div className="sp-card" style={{ padding: "14px 20px" }}>
+                    <div className="sp-card-title">{t("Graded Subjects")}</div>
+                    <div className="sp-card-value">{grades.filter(g => g.score !== undefined && g.score !== null).length}</div>
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -992,24 +1076,31 @@ export default function StudentDashboard() {
                     <table className="sp-table">
                       <thead>
                         <tr>
+                          <th>{t("Date")}</th>
                           <th>{t("Course")}</th>
-                          <th>{t("Code")}</th>
+                          <th>{t("Teacher")}</th>
                           <th>{t("Score")}</th>
                           <th>{t("Grade")}</th>
                           <th>{t("Grade Points")}</th>
+                          <th>{t("Semester")}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {grades.map((g, i) => {
                           const score = Number(g.score ?? g.mark ?? 0);
                           const lg = letterGrade(score);
+                          const dateStr = g.createdAt
+                            ? new Date(g.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : g.date || "-";
                           return (
                             <tr key={g.id || i}>
-                              <td style={{ fontWeight: 600, color: "#182644" }}>{g.title || g.courseName || g.name || t("Course")}</td>
-                              <td>{g.code || g.courseCode || "-"}</td>
+                              <td style={{ fontSize: 12, color: "#6B7280", whiteSpace: "nowrap" }}>{dateStr}</td>
+                              <td style={{ fontWeight: 600, color: "#182644" }}>{g.title || g.courseName || g.name || "-"}</td>
+                              <td>{g.teacher || g.instructor || "-"}</td>
                               <td>{score}%</td>
                               <td><span className="grade-pill" style={{ background: score >= 90 ? "#2E9E6C" : score >= 70 ? "#D69A1E" : "#D2483C" }}>{lg.letter}</span></td>
                               <td>{lg.pts.toFixed(1)}</td>
+                              <td>{g.semester || "-"}</td>
                             </tr>
                           );
                         })}

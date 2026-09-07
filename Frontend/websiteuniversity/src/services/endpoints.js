@@ -568,6 +568,13 @@ export const getStudentAttendanceRecords = async () => {
     return parse(response);
 };
 
+export const getStudentHistory = async () => {
+    const response = await fetch(`${BASE_URL}/api/students/history`, {
+        headers: authHeaders(),
+    });
+    return parse(response);
+};
+
 // ---------- Assignments (student + teacher) ----------
 export const getStudentAssignments = async () => {
     const response = await fetch(`${BASE_URL}/api/students/assignments`, {
