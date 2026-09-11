@@ -43,3 +43,33 @@ export function SkeletonGrid({ count = 6 }) {
     </div>
   );
 }
+
+// Drop-in placeholder for a data table while it loads — pass the same
+// number of columns as the real <thead> so the shimmering bars line up.
+export function SkeletonTable({ rows = 5, cols = 5 }) {
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <tbody>
+        {Array.from({ length: rows }).map((_, r) => (
+          <tr key={r}>
+            {Array.from({ length: cols }).map((_, c) => (
+              <td key={c} style={{ padding: "10px 12px" }}>
+                <Skeleton height={13} width={c === 0 ? "70%" : "85%"} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// Small inline placeholder for a stat/summary card while its number loads.
+export function SkeletonStat() {
+  return (
+    <div style={{ border: "1px solid var(--border)", borderRadius: 14, padding: 18, background: "var(--bg-card)", display: "flex", flexDirection: "column", gap: 10 }}>
+      <Skeleton height={11} width="50%" />
+      <Skeleton height={22} width="35%" />
+    </div>
+  );
+}

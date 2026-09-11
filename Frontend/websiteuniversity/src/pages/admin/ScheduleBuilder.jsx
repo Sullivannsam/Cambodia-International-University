@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Loader2, CalendarDays, Save, Plus, Trash2, Sparkles, Blocks, Copy, ChevronDown, KeyRound, Check } from "lucide-react";
 import { getAdminSchedule, saveAdminSchedule, deleteAdminScheduleRow, deleteAdminScheduleBlock, getTeacherAccounts } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import { SkeletonTable } from "../../components/common/Skeleton";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -669,11 +670,9 @@ export default function ScheduleBuilder() {
       {notice && <div className="notice-banner">{notice}</div>}
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 size={30} className="animate-spin" style={{ color: "#3E5EDB" }} />
-        </div>
+        <SkeletonTable rows={6} cols={7} />
       ) : (
-        <div className="sb-panel">
+        <div className="sb-panel fade-in">
           <div className="sb-filters">
             <div className="sb-filter">
               <label>{t("Degree")}</label>

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, X, CreditCard, UserCircle2, Mail, Phone, MapPin, Cake, GraduationCap, Loader2, RefreshCcw } from 'lucide-react';
+import { Search, X, CreditCard, UserCircle2, Mail, Phone, MapPin, Cake, GraduationCap, RefreshCcw } from 'lucide-react';
 import { getStudentRecords } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import { SkeletonTable } from "../../components/common/Skeleton";
 
 const PAY_META = {
   PAID: { bg: "#E3F0E7", fg: "#1E7A4E" },
@@ -135,10 +136,7 @@ export default function StudentRecords() {
       </div>
 
       {loading ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "48px 0", color: "#6B7280", fontSize: 14 }}>
-          <Loader2 size={18} className="animate-spin" />
-          {t("Loading...")}
-        </div>
+        <SkeletonTable rows={6} cols={6} />
       ) : error ? (
         <div style={{ padding: "40px 0", textAlign: "center" }}>
           <p style={{ color: "#D2483C", fontSize: 14, margin: "0 0 14px" }}>{error}</p>

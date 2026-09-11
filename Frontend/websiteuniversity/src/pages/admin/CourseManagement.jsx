@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { getCourses, createCourse, updateCourse, deleteCourse } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
+import { SkeletonTable } from "../../components/common/Skeleton";
 
 const emptyForm = () => ({
   code: "",
@@ -278,11 +279,9 @@ export default function CourseManagement() {
       {notice && <div className="notice-banner">{notice}</div>}
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 size={30} className="animate-spin" style={{ color: "#3E5EDB" }} />
-        </div>
+        <SkeletonTable rows={6} cols={8} />
       ) : (
-        <div className="course-panel">
+        <div className="course-panel fade-in">
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <BookOpen size={18} style={{ color: "#3E5EDB" }} />
             <span style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 600, color: "#182644", fontSize: 15 }}>

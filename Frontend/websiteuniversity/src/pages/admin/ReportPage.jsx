@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  Search, Loader2, FileBarChart, FileDown, CheckCircle2, RotateCcw
+  Search, FileBarChart, FileDown, CheckCircle2, RotateCcw
 } from "lucide-react";
 import { getReports, updateReport } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 import StyledSelect from "../../components/common/StyledSelect";
+import { SkeletonTable } from "../../components/common/Skeleton";
 
 export default function ReportPage() {
   const { t } = useLanguage();
@@ -154,9 +155,7 @@ export default function ReportPage() {
       {notice && <div className="notice-banner">{notice}</div>}
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 size={30} className="animate-spin" style={{ color: "#3E5EDB" }} />
-        </div>
+        <SkeletonTable rows={6} cols={8} />
       ) : (
         <>
           <div className="rp-stats">

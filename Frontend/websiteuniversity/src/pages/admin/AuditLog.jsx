@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  Search, Loader2, Trash2, FileClock, ShieldCheck, FileDown
+  Search, Trash2, FileClock, ShieldCheck, FileDown
 } from "lucide-react";
 import { getAuditLogs, clearAuditLogs } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 import StyledSelect from "../../components/common/StyledSelect";
+import { SkeletonTable } from "../../components/common/Skeleton";
 
 const ACTION_COLORS = {
   CREATE: "#2E9E6C",
@@ -185,11 +186,9 @@ export default function AuditLog() {
       {notice && <div className="notice-banner">{notice}</div>}
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 size={30} className="animate-spin" style={{ color: "#3E5EDB" }} />
-        </div>
+        <SkeletonTable rows={6} cols={6} />
       ) : (
-        <div className="log-panel">
+        <div className="log-panel fade-in">
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <FileClock size={18} style={{ color: "#3E5EDB" }} />
             <span style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 600, color: "#182644", fontSize: 15 }}>

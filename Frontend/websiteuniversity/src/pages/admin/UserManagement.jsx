@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Search, Loader2, Pencil, Trash2, X, Save, UserCircle2, Ban, RotateCcw, FileUp, FileDown
 } from "lucide-react";
+import { SkeletonTable } from "../../components/common/Skeleton";
 import { getUsers, updateUser, deleteUser, suspendUser, unsuspendUser, importUsers, exportUsers } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 import StyledSelect from "../../components/common/StyledSelect";
@@ -417,11 +418,9 @@ export default function UserManagement() {
         <div className="panel-title">{t("Registered Users")} ({filtered.length})</div>
 
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-            <Loader2 size={30} className="animate-spin" style={{ color: "#3E5EDB" }} />
-          </div>
+          <SkeletonTable rows={6} cols={9} />
         ) : filtered.length > 0 ? (
-          <div style={{ overflowX: "auto" }}>
+          <div className="fade-in" style={{ overflowX: "auto" }}>
             <table>
               <thead>
                 <tr>

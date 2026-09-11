@@ -1,6 +1,7 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
+import TopProgressBar from './components/common/TopProgressBar.jsx';
 import Homepage from './components/public/Homepage.jsx'
 import Navbar from './components/layout/Navbar';
 import SlideShow from './components/public/SlideShow';
@@ -50,6 +51,8 @@ const withNavbar = (children) => (
 function App() {
   return (
   <BrowserRouter>
+        <TopProgressBar />
+        <RouteFadeWrapper>
         <Routes>
           {/* Home page */}
           <Route path="/" element={
@@ -249,7 +252,19 @@ function App() {
 
           <Route path = "*" element = {<NotFound />} />
         </Routes>
+        </RouteFadeWrapper>
       </BrowserRouter>
+  );
+}
+
+// Plays a subtle fade-in every time the route changes, by remounting this
+// wrapper (via the pathname key) around the matched route's content.
+function RouteFadeWrapper({ children }) {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="route-fade">
+      {children}
+    </div>
   );
 }
 

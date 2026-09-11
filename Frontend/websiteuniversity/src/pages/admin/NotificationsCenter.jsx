@@ -5,6 +5,7 @@ import {
 import { getAdminNotifications, broadcastNotification } from "../../services/endpoints";
 import { useLanguage } from "../../context/LanguageContext";
 import StyledSelect from "../../components/common/StyledSelect";
+import Skeleton from "../../components/common/Skeleton";
 
 const TYPE_COLORS = {
   EXAM: "#3E5EDB",
@@ -195,11 +196,17 @@ export default function NotificationsCenter() {
       {notice && <div className="notice-banner">{notice}</div>}
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <Loader2 size={30} className="animate-spin" style={{ color: "#3E5EDB" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} style={{ border: "1px solid var(--border)", borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+              <Skeleton height={12} width="30%" />
+              <Skeleton height={14} width="70%" />
+              <Skeleton height={11} width="45%" />
+            </div>
+          ))}
         </div>
       ) : filtered.length > 0 ? (
-        <div className="nc-list">
+        <div className="nc-list fade-in">
           {filtered.map((n) => {
             const color = TYPE_COLORS[n.type] || "#6B7280";
             return (

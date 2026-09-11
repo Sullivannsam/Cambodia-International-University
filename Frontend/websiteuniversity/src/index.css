@@ -129,3 +129,25 @@ img, svg {
   max-width: 100%;
 }
 
+/* ==========================================================================
+   Fade-in / page-transition utilities
+   ========================================================================== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeInUp 320ms ease both;
+}
+
+.route-fade {
+  animation: fadeInUp 260ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .route-fade {
+    animation: none;
+  }
+}
+
