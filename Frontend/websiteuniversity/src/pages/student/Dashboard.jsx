@@ -67,9 +67,13 @@ const NAV = [
 const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function LoadingSpinner() {
+  const { t } = useLanguage();
   return (
-    <div className="sp-flex" style={{ padding: "80px 0", justifyContent: "center" }}>
-      <Loader2 size={32} className="sp-spin" style={{ color: "#3E5EDB" }} />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "100px 0" }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: "#182644", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 size={22} className="sp-spin" style={{ color: "#fff" }} />
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: "#6B7280", letterSpacing: 0.2 }}>{t("Loading dashboard...")}</div>
     </div>
   );
 }
@@ -669,9 +673,12 @@ export default function StudentDashboard() {
           {error && <div className="error-banner">{error}</div>}
           {notice && <div className="notice-banner">{notice}</div>}
 
-          {loading && <LoadingSpinner />}
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+          <div key={active} className="fade-in">
 
-          {!loading && active === "overview" && (
+          {active === "overview" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -736,7 +743,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "courses" && (
+          {active === "courses" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -805,7 +812,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "announcements" && (
+          {active === "announcements" && (
             <div className="panel">
               <div className="panel-title sp-flex"><Megaphone size={16} /> {t("Announcements")}</div>
 
@@ -831,7 +838,7 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {!loading && active === "schedule" && (
+          {active === "schedule" && (
             <div className="panel">
               <div className="content-row" style={{ marginBottom: 12 }}>
                 <div className="panel-title" style={{ margin: 0 }}><CalendarDays size={16} /> {t("Weekly Schedule")}</div>
@@ -864,7 +871,7 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {!loading && active === "assignments" && (
+          {active === "assignments" && (
             <div className="panel">
               <div className="panel-title sp-flex"><ClipboardList size={16} /> {t("Assignments")}</div>
               {assignments.length ? (
@@ -902,7 +909,7 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {!loading && active === "attendance" && (
+          {active === "attendance" && (
             <div className="panel">
               <div className="panel-title sp-flex"><ClipboardCheck size={16} /> {t("My Attendance")}</div>
               {attendanceRecords.length ? (
@@ -944,7 +951,7 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {!loading && active === "grades" && (
+          {active === "grades" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -991,7 +998,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "history" && (
+          {active === "history" && (
             <>
               <div className="content-row">
                 <div className="date-label">{t("Study History")}</div>
@@ -1075,7 +1082,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "transcript" && (
+          {active === "transcript" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1142,7 +1149,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "payments" && (
+          {active === "payments" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1264,7 +1271,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "invoices" && (
+          {active === "invoices" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1316,7 +1323,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {!loading && active === "messages" && (
+          {active === "messages" && (
             <div className="panel">
               <div className="panel-title sp-flex"><MessageSquare size={16} /> {t("Class Messages")} <span className="course-code" style={{ marginLeft: 4 }}>CS101</span></div>
               <div style={{ maxHeight: 420, overflow: "auto", border: "1px solid #ECE6DC", borderRadius: 12, padding: 16, marginBottom: 16, background: "#FAF8F4" }}>
@@ -1349,7 +1356,7 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {!loading && active === "profile" && (
+          {active === "profile" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1368,6 +1375,8 @@ export default function StudentDashboard() {
                 }}
               />
             </>
+          )}
+          </div>
           )}
         </div>
       </div>

@@ -422,9 +422,13 @@ function Placeholder({ title }) {
 }
 
 function LoadingSpinner() {
+  const { t } = useLanguage();
   return (
-    <div className="flex items-center justify-center" style={{ padding: "80px 0" }}>
-      <Loader2 size={32} className="animate-spin" style={{ color: "#3E5EDB" }} />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: "100px 0" }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: "#182644", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 size={22} className="animate-spin" style={{ color: "#fff" }} />
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: "#6B7280", letterSpacing: 0.2 }}>{t("Loading dashboard...")}</div>
     </div>
   );
 }
@@ -1013,9 +1017,12 @@ export default function AdminDashboard() {
         <div className="content">
           {error && <div className="error-banner">{error}</div>}
 
-          {loading && <LoadingSpinner />}
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+          <div key={active} className="fade-in">
 
-          {!loading && active === "overview" && (
+          {active === "overview" && (
             <>
               <div className="overview-head">
                 <div>
@@ -1083,7 +1090,7 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "income" && (
+          {active === "income" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1161,7 +1168,7 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "student-att" && (
+          {active === "student-att" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1183,7 +1190,7 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "teacher-att" && (
+          {active === "teacher-att" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1205,7 +1212,7 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "student-acc" && (
+          {active === "student-acc" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1222,7 +1229,7 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "teacher-acc" && (
+          {active === "teacher-acc" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1239,7 +1246,7 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "admin-acc" && (
+          {active === "admin-acc" && (
             <>
               <div className="content-row">
                 <div className="date-label">{today}</div>
@@ -1256,51 +1263,51 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "user-mgmt" && (
+          {active === "user-mgmt" && (
             <UserManagement />
           )}
 
-          {!loading && active === "courses" && (
+          {active === "courses" && (
             <CourseManagement />
           )}
 
-          {!loading && active === "news" && (
+          {active === "news" && (
             <NewsManagement />
           )}
 
-          {!loading && active === "enrollments" && (
+          {active === "enrollments" && (
             <EnrollmentManagement
               onPendingChange={(n) => setBadges((b) => ({ ...b, enrollments: n }))}
             />
           )}
 
-          {!loading && active === "contact" && (
+          {active === "contact" && (
             <ContactInbox
               onUnreadChange={(n) => setBadges((b) => ({ ...b, contact: n }))}
             />
           )}
 
-          {!loading && active === "audit-log" && (
+          {active === "audit-log" && (
             <AuditLog />
           )}
 
-          {!loading && active === "progression" && (
+          {active === "progression" && (
             <Progression />
           )}
 
-          {!loading && active === "students" && (
+          {active === "students" && (
             <StudentRecords />
           )}
 
-          {!loading && active === "cards" && (
+          {active === "cards" && (
             <StudentCardManager />
           )}
 
-          {!loading && active === "schedule" && (
+          {active === "schedule" && (
             <ScheduleBuilder />
           )}
 
-          {!loading && active === "classes" && (
+          {active === "classes" && (
             <>
               <div className="content-row">
                 <div className="date-label">{t("Classes created from the schedule — share the join code so students can join.")}</div>
@@ -1329,16 +1336,18 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {!loading && active === "report" && (
+          {active === "report" && (
             <ReportPage />
           )}
 
-          {!loading && active === "notifications" && (
+          {active === "notifications" && (
             <NotificationsCenter />
           )}
 
-          {!loading && !["overview", "income", "classes", "students", "progression", "cards", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
+          {!["overview", "income", "classes", "students", "progression", "cards", "student-att", "teacher-att", "student-acc", "teacher-acc", "admin-acc", "user-mgmt", "courses", "news", "enrollments", "contact", "audit-log", "schedule", "report", "notifications"].includes(active) && (
             <Placeholder title={t(activeLabel)} />
+          )}
+          </div>
           )}
         </div>
 

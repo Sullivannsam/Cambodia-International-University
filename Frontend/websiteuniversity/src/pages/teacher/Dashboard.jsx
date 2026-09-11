@@ -508,6 +508,8 @@ export default function TeacherDashboard() {
 
         {saved && <div className="td-banner"><CheckCircle2 size={15} style={{ verticalAlign: 'middle', marginRight: 6 }} />{saved}</div>}
 
+        <div key={active} className="fade-in">
+
         {active === "overview" && (
           <>
             <div className="td-grid">
@@ -799,6 +801,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
         )}
+        </div>
       </main>
 
       {annOpen && (
