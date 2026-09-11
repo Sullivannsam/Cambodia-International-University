@@ -8,6 +8,7 @@ import AboutPage from './components/public/AboutPage';
 import AboutUs from './components/public/AboutUs';
 import ContactUs from './components/public/ContactUs';
 import NewsSection from './components/public/NewsSection.jsx';
+import ExploreUniversity from './components/public/ExploreUniversity.jsx';
 import Footer from './components/layout/Footer';
 import SecondFooter from './components/layout/BlackFooter.jsx';
 import AdminLogin from './pages/admin/Login.jsx';
@@ -56,6 +57,7 @@ function App() {
               <Navbar />
               <SlideShow />
               <AboutPage />
+              <ExploreUniversity />
               <NewsSection />
               <Footer />
               <SuccessToast />

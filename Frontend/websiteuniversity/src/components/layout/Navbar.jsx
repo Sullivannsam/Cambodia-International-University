@@ -144,29 +144,6 @@ const Navbar = () => {
                     {/* Search + Buttons */}
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}
                         className="desktop-actions">
-                        {/* Search */}
-                        <div style={{ position: "relative" }}>
-                                <input
-                                    type="text"
-                                    placeholder={t("search")}
-                                    style={{
-                                        width: 176,
-                                        background: "var(--input-bg)",
-                                        border: "1px solid var(--border)",
-                                        borderRadius: 10,
-                                        padding: "7px 36px 7px 14px",
-                                        fontSize: 14,
-                                        color: "var(--text-primary)",
-                                        outline: "none",
-                                    }}
-                                />
-                                <svg style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "var(--text-muted)" }}
-                                    fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-
                         {/* Language Toggle */}
                         <button
                             onClick={() => setLang(lang === "en" ? "kh" : "en")}
@@ -410,14 +387,6 @@ const Navbar = () => {
                     ))}
                   
                     <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-                        <div style={{ position: "relative" }}>
-                            <input type="text" placeholder={t("search")}
-                                style={{ width: "100%", background: "var(--input-bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "9px 36px 9px 14px", fontSize: 14, color: "var(--text-primary)", outline: "none" }} />
-                            <svg style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "var(--text-muted)" }}
-                                fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
                         <button onClick={() => setLang(lang === "en" ? "kh" : "en")} style={{
                             background: "var(--hover-bg)", border: "1.5px solid var(--border)", cursor: "pointer",
                             padding: "8px 12px", borderRadius: 10, color: "var(--text-secondary)",
