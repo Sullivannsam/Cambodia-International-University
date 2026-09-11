@@ -48,6 +48,7 @@ public class PaymentController {
 
   @PostMapping("/student/payment-fee")
   public ResponseEntity<?> paymentInstitute(@RequestBody Payment payment) {
+
     if (payment.getStudentId() == null)
       return ResponseEntity.badRequest().body(Map.of("error", "studentId required"));
     Optional<StudentAccount> found = studentRepository.findById(payment.getStudentId());

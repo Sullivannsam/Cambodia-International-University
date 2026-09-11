@@ -109,10 +109,14 @@ public class EnrollService {
 
     String email = generateStudentEmail(enroll.getFirstNameEN(), enroll.getLastNameEN());
 
+    String tempPassword = generateRandomPassword();
+    String hashed = passwordEncoder.encode(tempPassword);
+
     StudentAccount account = new StudentAccount();
     account.setUsername((nz(enroll.getFirstNameEN()) + " " + nz(enroll.getLastNameEN())).trim());
     account.setEmail(email);
-    account.setPassword(passwordEncoder.encode(generateRandomPassword()));
+    account.setPassword(hashed);
+    account.setTempPassword(tempPassword);
     account.setPhone(enroll.getPhoneNumber());
     account.setRole("STUDENT");
     account.setActive(false); // stays inactive until admin approves
@@ -158,8 +162,15 @@ public class EnrollService {
       return Map.of("error", true, "message", "Linked student account no longer exists.");
     }
 
-    String freshPassword = generateRandomPassword();
-    account.setPassword(passwordEncoder.encode(freshPassword));
+    // Reuse the temporary password created at payment time so any approval
+    // email always matches the value stored in the database. If it is missing
+    // (legacy account), generate and store a fresh one.
+    String freshPassword = account.getTempPassword();
+    if (freshPassword == null || freshPassword.isEmpty()) {
+      freshPassword = generateRandomPassword();
+      account.setTempPassword(freshPassword);
+      account.setPassword(passwordEncoder.encode(freshPassword));
+    }
     account.setActive(true);
 
     int year = parseStartYear(enroll.getYear());

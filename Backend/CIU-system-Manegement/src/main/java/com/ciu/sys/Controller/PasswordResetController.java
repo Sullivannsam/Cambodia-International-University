@@ -131,6 +131,7 @@ public class PasswordResetController {
       } else {
 
         student.setPassword(encoded);
+        student.setTempPassword(null);
         student.setActive(true);
         studentRepo.save(student);
       }

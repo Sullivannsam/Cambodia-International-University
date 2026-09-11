@@ -70,7 +70,7 @@ public class Enroll {
   @Column(name = "status")
   private String status = "PENDING";
 
-  @Column(name = "paid")
+  @Column(name = "paid", columnDefinition = "TINYINT(1) NOT NULL DEFAULT 0")
   private boolean paid = false;
 
   @Column(name = "reject_comment", length = 1000)

@@ -36,6 +36,9 @@ public class StudentAccount {
   @Column(name = "Password")
   private String password;
 
+  @Column(name = "temp_password")
+  private String tempPassword;
+
   @Column(name = "PhoneNumber")
   private String phone;
 
